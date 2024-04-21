@@ -3,6 +3,7 @@ package com.example.swip.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -40,12 +41,14 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests(authorize -> authorize // 요청에 대한 권한 설정 메서드
-                        .requestMatchers("/", "/auth/**", "/board").permitAll() // / 경로 요청에 대한 권한을 설정. permitAll() 모든 사용자, 인증되지않은 사용자에게 허용
-                        .requestMatchers("/oauth/kakao").permitAll()
-                        .requestMatchers("/board/*").permitAll() // 모든 사용자에게 허용
-                        .requestMatchers("/board/{boardId}/edit").authenticated() //
+                        .requestMatchers("/").permitAll() // / 경로 요청에 대한 권한을 설정. permitAll() 모든 사용자, 인증되지않은 사용자에게 허용
+                        .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-resources/**").permitAll() //swagger 관련 경로 요청 모든 사용자에게 허용
+                        .requestMatchers("/oauth/kakao").permitAll() 
+                        .requestMatchers("/auth/**").permitAll() // 모든 사용자에게 허용
+                        .requestMatchers("/board/**").permitAll() // 모든 사용자에게 허용
+                        .requestMatchers(HttpMethod.GET, "/board/{boardId}/edit").authenticated() //
                         .requestMatchers("/admin/**").hasRole("ADMIN") // ROLE_ADMIN 에게만 허용
-                        .anyRequest().authenticated() // 다른 나머지 모든 요청에 대한 권한 설정, authenticated()는 인증된 사용자에게만 허용, 로그인해야만 접근 가능
+                        .anyRequest().authenticated() // 다른 나머지 모든 요청에 대한 권한 설정, authenticated()는 인증된 사용자에게만 허용, 로그인해야만 접근 가
                 );
         return http.build();
     }

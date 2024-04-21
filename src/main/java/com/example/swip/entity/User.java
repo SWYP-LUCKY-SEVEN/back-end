@@ -1,13 +1,20 @@
 package com.example.swip.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
+@Entity
 @Getter
-@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Table(name = "Users")
 public class User {
-    private long id;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
+    private Long id;
+
     private String email;
 
     @JsonIgnore

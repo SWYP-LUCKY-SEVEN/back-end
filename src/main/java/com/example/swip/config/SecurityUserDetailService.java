@@ -20,7 +20,7 @@ public class SecurityUserDetailService implements UserDetailsService {
     private final UserService userService;
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        var user = userService.findByEmail(username).orElseThrow();
+        var user = userService.findByEmail(username);
         return UserPrincipal.builder()
                 .userId(user.getId())
                 .email(user.getEmail())

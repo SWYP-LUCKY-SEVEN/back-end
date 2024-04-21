@@ -3,7 +3,9 @@ package com.example.swip.service;
 import com.example.swip.config.JwtIssuer;
 import com.example.swip.config.UserPrincipal;
 import com.example.swip.dto.LoginResponse;
+import com.example.swip.entity.Board;
 import com.example.swip.entity.User;
+import com.example.swip.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,6 +20,8 @@ import org.springframework.stereotype.Service;
 public class AuthService {
     private final JwtIssuer jwtIssuer;
     private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
+
     @Autowired
     private PasswordEncoder passwordEncoder;
     public LoginResponse attemptLogin(String email, String password) {
@@ -43,14 +47,13 @@ public class AuthService {
     public String addUser(String email, String password) {
         System.out.println("enroll : " + email + ", " + password);
         // TODO : DB 연동 필요.
-        var user = new User();
         var encode = passwordEncoder.encode(password);
-        System.out.println(encode);
-        user.setId(1L);
-        user.setEmail(email);
-        user.setPassword(encode);
-        user.setRole("ROLE_ADMIN");
-        user.setExtraInfo("My nice admin");
+        var user = User.builder()
+                .password(encode)
+                .email(email)
+                .role("ROLE_ADMIN")
+                .extraInfo("testadmin").build();
+        User saveUser = userRepository.save(user);
         return "test success";
     }
 }
