@@ -1,8 +1,10 @@
 package com.example.swip.service;
 
+import com.example.swip.dto.OauthKakaoResponse;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,8 +16,16 @@ import java.net.URL;
 @Service
 @RequiredArgsConstructor
 public class OauthService {
+
+    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
+    private String apikey;
+    @Value("spring.security.oauth2.client.registration.kakao.authorization-grant-type")
+    private String grantType;
+    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
+    private String redirectUrl;
+
     @Transactional
-    public String getKakaoAccessToken(String code) {
+    public OauthKakaoResponse getKakaoAccessToken(String code) {
         String accessToken = "";
         String reqURL = "https://kauth.kakao.com/oauth/token";
 
@@ -30,9 +40,9 @@ public class OauthService {
             // POST 요처에 필요로 요구하는 파라미터를 스트림을 통해 전송
             BufferedWriter bw = new BufferedWriter((new OutputStreamWriter(conn.getOutputStream())));
             StringBuilder sb = new StringBuilder();
-            sb.append("grant_type=authorization_code");
-            sb.append("&client_id=4272a0b3892816ffa5ef615c430ca7a9");
-            sb.append("&redirect_uri=http://api.dorihun.r-e.kr:8000/oauth/kakao");
+            sb.append("grant_type="+grantType);
+            sb.append("&client_id="+apikey);
+            sb.append("&redirect_uri="+redirectUrl);
             sb.append("&code=" + code);
             bw.write(sb.toString());
             bw.flush();
@@ -63,6 +73,8 @@ public class OauthService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return accessToken;
+        return OauthKakaoResponse.builder()
+                .accessToken(accessToken)
+                .build();
     }
 }

@@ -1,16 +1,12 @@
 package com.example.swip.controller;
 
-import com.example.swip.dto.AddUserRequest;
-import com.example.swip.dto.LoginRequest;
-import com.example.swip.dto.LoginResponse;
+import com.example.swip.dto.*;
 import com.example.swip.service.AuthService;
 import com.example.swip.service.OauthService;
 import com.example.swip.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,9 +30,13 @@ public class AuthController {
 
     //https://kauth.kakao.com/oauth/authorize?client_id=4272a0b3892816ffa5ef615c430ca7a9&redirect_uri=http://api.dorihun.r-e.kr:8000/oauth/kakao&response_type=code
     @GetMapping("/oauth/kakao")
-    public String kakaoCalllback(@RequestParam(value = "code")String code) {
+    public void kakaoCalllback(@RequestParam(value = "code") String code) {
         System.out.println("code : " + code);
-        return oauthService.getKakaoAccessToken(code);
-        //return "text";
+    }
+
+    //요청의 인증 code를 받아, Kakao에서 accessToken 및 회원 정보를 발급받아 제공.
+    @PostMapping("/oauth/kakao")
+    public OauthKakaoResponse postKakaoToken(@RequestBody OauthKakaoRequest oauthKakaoRequest) {
+        return oauthService.getKakaoAccessToken(oauthKakaoRequest.getCode());
     }
 }
