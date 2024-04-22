@@ -30,13 +30,15 @@ public class AuthController {
 
     //https://kauth.kakao.com/oauth/authorize?client_id=4272a0b3892816ffa5ef615c430ca7a9&redirect_uri=http://api.dorihun.r-e.kr:8000/oauth/kakao&response_type=code
     @GetMapping("/oauth/kakao")
-    public void kakaoCalllback(@RequestParam(value = "code") String code) {
+    public OauthKakaoResponse kakaoCalllback(@RequestParam(value = "code") String code) {
         System.out.println("code : " + code);
+        return oauthService.getKakaoAccessToken(code);
     }
 
     //요청의 인증 code를 받아, Kakao에서 accessToken 및 회원 정보를 발급받아 제공.
     @PostMapping("/oauth/kakao")
-    public OauthKakaoResponse postKakaoToken(@RequestBody OauthKakaoRequest oauthKakaoRequest) {
+    public OauthKakaoResponse postKakaoToken(@RequestBody @Validated OauthKakaoRequest oauthKakaoRequest) {
+        System.out.println("code : " + oauthKakaoRequest.getCode());
         return oauthService.getKakaoAccessToken(oauthKakaoRequest.getCode());
     }
 }

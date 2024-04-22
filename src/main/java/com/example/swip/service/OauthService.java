@@ -16,10 +16,9 @@ import java.net.URL;
 @Service
 @RequiredArgsConstructor
 public class OauthService {
-
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
     private String apikey;
-    @Value("spring.security.oauth2.client.registration.kakao.authorization-grant-type")
+    @Value("${spring.security.oauth2.client.registration.kakao.authorization-grant-type}")
     private String grantType;
     @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
     private String redirectUrl;
@@ -35,6 +34,7 @@ public class OauthService {
 
             // POST 요청을 위해 기본값이 false인 setDoOutput을 true로 설정
             conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             conn.setDoOutput(true);
 
             // POST 요처에 필요로 요구하는 파라미터를 스트림을 통해 전송
@@ -44,6 +44,7 @@ public class OauthService {
             sb.append("&client_id="+apikey);
             sb.append("&redirect_uri="+redirectUrl);
             sb.append("&code=" + code);
+            System.out.println("sb : " + sb.toString());
             bw.write(sb.toString());
             bw.flush();
 

@@ -15,6 +15,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+
+import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
@@ -23,6 +27,16 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final SecurityUserDetailService securityUserDetailService;
     private final UnauthorizedHandler unauthorizedHandler;
+    CorsConfigurationSource corsConfigurationSource() {
+        return request -> {
+            CorsConfiguration config = new CorsConfiguration();
+            config.setAllowedHeaders(Collections.singletonList("*"));
+            config.setAllowedMethods(Collections.singletonList("*"));
+            config.setAllowedOriginPatterns(Collections.singletonList("*"));
+            config.setAllowCredentials(true);
+            return config;
+        };
+    }
 
     @Bean
     public SecurityFilterChain applicationSecurity(HttpSecurity http) throws Exception {
@@ -31,7 +45,7 @@ public class SecurityConfig {
         //UsernamePasswordAuthenticationFilter.doFilter 요청이 인증을 위한 것인지, 이 필터로 처리되어야 하는지 여부를 결정하는 메서드를 호출
 
         http
-                .cors(AbstractHttpConfigurer::disable)  //cors 기능 비활성화
+                .cors(corsConfigurer -> corsConfigurer.configurationSource(corsConfigurationSource()))  //cors 기능 비활성화
                 .csrf(AbstractHttpConfigurer::disable)  //csrf 기능 비활성화
                 .securityMatcher("/**") // map current config to given resource path
                 .sessionManagement(sessionManagementConfigurer
