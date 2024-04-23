@@ -2,6 +2,7 @@ package com.example.swip.service;
 
 import com.example.swip.config.JwtIssuer;
 import com.example.swip.config.UserPrincipal;
+import com.example.swip.dto.KakaoRegisterDto;
 import com.example.swip.dto.LoginResponse;
 import com.example.swip.entity.Board;
 import com.example.swip.entity.User;
@@ -38,7 +39,26 @@ public class AuthService {
                 .map(GrantedAuthority::getAuthority)
                 .toList();
 
-        var token = jwtIssuer.issue(principal.getUserId(), principal.getEmail(), roles);
+        var token = jwtIssuer.issue(principal.getUserId(), principal.getEmail(), principal.getValidate(), roles);
+        return LoginResponse.builder()
+                .accessToken(token)
+                .build();
+    }
+    public LoginResponse oauthLogin(String email, String validate) {
+        System.out.println("test : " + email + ", " + validate);
+        //SecurityConfig에서 구성한 SecurityFilterChain
+        var authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(email, validate)
+        );
+        System.out.println("authentication : " + authentication.getPrincipal());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        var principal = (UserPrincipal) authentication.getPrincipal();
+
+        var roles = principal.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        var token = jwtIssuer.issue(principal.getUserId(), email, validate, roles);
         return LoginResponse.builder()
                 .accessToken(token)
                 .build();
@@ -52,8 +72,17 @@ public class AuthService {
                 .password(encode)
                 .email(email)
                 .role("ROLE_ADMIN")
-                .extraInfo("testadmin").build();
+                .build();
+
         User saveUser = userRepository.save(user);
         return "test success";
+    }
+
+    public User kakaoRegisterUser(KakaoRegisterDto kakaoRegisterDto) {
+        User user = userRepository.findByEmail(kakaoRegisterDto.getEmail());
+        if(user == null) {
+            userRepository.save(kakaoRegisterDto.toEntity());
+        }
+        return user;
     }
 }

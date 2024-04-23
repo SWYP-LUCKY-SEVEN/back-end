@@ -1,6 +1,7 @@
 package com.example.swip.controller;
 
 import com.example.swip.dto.*;
+import com.example.swip.entity.User;
 import com.example.swip.service.AuthService;
 import com.example.swip.service.OauthService;
 import com.example.swip.service.UserService;
@@ -28,16 +29,24 @@ public class AuthController {
             return "duplicated User Name";
     }
 
-    //https://kauth.kakao.com/oauth/authorize?client_id=4272a0b3892816ffa5ef615c430ca7a9&redirect_uri=http://api.dorihun.r-e.kr:8000/oauth/kakao&response_type=code
+    //https://kauth.kakao.com/oauth/authorize?client_id=4272a0b3892816ffa5ef615c430ca7a9&redirect_uri=http://api.dorihun.r-e.kr:8080/oauth/kakao&response_type=code
     @GetMapping("/oauth/kakao")
-    public OauthKakaoResponse kakaoCalllback(@RequestParam(value = "code") String code) {
+    public KakaoRegisterDto kakaoCalllback(@RequestParam(value = "code") String code) {
         System.out.println("code : " + code);
-        return oauthService.getKakaoAccessToken(code);
+        String accessToken = oauthService.getKakaoAccessToken(code);
+
+        KakaoRegisterDto kakaoRegisterDto = oauthService.getKakaoProfile(accessToken);
+
+        User user = authService.kakaoRegisterUser(kakaoRegisterDto);
+
+        return kakaoRegisterDto;
+        // JWT 토큰, 회원가입 상태, 회원가입 정보
+        //return authService.oauthLogin(user.getEmail(), user.getValidate());
     }
 
     //요청의 인증 code를 받아, Kakao에서 accessToken 및 회원 정보를 발급받아 제공.
     @PostMapping("/oauth/kakao")
-    public OauthKakaoResponse postKakaoToken(@RequestBody @Validated OauthKakaoRequest oauthKakaoRequest) {
+    public String postKakaoToken(@RequestBody @Validated OauthKakaoRequest oauthKakaoRequest) {
         System.out.println("code : "+oauthKakaoRequest.getCode());
         return oauthService.getKakaoAccessToken(oauthKakaoRequest.getCode());
     }

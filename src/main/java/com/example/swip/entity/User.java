@@ -13,7 +13,7 @@ import lombok.*;
 public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private Long id;
+    private Long Id;
 
     private String email;
 
@@ -21,6 +21,13 @@ public class User {
     private String password;
 
     private String role;
+
+    private String validate;
+
+    //private Long profile;
+    private String profileName;
+
+    private String profileInterests;
 
     private String extraInfo;
 }

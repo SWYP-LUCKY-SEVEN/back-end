@@ -1,6 +1,8 @@
 package com.example.swip.service;
 
+import com.example.swip.dto.KakaoRegisterDto;
 import com.example.swip.dto.OauthKakaoResponse;
+import com.example.swip.entity.User;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +26,7 @@ public class OauthService {
     private String redirectUrl;
 
     @Transactional
-    public OauthKakaoResponse getKakaoAccessToken(String code) {
+    public String getKakaoAccessToken(String code) {
         String accessToken = "";
         String refreshToken = "";
         String reqURL = "https://kauth.kakao.com/oauth/token";
@@ -44,7 +46,6 @@ public class OauthService {
             StringBuilder sb = new StringBuilder();
             sb.append("grant_type="+grantType);
             sb.append("&client_id="+apikey);
-            sb.append("&client_secret=vzlBG1lCeSDdZYO6HjqrQZ16R2rcyVAj");
             sb.append("&redirect_uri="+redirectUrl);
             sb.append("&code=" + code);
             System.out.println("sb : " + sb.toString());
@@ -79,9 +80,60 @@ public class OauthService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return OauthKakaoResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+        return accessToken;
+    }
+
+    public KakaoRegisterDto getKakaoProfile(String accessToken) {
+        String email = "";
+        String nickname = "";
+        //JAVA HTTP POST 작성
+        try {
+            URL url = new URL("https://kauth.kakao.com/v2/user/me");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            // POST 요청을 위해 기본값이 false인 setDoOutput을 true로 설정
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Authorization", "Bearer "+accessToken.trim());
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+            conn.setDoOutput(true);
+
+            // POST 요처에 필요로 요구하는 파라미터를 스트림을 통해 전송
+            BufferedWriter bw = new BufferedWriter((new OutputStreamWriter(conn.getOutputStream())));
+            bw.flush();
+
+            int responseCode = conn.getResponseCode();
+            System.out.println("responseCode : " + responseCode);
+
+            // 요청을 통해 얻은 JSON타입의 Response 메세지 읽어오기
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String line = "";
+            String result ="";
+
+            while ((line = br.readLine()) != null) {
+                result += line;
+            }
+            System.out.println("response body : " + result);
+
+            // Gson 라이브러리에 포함된 클래스로 JSON파싱 객체 생성
+            JsonParser parser = new JsonParser();
+            JsonElement element = parser.parse(result);
+
+            Long id = element.getAsLong();
+            email = element.getAsJsonObject().get("kakao_account").getAsString();
+            nickname = element.getAsJsonObject().get("properties").getAsString();
+
+            System.out.println("id : " + id);
+            System.out.println("email : " + email);
+            System.out.println("nickname : " + nickname);
+
+            br.close();
+            bw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return KakaoRegisterDto.builder()
+                .email(email)
+                .nickname(nickname)
+                .role("ROLE_USER").build();
     }
 }

@@ -24,6 +24,7 @@ public class SecurityUserDetailService implements UserDetailsService {
         return UserPrincipal.builder()
                 .userId(user.getId())
                 .email(user.getEmail())
+                .validate(user.getValidate())
                 .authorities(List.of(new SimpleGrantedAuthority(user.getRole())))
                 .password(user.getPassword())
                 .build();
