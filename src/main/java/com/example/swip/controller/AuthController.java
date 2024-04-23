@@ -38,7 +38,7 @@ public class AuthController {
     //요청의 인증 code를 받아, Kakao에서 accessToken 및 회원 정보를 발급받아 제공.
     @PostMapping("/oauth/kakao")
     public OauthKakaoResponse postKakaoToken(@RequestBody @Validated OauthKakaoRequest oauthKakaoRequest) {
-        System.out.println("code : " + oauthKakaoRequest.getCode());
+        System.out.println("code : "+oauthKakaoRequest.getCode());
         return oauthService.getKakaoAccessToken(oauthKakaoRequest.getCode());
     }
 }

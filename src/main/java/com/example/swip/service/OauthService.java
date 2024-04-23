@@ -26,8 +26,10 @@ public class OauthService {
     @Transactional
     public OauthKakaoResponse getKakaoAccessToken(String code) {
         String accessToken = "";
+        String refreshToken = "";
         String reqURL = "https://kauth.kakao.com/oauth/token";
 
+        //JAVA HTTP POST 작성
         try {
             URL url = new URL(reqURL);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -42,6 +44,7 @@ public class OauthService {
             StringBuilder sb = new StringBuilder();
             sb.append("grant_type="+grantType);
             sb.append("&client_id="+apikey);
+            sb.append("&client_secret=vzlBG1lCeSDdZYO6HjqrQZ16R2rcyVAj");
             sb.append("&redirect_uri="+redirectUrl);
             sb.append("&code=" + code);
             System.out.println("sb : " + sb.toString());
@@ -66,8 +69,10 @@ public class OauthService {
             JsonElement element = parser.parse(result);
 
             accessToken = element.getAsJsonObject().get("access_token").getAsString();
+            refreshToken = element.getAsJsonObject().get("refresh_token").getAsString();
 
             System.out.println("access_token : " + accessToken);
+            System.out.println("refresh_token : " + refreshToken);
 
             br.close();
             bw.close();
@@ -76,6 +81,7 @@ public class OauthService {
         }
         return OauthKakaoResponse.builder()
                 .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .build();
     }
 }

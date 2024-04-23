@@ -57,7 +57,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize // 요청에 대한 권한 설정 메서드
                         .requestMatchers("/").permitAll() // / 경로 요청에 대한 권한을 설정. permitAll() 모든 사용자, 인증되지않은 사용자에게 허용
                         .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-resources/**").permitAll() //swagger 관련 경로 요청 모든 사용자에게 허용
-                        .requestMatchers("/oauth/kakao").permitAll() 
+                        .requestMatchers("/oauth/kakao", "/oauth/**").permitAll()
                         .requestMatchers("/auth/**").permitAll() // 모든 사용자에게 허용
                         .requestMatchers("/board/**").permitAll() // 모든 사용자에게 허용
                         .requestMatchers(HttpMethod.GET, "/board/{boardId}/edit").authenticated() //
@@ -78,5 +78,4 @@ public class SecurityConfig {
 
         return http.getSharedObject(AuthenticationManagerBuilder.class).build();
     }
-
 }
