@@ -29,17 +29,19 @@ public class AuthController {
             return "duplicated User Name";
     }
 
-    //https://kauth.kakao.com/oauth/authorize?client_id=4272a0b3892816ffa5ef615c430ca7a9&redirect_uri=http://api.dorihun.r-e.kr:8080/oauth/kakao&response_type=code
+    //https://kauth.kakao.com/oauth/authorize?client_id=4272a0b3892816ffa5ef615c430ca7a9&redirect_uri=http://localhost:3000/login/kakao&response_type=code
     @GetMapping("/oauth/kakao")
-    public KakaoRegisterDto kakaoCalllback(@RequestParam(value = "code") String code) {
-        System.out.println("code : " + code);
+    public OauthKakaoResponse kakaoCalllback(@RequestParam(value = "code") String code) {
         String accessToken = oauthService.getKakaoAccessToken(code);
 
         KakaoRegisterDto kakaoRegisterDto = oauthService.getKakaoProfile(accessToken);
 
+        //회원가입 후, user 정보를 반환함. 회원가입이 되어있다면 바로 user정보를 반환함
         User user = authService.kakaoRegisterUser(kakaoRegisterDto);
 
-        return kakaoRegisterDto;
+        System.out.println("accessToken : " + accessToken);
+
+        return authService.oauthLogin(user);
         // JWT 토큰, 회원가입 상태, 회원가입 정보
         //return authService.oauthLogin(user.getEmail(), user.getValidate());
     }

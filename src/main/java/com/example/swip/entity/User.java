@@ -27,7 +27,7 @@ public class User {
     //private Long profile;
     private String profileName;
 
-    private String profileInterests;
+    //private String profileInterests;
 
-    private String extraInfo;
+    //private String extraInfo;
 }

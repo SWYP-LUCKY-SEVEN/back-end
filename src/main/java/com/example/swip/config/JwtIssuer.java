@@ -21,6 +21,7 @@ public class JwtIssuer {
                 .withExpiresAt(Instant.now().plus(Duration.of(1, ChronoUnit.DAYS))) // 보통 duration 짧게 하는데 튜토리얼이니까 1day
                 .withClaim("e", email)
                 .withClaim("v", validate)
+                .withClaim("u", userId)
                 .withClaim("a", roles)
                 .sign(Algorithm.HMAC256(properties.getSecretKey()));
     }

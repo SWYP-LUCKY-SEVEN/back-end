@@ -5,6 +5,7 @@ import com.example.swip.dto.OauthKakaoResponse;
 import com.example.swip.entity.User;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import io.swagger.v3.core.util.Json;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -84,22 +85,22 @@ public class OauthService {
     }
 
     public KakaoRegisterDto getKakaoProfile(String accessToken) {
+        Long id = 0L;
         String email = "";
         String nickname = "";
         //JAVA HTTP POST 작성
         try {
-            URL url = new URL("https://kauth.kakao.com/v2/user/me");
+            URL url = new URL("https://kapi.kakao.com/v2/user/me");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
             // POST 요청을 위해 기본값이 false인 setDoOutput을 true로 설정
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Authorization", "Bearer "+accessToken.trim());
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
-            conn.setDoOutput(true);
+            conn.setRequestProperty("Authorization", "Bearer "+accessToken);
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            conn.setDoOutput(true); //POST 요청에 필수
 
             // POST 요처에 필요로 요구하는 파라미터를 스트림을 통해 전송
             BufferedWriter bw = new BufferedWriter((new OutputStreamWriter(conn.getOutputStream())));
-            bw.flush();
 
             int responseCode = conn.getResponseCode();
             System.out.println("responseCode : " + responseCode);
@@ -118,9 +119,12 @@ public class OauthService {
             JsonParser parser = new JsonParser();
             JsonElement element = parser.parse(result);
 
-            Long id = element.getAsLong();
-            email = element.getAsJsonObject().get("kakao_account").getAsString();
-            nickname = element.getAsJsonObject().get("properties").getAsString();
+            id = element.getAsJsonObject().get("id").getAsLong();
+            JsonElement kakaoAccount = element.getAsJsonObject().get("kakao_account");
+            JsonElement properties = element.getAsJsonObject().get("properties");
+
+            email = kakaoAccount.getAsJsonObject().get("email").getAsString();
+            nickname = properties.getAsJsonObject().get("nickname").getAsString();
 
             System.out.println("id : " + id);
             System.out.println("email : " + email);
@@ -134,6 +138,6 @@ public class OauthService {
         return KakaoRegisterDto.builder()
                 .email(email)
                 .nickname(nickname)
-                .role("ROLE_USER").build();
+                .role("USER").build();
     }
 }

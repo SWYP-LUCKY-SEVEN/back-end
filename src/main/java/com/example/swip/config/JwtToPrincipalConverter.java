@@ -8,7 +8,7 @@ import java.util.List;
 
 @Component
 public class JwtToPrincipalConverter {
-    public UserPrincipal convert(DecodedJWT jwt) {
+    public UserPrincipal convert(DecodedJWT jwt) { // jwtDecoder에서 반환된 DecodedJWT 입력
         return UserPrincipal.builder()
                 .userId(Long.valueOf(jwt.getSubject()))
                 .email(jwt.getClaim("e").asString())
