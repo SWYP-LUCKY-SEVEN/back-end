@@ -32,7 +32,6 @@ public class Board {
     private LocalDateTime updated_time;
 
     //comment entity 추가
-
     public void updateBoard(String title, String content){
         this.title = title;
         this.content = content;

@@ -7,9 +7,9 @@ public class UserPrincipalAuthenticationToken extends AbstractAuthenticationToke
     private final UserPrincipal principal;
 
     public UserPrincipalAuthenticationToken(UserPrincipal principal) {
-        super(principal.getAuthorities()); //AbstractAuthenticationToken생성자 호출
-        this.principal = principal;
-        setAuthenticated(true); //토큰을 신뢰할 수 있는지 토큰을 신뢰할 수 없는지 여부
+        super(principal.getAuthorities()); //AbstractAuthenticationToken생성자 호출. 해당 JWT 토큰에 저장된 UserPrincipal 내 Autorities로 토큰 생성.
+        this.principal = principal; //해당 JWT토큰에 저장된 UserPrincipal로 등록
+        setAuthenticated(true); //토큰을 신뢰
     }
 
     @Override

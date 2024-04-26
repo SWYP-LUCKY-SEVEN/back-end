@@ -22,11 +22,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        extractTokenFromRequest(request)
-                .map(jwtDecoder::decode)
-                .map(jwtToPrincipalConverter::convert)//UserPrincipal 반환
-                .map(UserPrincipalAuthenticationToken::new)//제공된 권한 배열을 사용하여 토큰 생성
-                .ifPresent(authentication -> SecurityContextHolder.getContext().setAuthentication(authentication));//현재 인증된 주체를 변경한다. 때로는 인증 정보를 제거(null일경우)한다.
+        extractTokenFromRequest(request)// token string 반환됨
+                .map(jwtDecoder::decode) // .map() => optional 반환값을 함수에 매핑해줌. 즉 jwtDecoder.decode(request)와 동일
+                .map(jwtToPrincipalConverter::convert) //DecodedJWT입력, UserPrincipal 반환
+                .map(UserPrincipalAuthenticationToken::new) //UserPrincipal 사용하여 생성자 호출. authentication
+                .ifPresent(authentication -> SecurityContextHolder.getContext().setAuthentication(authentication)); //현재 인증된 주체를 변경한다. 때로는 인증 정보를 제거(null일경우)한다.
+        //UserPrincipalAuthenticationToken이 SecurityContextHolder의 Context의 인증을 한다.
         //SecurityContext 는 전역으로 어디서든 꺼낼 수 있다.
         //ifpresent Optional 객체가 값을 가지고 있으면 실행 값이 없으면 넘어감
 
@@ -41,7 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         //서브클래스는 이 메서드를 재정의하여 인증 성공 후 계속할 수 있습니다 FilterChain.
     }
 
-    // Authorization: Bearer ey74823y58734.y34t897y34.y8934t8934 이런식이라서 substring 7 해서 ey 부분만 가져오기위해서
+    // Authorization: substring 7 = Bearer 제거
     private Optional<String> extractTokenFromRequest(HttpServletRequest request) {
         var token = request.getHeader("Authorization");
         if (StringUtils.hasText(token) && token.startsWith("Bearer ")) {

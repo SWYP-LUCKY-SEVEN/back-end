@@ -57,13 +57,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize // 요청에 대한 권한 설정 메서드
                         .requestMatchers("/").permitAll() // / 경로 요청에 대한 권한을 설정. permitAll() 모든 사용자, 인증되지않은 사용자에게 허용
                         .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-resources/**").permitAll() //swagger 관련 경로 요청 모든 사용자에게 허용
-                        .requestMatchers("/oauth/kakao").permitAll() 
+                        .requestMatchers("/oauth/kakao", "/oauth/**").permitAll()
                         .requestMatchers("/auth/**").permitAll() // 모든 사용자에게 허용
                         .requestMatchers("/board/**").permitAll() // 모든 사용자에게 허용
-                        .requestMatchers(HttpMethod.GET, "/board/{boardId}/edit").authenticated() //
-                        .requestMatchers("/admin/**").hasRole("ADMIN") // ROLE_ADMIN 에게만 허용
+                        .requestMatchers(HttpMethod.GET, "/board/{boardId}/edit").hasRole("USER") //
+                        .requestMatchers("/secured/**").authenticated() // ROLE_USER 에게만 허용
+                        .requestMatchers("/admin/**").hasRole("USER") // ROLE_ADMIN 에게만 허용
                         .anyRequest().authenticated() // 다른 나머지 모든 요청에 대한 권한 설정, authenticated()는 인증된 사용자에게만 허용, 로그인해야만 접근 가
                 );
+
         return http.build();
     }
     @Bean
@@ -71,12 +73,14 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
+    @Bean // 로그인 시도에 사용되는 매서드
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        //AuthenticationManagerBuilder를 불러와 userDetailsService를 securityUserDetailService로 설정
         http.getSharedObject(AuthenticationManagerBuilder.class)
         .userDetailsService(securityUserDetailService).passwordEncoder(passwordEncoder());
+        //이를통해 UserPrincipal 객체를 반환하는 loadUserByUsername 메소드로 오버라이딩시킴
+        //
 
         return http.getSharedObject(AuthenticationManagerBuilder.class).build();
     }
-
 }
