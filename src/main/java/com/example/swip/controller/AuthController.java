@@ -39,7 +39,8 @@ public class AuthController {
         //회원가입 후, user 정보를 반환함. 회원가입이 되어있다면 바로 user정보를 반환함
         User user = authService.kakaoRegisterUser(kakaoRegisterDto);
 
-        System.out.println("accessToken : " + accessToken);
+        System.out.println("getValidate : " + user.getValidate());
+        System.out.println("getRole : " + user.getRole());
 
         return authService.oauthLogin(user);
         // JWT 토큰, 회원가입 상태, 회원가입 정보
