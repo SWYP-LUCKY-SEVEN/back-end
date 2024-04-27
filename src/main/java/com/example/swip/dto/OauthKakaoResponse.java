@@ -11,6 +11,7 @@ public class OauthKakaoResponse {
     private String accessToken;
     private String profileName;
     private String email;
+    private Long userId;
 }
 
 //@Data

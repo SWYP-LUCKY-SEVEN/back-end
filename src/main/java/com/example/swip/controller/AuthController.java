@@ -16,6 +16,16 @@ public class AuthController {
     private final UserService userService;
     private final OauthService oauthService;
 
+    @GetMapping("/user") // user id 반환
+    public getUserID getUserId(){  // @Validated
+        User user = userService.findByEmail("test@test.com");
+        if(user != null) {
+            return getUserID.builder()
+                    .user_id(user.getId())
+                    .build();
+        }
+        return null;
+    }
     @PostMapping("/auth/login") // 'test@test.com', 'test' 입력시 로그인 토큰 반환 (UserService 내부 정의)
     public LoginResponse login(@RequestBody @Validated LoginRequest loginRequest){  // @Validated
         return authService.attemptLogin(loginRequest.getEmail(), loginRequest.getPassword());
@@ -50,7 +60,7 @@ public class AuthController {
     //요청의 인증 code를 받아, Kakao에서 accessToken 및 회원 정보를 발급받아 제공.
     @PostMapping("/oauth/kakao")
     public String postKakaoToken(@RequestBody @Validated OauthKakaoRequest oauthKakaoRequest) {
-        System.out.println("code : "+oauthKakaoRequest.getCode());
+        System.out.println("code : " + oauthKakaoRequest.getCode());
         return oauthService.getKakaoAccessToken(oauthKakaoRequest.getCode());
     }
 }
