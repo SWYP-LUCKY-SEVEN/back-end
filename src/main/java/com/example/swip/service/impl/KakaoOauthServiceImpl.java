@@ -1,11 +1,9 @@
-package com.example.swip.service;
+package com.example.swip.service.impl;
 
 import com.example.swip.dto.KakaoRegisterDto;
-import com.example.swip.dto.OauthKakaoResponse;
-import com.example.swip.entity.User;
+import com.example.swip.service.KakaoOauthService;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import io.swagger.v3.core.util.Json;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,7 +16,7 @@ import java.net.URL;
 
 @Service
 @RequiredArgsConstructor
-public class OauthService {
+public class KakaoOauthServiceImpl implements KakaoOauthService {
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
     private String apikey;
     @Value("${spring.security.oauth2.client.registration.kakao.authorization-grant-type}")
