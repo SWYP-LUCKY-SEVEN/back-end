@@ -6,6 +6,10 @@ import lombok.*;
 
 import java.sql.Date;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @AllArgsConstructor
@@ -18,25 +22,30 @@ public class User {
     private Long Id;
 
     private String email;
-
-    @JsonIgnore
-    private String password;
-
-    private String role;
-
-    private String validate;
-
-    //private Long profile;
+  
     private String nickname;
 
     private String profileImage;
+  
+    private LocalDateTime joinDate;
+  
+    private LocalDateTime withdrawalDate;
 
-    private Date joinDate;
-    private Date withdrawalDate;
-
-    //private String extraInfo;
     public void updateProfile(String profileImage, String nickname){
         this.profileImage = profileImage;
         this.nickname = nickname;
     }
+    @OneToMany(mappedBy = "user")
+    private List<Evaluation> evaluations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<UserStudy> userStudies = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<JoinRequest> joinRequests = new ArrayList<>();
+
+    //기존 error 때문에 넣어둔 field => 추후 삭제 요망 (현재는 테스트 코드 용으로 사용중)
+    private String validate;
+    private String role;
+    private String password;
 }
