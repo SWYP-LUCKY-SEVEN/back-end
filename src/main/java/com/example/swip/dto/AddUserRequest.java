@@ -1,6 +1,5 @@
 package com.example.swip.dto;
 
-import com.example.swip.entity.Board;
 import com.example.swip.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

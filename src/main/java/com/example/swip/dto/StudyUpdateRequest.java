@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class BoardUpdateRequest {
+public class StudyUpdateRequest {
 
     private String title;
     private String content;
