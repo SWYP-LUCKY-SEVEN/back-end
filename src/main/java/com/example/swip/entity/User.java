@@ -3,9 +3,8 @@ package com.example.swip.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 
-import java.util.UUID;
+import java.sql.Date;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,16 +21,20 @@ public class User {
     @Column(name = "user_id")
     private Long Id;
 
-    private String profile_image;
-
     private String email;
-
+  
     private String nickname;
 
-    private LocalDateTime join_date;
+    private String profileImage;
+  
+    private LocalDateTime joinDate;
+  
+    private LocalDateTime withdrawalDate;
 
-    private LocalDateTime withdrawal_date;
-
+    public void updateProfile(String profileImage, String nickname){
+        this.profileImage = profileImage;
+        this.nickname = nickname;
+    }
     @OneToMany(mappedBy = "user")
     private List<Evaluation> evaluations = new ArrayList<>();
 
@@ -41,9 +44,8 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<JoinRequest> joinRequests = new ArrayList<>();
 
-    //기존 error 때문에 넣어둔 field => 추후 삭제 요망
+    //기존 error 때문에 넣어둔 field => 추후 삭제 요망 (현재는 테스트 코드 용으로 사용중)
     private String validate;
     private String role;
-    private String profileName;
     private String password;
 }

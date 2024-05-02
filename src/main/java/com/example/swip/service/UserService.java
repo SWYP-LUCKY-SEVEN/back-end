@@ -2,6 +2,9 @@ package com.example.swip.service;
 
 
 import com.example.swip.dto.AddUserRequest;
+import com.example.swip.dto.BoardSaveRequest;
+import com.example.swip.dto.PostProfileResponse;
+import com.example.swip.entity.Board;
 import com.example.swip.entity.User;
 import com.example.swip.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,12 @@ public class UserService {
             return false;
         else
             return true;
+    }
+
+    @Transactional
+    public void updateProfile(long userId, String profileImage, String nickname){
+        User findUser = userRepository.findById(userId).orElse(null);
+        findUser.updateProfile(profileImage, nickname);
     }
 
     //조회

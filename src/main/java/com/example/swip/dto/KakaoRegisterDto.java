@@ -18,7 +18,7 @@ public class KakaoRegisterDto {
     public User toEntity() {
         return User.builder()
                 .email(this.email)
-                .profileName(this.nickname)
+                .nickname(this.nickname)
                 .role(this.role)
                 .validate("kakao")
                 .build();
