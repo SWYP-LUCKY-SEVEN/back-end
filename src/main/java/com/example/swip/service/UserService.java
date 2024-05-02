@@ -2,15 +2,11 @@ package com.example.swip.service;
 
 
 import com.example.swip.dto.AddUserRequest;
-import com.example.swip.dto.BoardSaveRequest;
-import com.example.swip.entity.Board;
 import com.example.swip.entity.User;
 import com.example.swip.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)

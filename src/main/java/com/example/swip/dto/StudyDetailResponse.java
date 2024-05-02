@@ -1,6 +1,5 @@
 package com.example.swip.dto;
 
-import com.example.swip.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -8,7 +7,7 @@ import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @Getter
-public class BoardDetailResponse {
+public class StudyDetailResponse {
     private Long id;
     private String title;
     private String content;
