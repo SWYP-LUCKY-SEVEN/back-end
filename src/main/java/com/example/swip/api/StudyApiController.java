@@ -5,6 +5,7 @@ import com.example.swip.dto.StudySaveRequest;
 import com.example.swip.dto.StudyUpdateRequest;
 import com.example.swip.entity.Study;
 import com.example.swip.service.StudyService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,14 @@ public class StudyApiController {
     private final StudyService studyService;
 
     //저장
+    @Operation(summary = "스터디 생성 메소드",
+            description = "스터디 생성 메소드입니다." +
+                    "/ categories: 정해진 분야(수능, 대학생, 코딩 ... 등 11가지) 중 선택된 값을 배열 형태로 넣기." +
+                    "/ tags: 추가정보(태그)를 배열 형태로 넣기." +
+                    "/ duration: (미정, 일주일, 한 달, 3개월, ...) 같이 문자열의 형태 그대로 넣기" +
+                    "/ max_participants_num : 최대 참여 인원" +
+                    "/ matching_tye: 스터디 신청 방식 - (빠른 매칭 or 인증제) - 문자열로 넣기" +
+                    "/ tendency: 스터디 성향: (활발한 대화와 동기부여 원해요), ... - 문자열로 넣기")
     @PostMapping("/study")
     public Long saveStudy(@RequestBody StudySaveRequest dto){
 
@@ -30,6 +39,7 @@ public class StudyApiController {
     }
 
     //조회
+    @Operation(summary = "스터디 전체 리스트 조회 메소드")
     @GetMapping("/study")
     public Result showStudy(){
         List<Study> allStudies = studyService.findAllStudies();
