@@ -23,7 +23,6 @@ public class S3AccessTime {
     private Long putAccessTime;
     private Long getAccessTime;
 
-
     public void addPutAccessTime(){
         this.putAccessTime += 1;
     }

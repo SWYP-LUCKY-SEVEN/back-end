@@ -3,9 +3,8 @@ package com.example.swip.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 
-import java.util.UUID;
+import java.sql.Date;
 
 @Entity
 @Getter
@@ -28,9 +27,16 @@ public class User {
     private String validate;
 
     //private Long profile;
-    private String profileName;
+    private String nickname;
 
-    //private String profileInterests;
+    private String profileImage;
+
+    private Date joinDate;
+    private Date withdrawalDate;
 
     //private String extraInfo;
+    public void updateProfile(String profileImage, String nickname){
+        this.profileImage = profileImage;
+        this.nickname = nickname;
+    }
 }

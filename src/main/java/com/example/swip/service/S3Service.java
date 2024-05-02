@@ -40,15 +40,15 @@ public class S3Service {
         return s3AccessTime;
     }
     @Transactional
-    public boolean putS3Test(MultipartFile multipartFile) {
+    public String putS3Test(MultipartFile multipartFile) {
         S3AccessTime test = getMonthlyAccessTime();
         if(test.getPutAccessTime() >= 2000L) {
-            return false;
+            return "";
         }
         System.out.println("it's accessible");
 
         // S3 동작
-        String fileName = "";
+        String fileName = "test";
         if(multipartFile != null){ // 파일 업로드한 경우에만
             System.out.println("it's running");
             try{// 파일 업로드
@@ -56,12 +56,12 @@ public class S3Service {
                 System.out.println("fileName = " + fileName);
             }catch (IOException e){
                 System.out.println(e);
-                return false;
+                return "";
             }
         }
 
         //종료 후에 DB에 Access 횟수 카운트
         test.addPutAccessTime();    //@Transactional 덕분에 자동 업데이트 됨.
-        return true;
+        return fileName;
     }
 }

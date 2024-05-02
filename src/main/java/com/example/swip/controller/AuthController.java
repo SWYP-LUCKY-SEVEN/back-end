@@ -1,11 +1,14 @@
 package com.example.swip.controller;
 
+import com.example.swip.config.UserPrincipal;
 import com.example.swip.dto.*;
 import com.example.swip.entity.User;
 import com.example.swip.service.AuthService;
 import com.example.swip.service.KakaoOauthService;
 import com.example.swip.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,12 +18,13 @@ public class AuthController {
     private final AuthService authService;
     private final UserService userService;
 
+    @Operation(summary = "USER ID 확인", description = "JWT 토큰 계정과 알맞은 userID를 반환합니다. 헤더 내 Authorization:Bearer ~ 형태의 JWT 토큰을 필요로 합니다.")
     @GetMapping("/user") // user id 반환
     public getUserID getUserId(){  // @Validated
-        User user = userService.findByEmail("test@test.com");
+        UserPrincipal user = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if(user != null) {
             return getUserID.builder()
-                    .user_id(user.getId())
+                    .user_id(user.getUserId())
                     .build();
         }
         return null;

@@ -71,7 +71,7 @@ public class AuthServiceImpl implements AuthService {
 
         return OauthKakaoResponse.builder()
                 .accessToken(token)
-                .profileName(user.getProfileName())
+                .nickname(user.getNickname())
                 .email(user.getEmail())
                 .userId(user.getId())
                 .build();

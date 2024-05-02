@@ -9,7 +9,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class OauthKakaoResponse {
     private String accessToken;
-    private String profileName;
+    private String nickname;
     private String email;
     private Long userId;
 }
