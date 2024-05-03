@@ -32,10 +32,10 @@ public class User {
   
     private LocalDateTime withdrawalDate;
 
-    @PrePersist
-    public void onPrePersist() {
-        this.joinDate = LocalDateTime.now();
-    }
+//    @PrePersist
+//    public void onPrePersist() {
+//        this.joinDate = LocalDateTime.now();
+//    }
     public void updateProfile(String profileImage, String nickname){
         this.profileImage = profileImage;
         this.nickname = nickname;
