@@ -1,7 +1,9 @@
 package com.example.swip.service.impl;
 
-import com.example.swip.config.JwtIssuer;
-import com.example.swip.config.UserPrincipal;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.example.swip.config.*;
+import com.example.swip.dto.auth.ValidateTokenResponse;
 import com.example.swip.dto.oauth.KakaoRegisterDto;
 import com.example.swip.dto.auth.LoginResponse;
 import com.example.swip.dto.oauth.OauthKakaoResponse;
@@ -28,6 +30,8 @@ public class AuthServiceImpl implements AuthService {
     private final JwtIssuer jwtIssuer;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
+    private final JwtDecoder jwtDecoder;
+    private final JwtToPrincipalConverter jwtToPrincipalConverter;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -86,8 +90,8 @@ public class AuthServiceImpl implements AuthService {
         var token = jwtIssuer.issue(user.getId(), user.getEmail(), user.getValidate(), list);
 
         String date = "";
-        if (user.getJoinDate() != null)
-            date = user.getJoinDate().format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
+        if (user.getJoin_date() != null)
+            date = user.getJoin_date().format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
 
         return OauthKakaoResponse.builder()
                 .accessToken(token)
@@ -104,5 +108,18 @@ public class AuthServiceImpl implements AuthService {
             user = userRepository.save(kakaoRegisterDto.toEntity());
         }
         return user;
+    }
+
+    public ValidateTokenResponse compareJWTWithId(String jwt, long user_id) {
+        DecodedJWT decodedJWT = jwtDecoder.decode(jwt);
+        UserPrincipal userPrincipal = jwtToPrincipalConverter.convert(decodedJWT);
+
+        if(userPrincipal == null)
+            return null;
+
+        return ValidateTokenResponse.builder()
+                .validated(userPrincipal.getUserId() == user_id)
+                .build();
+
     }
 }
