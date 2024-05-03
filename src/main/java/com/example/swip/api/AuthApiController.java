@@ -26,8 +26,8 @@ public class AuthApiController {
         }
         return null;
     }
-    @Operation(summary = "USER ID 확인", description = "JWT 토큰 계정과 알맞은 userID를 반환합니다. 헤더 내 Authorization:Bearer ~ 형태의 JWT 토큰을 필요로 합니다.")
-    @GetMapping("/auth/validate/token") // user id 반환
+    @Operation(summary = "JWT 검증", description = "JWT 토큰내 계정이 입력된 userID과 일치하는지 확인합니다. 헤더 내 Authorization:Bearer ~ 형태의 JWT 토큰을 필요로 합니다.")
+    @GetMapping("/auth/validate/token")
     public ValidateTokenResponse validateToken(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(value = "user_id") Long user_id
