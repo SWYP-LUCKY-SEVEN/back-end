@@ -1,8 +1,10 @@
 package com.example.swip.service;
 
-import com.example.swip.dto.KakaoRegisterDto;
-import com.example.swip.dto.LoginResponse;
-import com.example.swip.dto.OauthKakaoResponse;
+import com.example.swip.config.UserPrincipal;
+import com.example.swip.dto.auth.ValidateTokenResponse;
+import com.example.swip.dto.oauth.KakaoRegisterDto;
+import com.example.swip.dto.auth.LoginResponse;
+import com.example.swip.dto.oauth.OauthKakaoResponse;
 import com.example.swip.entity.User;
 
 public interface AuthService {
@@ -12,4 +14,6 @@ public interface AuthService {
     public String addUser(String email, String password);
 
     public User kakaoRegisterUser(KakaoRegisterDto kakaoRegisterDto);
+
+    public ValidateTokenResponse compareJWTWithId(String jwt, long user_id);
 }

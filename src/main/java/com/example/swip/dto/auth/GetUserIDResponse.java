@@ -1,4 +1,4 @@
-package com.example.swip.dto;
+package com.example.swip.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,6 +7,6 @@ import lombok.Getter;
 @Getter
 @Builder
 @AllArgsConstructor
-public class getUserID {
+public class GetUserIDResponse {
     private Long user_id;
 }

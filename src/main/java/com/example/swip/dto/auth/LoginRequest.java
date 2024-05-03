@@ -1,4 +1,4 @@
-package com.example.swip.dto;
+package com.example.swip.dto.auth;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;

@@ -1,4 +1,4 @@
-package com.example.swip.dto;
+package com.example.swip.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,8 +6,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OauthKakaoRequest {
-    private String code;
+public class PostProfileDto {
+    private Long user_id;
+    private String nickname;
+    private String profileImage;
 }

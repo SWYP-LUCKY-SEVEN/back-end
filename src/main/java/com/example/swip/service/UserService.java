@@ -1,7 +1,9 @@
 package com.example.swip.service;
 
 
-import com.example.swip.dto.AddUserRequest;
+
+import com.example.swip.dto.auth.AddUserRequest;
+import com.example.swip.dto.auth.PostProfileDto;
 import com.example.swip.entity.User;
 import com.example.swip.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +22,8 @@ public class UserService {
         return user;
     }
 
-    public boolean isDuplicatedUserName(String username) {
-        var user = findByEmail(username);
+    public boolean isDuplicatedNickname(String nickname) {
+        User user = userRepository.findByNickname(nickname);
         System.out.println(user);
         if(user == null)
             return false;
@@ -30,9 +32,13 @@ public class UserService {
     }
 
     @Transactional
-    public void updateProfile(long userId, String profileImage, String nickname){
-        User findUser = userRepository.findById(userId).orElse(null);
-        findUser.updateProfile(profileImage, nickname);
+    public boolean updateProfile(PostProfileDto postProfileDto){
+        User findUser = userRepository.findById(postProfileDto.getUser_id()).orElse(null);
+        String temp = postProfileDto.getNickname().replaceAll("[^가-힣a-zA-Z0-9]","");
+        if(findUser == null || postProfileDto.getNickname().length() != temp.length())
+            return false;
+        findUser.createProfile(postProfileDto.getNickname(), postProfileDto.getProfileImage());
+        return true;
     }
 
     //조회

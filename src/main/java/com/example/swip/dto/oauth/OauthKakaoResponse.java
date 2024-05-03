@@ -1,8 +1,10 @@
-package com.example.swip.dto;
+package com.example.swip.dto.oauth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -12,6 +14,7 @@ public class OauthKakaoResponse {
     private String nickname;
     private String email;
     private Long userId;
+    private String joinDate;
 }
 
 //@Data

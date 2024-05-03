@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.sql.Date;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,21 +20,24 @@ import java.util.List;
 public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private Long Id;
+    private Long id;
+    private String role;
 
     private String email;
+    private String validate;
   
     private String nickname;
 
-    private String profileImage;
+    private String profile_image;
   
-    private LocalDateTime joinDate;
+    private LocalDateTime join_date;
   
-    private LocalDateTime withdrawalDate;
+    private LocalDateTime withdrawal_date;
 
-    public void updateProfile(String profileImage, String nickname){
-        this.profileImage = profileImage;
+    public void createProfile(String nickname, String profile_image){
+        this.profile_image = profile_image;
         this.nickname = nickname;
+        this.join_date = LocalDateTime.now();
     }
     @OneToMany(mappedBy = "user")
     private List<Evaluation> evaluations = new ArrayList<>();
@@ -45,7 +49,5 @@ public class User {
     private List<JoinRequest> joinRequests = new ArrayList<>();
 
     //기존 error 때문에 넣어둔 field => 추후 삭제 요망 (현재는 테스트 코드 용으로 사용중)
-    private String validate;
-    private String role;
     private String password;
 }

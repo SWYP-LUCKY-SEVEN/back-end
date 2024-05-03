@@ -1,6 +1,6 @@
 package com.example.swip.service;
 
-import com.example.swip.dto.KakaoRegisterDto;
+import com.example.swip.dto.oauth.KakaoRegisterDto;
 
 public interface KakaoOauthService {
 

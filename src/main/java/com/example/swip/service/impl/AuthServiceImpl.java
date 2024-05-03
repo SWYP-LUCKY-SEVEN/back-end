@@ -1,10 +1,12 @@
 package com.example.swip.service.impl;
 
-import com.example.swip.config.JwtIssuer;
-import com.example.swip.config.UserPrincipal;
-import com.example.swip.dto.KakaoRegisterDto;
-import com.example.swip.dto.LoginResponse;
-import com.example.swip.dto.OauthKakaoResponse;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.example.swip.config.*;
+import com.example.swip.dto.auth.ValidateTokenResponse;
+import com.example.swip.dto.oauth.KakaoRegisterDto;
+import com.example.swip.dto.auth.LoginResponse;
+import com.example.swip.dto.oauth.OauthKakaoResponse;
 import com.example.swip.entity.User;
 import com.example.swip.repository.UserRepository;
 import com.example.swip.service.AuthService;
@@ -17,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,6 +30,8 @@ public class AuthServiceImpl implements AuthService {
     private final JwtIssuer jwtIssuer;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
+    private final JwtDecoder jwtDecoder;
+    private final JwtToPrincipalConverter jwtToPrincipalConverter;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -62,20 +67,6 @@ public class AuthServiceImpl implements AuthService {
                 .accessToken(token)
                 .build();
     }
-    public OauthKakaoResponse oauthLogin(User user) {
-        System.out.println("test : " + user.getEmail() + ", " + user.getValidate());
-
-        List<String> list = new LinkedList<>(Arrays.asList(user.getRole()));
-
-        var token = jwtIssuer.issue(user.getId(), user.getEmail(), user.getValidate(), list);
-
-        return OauthKakaoResponse.builder()
-                .accessToken(token)
-                .nickname(user.getNickname())
-                .email(user.getEmail())
-                .userId(user.getId())
-                .build();
-    }
 
     public String addUser(String email, String password) {
         System.out.println("enroll : " + email + ", " + password);
@@ -91,11 +82,44 @@ public class AuthServiceImpl implements AuthService {
         return "SignUp success";
     }
 
+    public OauthKakaoResponse oauthLogin(User user) {
+        System.out.println("test : " + user.getEmail() + ", " + user.getValidate());
+
+        List<String> list = new LinkedList<>(Arrays.asList(user.getRole()));
+
+        var token = jwtIssuer.issue(user.getId(), user.getEmail(), user.getValidate(), list);
+
+        String date = "";
+        if (user.getJoin_date() != null)
+            date = user.getJoin_date().format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
+
+        return OauthKakaoResponse.builder()
+                .accessToken(token)
+                .nickname(user.getNickname())
+                .email(user.getEmail())
+                .userId(user.getId())
+                .joinDate(date)
+                .build();
+    }
+
     public User kakaoRegisterUser(KakaoRegisterDto kakaoRegisterDto) {
         User user = userRepository.findByEmail(kakaoRegisterDto.getEmail());
         if(user == null) {
             user = userRepository.save(kakaoRegisterDto.toEntity());
         }
         return user;
+    }
+
+    public ValidateTokenResponse compareJWTWithId(String jwt, long user_id) {
+        DecodedJWT decodedJWT = jwtDecoder.decode(jwt);
+        UserPrincipal userPrincipal = jwtToPrincipalConverter.convert(decodedJWT);
+
+        if(userPrincipal == null)
+            return null;
+
+        return ValidateTokenResponse.builder()
+                .validated(userPrincipal.getUserId() == user_id)
+                .build();
+
     }
 }
