@@ -2,9 +2,9 @@ package com.example.swip.service.impl;
 
 import com.example.swip.config.JwtIssuer;
 import com.example.swip.config.UserPrincipal;
-import com.example.swip.dto.KakaoRegisterDto;
-import com.example.swip.dto.LoginResponse;
-import com.example.swip.dto.OauthKakaoResponse;
+import com.example.swip.dto.oauth.KakaoRegisterDto;
+import com.example.swip.dto.auth.LoginResponse;
+import com.example.swip.dto.oauth.OauthKakaoResponse;
 import com.example.swip.entity.User;
 import com.example.swip.repository.UserRepository;
 import com.example.swip.service.AuthService;

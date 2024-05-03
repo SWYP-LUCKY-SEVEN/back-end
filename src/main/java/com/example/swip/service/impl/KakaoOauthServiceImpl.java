@@ -1,6 +1,6 @@
 package com.example.swip.service.impl;
 
-import com.example.swip.dto.KakaoRegisterDto;
+import com.example.swip.dto.oauth.KakaoRegisterDto;
 import com.example.swip.service.KakaoOauthService;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
