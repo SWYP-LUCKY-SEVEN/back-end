@@ -1,6 +1,7 @@
 package com.example.swip.service.impl;
 
 import com.example.swip.dto.auth.PostProfileDto;
+import com.example.swip.dto.auth.PostProfileResponse;
 import com.example.swip.service.ChatServerService;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -14,7 +15,7 @@ import java.net.URL;
 @Service
 @RequiredArgsConstructor
 public class ChatServerServiceImpl implements ChatServerService {
-    public boolean postUser(PostProfileDto postProfileDto){
+    public PostProfileResponse postUser(PostProfileDto postProfileDto){
 
         String reqURL = "https://short-tudy.onrender.com/api/user";
 
@@ -42,7 +43,9 @@ public class ChatServerServiceImpl implements ChatServerService {
             System.out.println("responseCode : " + responseCode);
 
             if(responseCode >= 300 || responseCode < 200)
-                return false;
+                return PostProfileResponse.builder()
+                        .message("Registered on http server only. chatting server disconnected.")
+                        .build();
 
             // 요청을 통해 얻은 JSON타입의 Response 메세지 읽어오기
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -65,6 +68,8 @@ public class ChatServerServiceImpl implements ChatServerService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return true;
+        return PostProfileResponse.builder()
+                .message("regist success!")
+                .build();
     }
 }

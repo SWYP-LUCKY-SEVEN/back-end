@@ -1,7 +1,8 @@
 package com.example.swip.service;
 
 import com.example.swip.dto.auth.PostProfileDto;
+import com.example.swip.dto.auth.PostProfileResponse;
 
 public interface ChatServerService {
-    boolean postUser(PostProfileDto postProfileDto);
+    PostProfileResponse postUser(PostProfileDto postProfileDto);
 }
