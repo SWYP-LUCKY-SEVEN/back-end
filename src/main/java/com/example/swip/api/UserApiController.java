@@ -1,10 +1,14 @@
 package com.example.swip.api;
 
 import com.example.swip.config.UserPrincipal;
+import com.example.swip.dto.auth.GetNicknameDupleResponse;
+import com.example.swip.dto.auth.PostProfileDto;
 import com.example.swip.dto.auth.PostProfileRequest;
 import com.example.swip.dto.auth.PostProfileResponse;
+import com.example.swip.service.ChatServerService;
 import com.example.swip.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -13,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 public class UserApiController {
-
+    private final ChatServerService chatServerService;
     private final UserService userService;
 
     @Operation(summary = "회원가입 시 프로필 생성 메소드", description = "회원가입 시 프로필을 생성하는 메소드입니다. 헤더 내 Authorization:Bearer ~ 형태의 JWT 토큰을 필요로 합니다.")
@@ -25,7 +29,31 @@ public class UserApiController {
         if(principal == null)
             return null;
 
-        userService.createProfile(principal.getUserId(), postProfileRequest.getProfileImage(), postProfileRequest.getNickname());
-        return null;
+        PostProfileDto postProfileDto = new PostProfileDto(
+                principal.getUserId(),
+                postProfileRequest.getNickname(),
+                postProfileRequest.getProfileImage()
+        );
+
+        userService.createProfile(postProfileDto);
+        boolean check = chatServerService.postUser(postProfileDto);
+
+        if(!check)
+            return PostProfileResponse.builder()
+               .message("chatting server disconnected.")
+               .build();
+
+        return PostProfileResponse.builder()
+                .message("regist success!")
+                .build();
+    }
+
+    @GetMapping("/user/nickname/{nickname}") //
+    public GetNicknameDupleResponse NicknameDuplicateCheck(
+            @PathVariable("nickname") String nickname
+    ) {
+        return GetNicknameDupleResponse.builder()
+                .isDuplicate(userService.isDuplicatedNickname(nickname))
+                .build();
     }
 }

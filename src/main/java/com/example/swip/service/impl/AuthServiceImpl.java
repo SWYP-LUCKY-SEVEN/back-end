@@ -86,8 +86,8 @@ public class AuthServiceImpl implements AuthService {
         var token = jwtIssuer.issue(user.getId(), user.getEmail(), user.getValidate(), list);
 
         String date = "";
-        if (user.getJoinDate() != null)
-            date = user.getJoinDate().format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
+        if (user.getJoin_date() != null)
+            date = user.getJoin_date().format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
 
         return OauthKakaoResponse.builder()
                 .accessToken(token)
