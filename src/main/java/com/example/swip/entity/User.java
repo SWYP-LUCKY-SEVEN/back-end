@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.sql.Date;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,10 @@ public class User {
   
     private LocalDateTime withdrawalDate;
 
+//    @PrePersist
+//    public void onPrePersist() {
+//        this.joinDate = LocalDateTime.now();
+//    }
     public void updateProfile(String profileImage, String nickname){
         this.profileImage = profileImage;
         this.nickname = nickname;

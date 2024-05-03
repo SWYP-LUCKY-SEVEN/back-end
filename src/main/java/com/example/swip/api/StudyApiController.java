@@ -23,7 +23,6 @@ public class StudyApiController {
     //저장
     @PostMapping("/study")
     public Long saveStudy(@RequestBody StudySaveRequest dto){
-
         Long savedBoard = studyService.saveStudy(dto);
         System.out.println("savedBoard = " + savedBoard);
         return savedBoard;
