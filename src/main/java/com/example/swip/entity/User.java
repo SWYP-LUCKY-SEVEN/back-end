@@ -36,9 +36,10 @@ public class User {
 //    public void onPrePersist() {
 //        this.joinDate = LocalDateTime.now();
 //    }
-    public void updateProfile(String profileImage, String nickname){
+    public void createProfile(String profileImage, String nickname){
         this.profileImage = profileImage;
         this.nickname = nickname;
+        this.joinDate = LocalDateTime.now();
     }
     @OneToMany(mappedBy = "user")
     private List<Evaluation> evaluations = new ArrayList<>();

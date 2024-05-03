@@ -1,4 +1,4 @@
-package com.example.swip.dto;
+package com.example.swip.dto.auth;
 
 import lombok.Builder;
 import lombok.Getter;

@@ -1,7 +1,7 @@
 package com.example.swip.service;
 
 
-import com.example.swip.dto.AddUserRequest;
+import com.example.swip.dto.auth.AddUserRequest;
 import com.example.swip.entity.User;
 import com.example.swip.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,9 +30,9 @@ public class UserService {
     }
 
     @Transactional
-    public void updateProfile(long userId, String profileImage, String nickname){
+    public void createProfile(long userId, String profileImage, String nickname){
         User findUser = userRepository.findById(userId).orElse(null);
-        findUser.updateProfile(profileImage, nickname);
+        findUser.createProfile(profileImage, nickname);
     }
 
     //조회

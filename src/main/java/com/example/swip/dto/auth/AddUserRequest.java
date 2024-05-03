@@ -1,4 +1,4 @@
-package com.example.swip.dto;
+package com.example.swip.dto.auth;
 
 import com.example.swip.entity.User;
 import lombok.AllArgsConstructor;
@@ -10,17 +10,14 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class KakaoRegisterDto {
+public class AddUserRequest {
     private String email;
-    private String nickname;
-    private String role;
+    private String password;
 
     public User toEntity() {
         return User.builder()
                 .email(this.email)
-                .nickname(this.nickname)
-                .role(this.role)
-                .validate("kakao")
+                .password(this.password)
                 .build();
     }
 }
