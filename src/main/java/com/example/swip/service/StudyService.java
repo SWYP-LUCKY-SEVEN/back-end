@@ -1,7 +1,6 @@
 package com.example.swip.service;
 
-import com.example.swip.dto.StudySaveRequest;
-import com.example.swip.dto.StudyUpdateRequest;
+import com.example.swip.dto.*;
 import com.example.swip.entity.Category;
 import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -52,10 +52,35 @@ public class StudyService {
 
 
     //조회
-    public List<Study> findAllStudies(){
+    public List<StudyResponse> findAllStudies(){
         List<Study> allStudies = studyRepository.findAll();
-        return allStudies;
+
+        //DTO로 변환
+        List<StudyResponse> result = allStudies.stream()
+                .map(study -> new StudyResponse(
+                        study.getId(),
+                        study.getTitle(),
+                        study.getStart_date(),
+                        study.getEnd_date(),
+                        study.getMax_participants_num(),
+                        study.getCur_participants_num(),
+                        study.getStudyCategories().stream()
+                                .map(studyCategory -> studyCategory.getCategory().getName())
+                                .collect(Collectors.toList()),
+                        study.getAdditionalInfos().stream()
+                                .map(additionalInfo -> additionalInfo.getName())
+                                .collect(Collectors.toList()))
+                )
+                .collect(Collectors.toList());
+        return result;
     }
+
+    //조회 - 필터 조건 추가
+    public  List<StudyFilterResponse> findFilteredStudy(StudyFilterCondition filterCondition){
+        List<StudyFilterResponse> FilteredStudyList = studyRepository.filterStudy(filterCondition);
+        return FilteredStudyList;
+    }
+
     /*
     public Study findStudy(Long id){
         Study findStudy = studyRepository.findById(id).orElse(null);

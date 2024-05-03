@@ -38,6 +38,7 @@ public class StudySaveRequest {
                 .description(this.description)
                 .start_date(this.start_date)
                 .end_date(toEndDate(this.start_date, this.duration))
+                .duration(this.duration)
                 .max_participants_num(this.max_participants_num)
                 .cur_participants_num(1) //생성시 작성자 1명 참여하므로 1
                 .tendency(toTendency(this.tendency))
