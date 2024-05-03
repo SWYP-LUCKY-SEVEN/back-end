@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -62,20 +63,6 @@ public class AuthServiceImpl implements AuthService {
                 .accessToken(token)
                 .build();
     }
-    public OauthKakaoResponse oauthLogin(User user) {
-        System.out.println("test : " + user.getEmail() + ", " + user.getValidate());
-
-        List<String> list = new LinkedList<>(Arrays.asList(user.getRole()));
-
-        var token = jwtIssuer.issue(user.getId(), user.getEmail(), user.getValidate(), list);
-
-        return OauthKakaoResponse.builder()
-                .accessToken(token)
-                .nickname(user.getNickname())
-                .email(user.getEmail())
-                .userId(user.getId())
-                .build();
-    }
 
     public String addUser(String email, String password) {
         System.out.println("enroll : " + email + ", " + password);
@@ -89,6 +76,22 @@ public class AuthServiceImpl implements AuthService {
 
         User saveUser = userRepository.save(user);
         return "SignUp success";
+    }
+
+    public OauthKakaoResponse oauthLogin(User user) {
+        System.out.println("test : " + user.getEmail() + ", " + user.getValidate());
+
+        List<String> list = new LinkedList<>(Arrays.asList(user.getRole()));
+
+        var token = jwtIssuer.issue(user.getId(), user.getEmail(), user.getValidate(), list);
+
+        return OauthKakaoResponse.builder()
+                .accessToken(token)
+                .nickname(user.getNickname())
+                .email(user.getEmail())
+                .userId(user.getId())
+                .joinDate(user.getJoinDate().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
+                .build();
     }
 
     public User kakaoRegisterUser(KakaoRegisterDto kakaoRegisterDto) {

@@ -21,15 +21,15 @@ public class OauthApiController {
     public OauthKakaoResponse kakaoCalllback(@RequestParam(value = "code") String code) {
         String accessToken = kakaoOauthService.getKakaoAccessToken(code);
 
-        KakaoRegisterDto kakaoRegisterDto = kakaoOauthService.getKakaoProfile(accessToken);
-
-        //회원가입 후, user 정보를 반환함. 회원가입이 되어있다면 바로 user정보를 반환함
-        User user = authService.kakaoRegisterUser(kakaoRegisterDto);
-
-        System.out.println("getValidate : " + user.getValidate());
-        System.out.println("getRole : " + user.getRole());
+        if(accessToken != "") {
+            KakaoRegisterDto kakaoRegisterDto = kakaoOauthService.getKakaoProfile(accessToken);
+            //회원가입 후, user 정보를 반환함. 회원가입이 되어있다면 바로 user정보를 반환함
+            User user = authService.kakaoRegisterUser(kakaoRegisterDto);
+            return authService.oauthLogin(user);
+        }
+        return OauthKakaoResponse.builder()
+                .build();
 
         // JWT 토큰, 회원가입 정보
-        return authService.oauthLogin(user);
     }
 }
