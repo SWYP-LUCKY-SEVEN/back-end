@@ -31,9 +31,13 @@ public class UserService {
     }
 
     @Transactional
-    public void createProfile(PostProfileDto postProfileDto){
+    public boolean updateProfile(PostProfileDto postProfileDto){
         User findUser = userRepository.findById(postProfileDto.getUser_id()).orElse(null);
+        String temp = postProfileDto.getNickname().replaceAll("[^가-힣a-zA-Z0-9]","");
+        if(findUser == null || postProfileDto.getNickname().length() != temp.length())
+            return false;
         findUser.createProfile(postProfileDto.getNickname(), postProfileDto.getProfileImage());
+        return true;
     }
 
     //조회

@@ -6,6 +6,7 @@ import com.example.swip.service.ChatServerService;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -15,10 +16,9 @@ import java.net.URL;
 @Service
 @RequiredArgsConstructor
 public class ChatServerServiceImpl implements ChatServerService {
+    @Value("${swyp.chat.server.uri}")
+    private String reqURL;
     public PostProfileResponse postUser(PostProfileDto postProfileDto){
-
-        String reqURL = "https://short-tudy.onrender.com/api/user";
-
         try {
             URL url = new URL(reqURL);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -27,6 +27,8 @@ public class ChatServerServiceImpl implements ChatServerService {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setDoOutput(true);
+            conn.setConnectTimeout(1000); // 1초
+            conn.setReadTimeout(1000);
 
             String jsonInputString = "{\"pk\":\""+postProfileDto.getUser_id().toString()
                     +"\",\"nickname\":\""+postProfileDto.getNickname()
