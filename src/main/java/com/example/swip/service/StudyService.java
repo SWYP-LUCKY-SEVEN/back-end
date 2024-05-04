@@ -63,7 +63,7 @@ public class StudyService {
                         study.getEnd_date(),
                         study.getMax_participants_num(),
                         study.getCur_participants_num(),
-                        Collections.singletonList(study.getCategory().getName()),
+                        study.getCategory().getName(),
                         study.getAdditionalInfos().stream()
                                 .map(additionalInfo -> additionalInfo.getName())
                                 .collect(Collectors.toList()))
