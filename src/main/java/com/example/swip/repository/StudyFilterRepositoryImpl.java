@@ -33,6 +33,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
     }
     @Override
     public List<StudyFilterResponse> filterStudy(StudyFilterCondition filterCondition) {
+
         QCategory category = QCategory.category;
         QAdditionalInfo additionalInfo = QAdditionalInfo.additionalInfo;
 
@@ -47,7 +48,8 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                                 study.end_date,
                                 study.max_participants_num,
                                 study.cur_participants_num,
-                                study.created_time)
+                                study.created_time,
+                                study.category.name)
                 )
                 .from(study)
                 .leftJoin(study.category, category)
@@ -90,9 +92,21 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
          *  필터 조건에 따라 쿼리에 조건 추가
          */
 
+        // 빠른 매칭 or 승인제
+        if(filterCondition.getQuick_match() != null){
+            String quickMatch = filterCondition.getQuick_match();
+            switch (quickMatch){
+                case "빠른 매칭":
+                    builder.and(study.matching_type.eq(MatchingType.Quick));
+                    break;
+                case "승인제":
+                    builder.and(study.matching_type.eq(MatchingType.Approval));
+                    break;
+            }
+        }
         // 카테고리 선택
-        if(filterCondition.getCategory() != null){
-            builder.and(category.name.eq(filterCondition.getCategory()));
+        if(filterCondition.getCategories() != null && !filterCondition.getCategories().isEmpty()){
+            builder.and(category.name.in(filterCondition.getCategories())); //하나라도 일치하는 것 출력.
         }
         //시작 날짜만 선택 -> 시작 날짜 일치하는 것
         if (filterCondition.getStart_date() != null && filterCondition.getDuration() == null){
@@ -109,12 +123,8 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         }
         //인원 수
         //최대 인원만 존재
-        if (filterCondition.getMax_participants() == null && filterCondition.getMax_participants() != null){
+        if (filterCondition.getMax_participants() != null){
             builder.and(study.max_participants_num.eq(filterCondition.getMax_participants()));
-        }
-        //최대, 최소 인원 존재
-        if (filterCondition.getMin_participants() != null && filterCondition.getMax_participants() != null){
-            builder.and(study.max_participants_num.between(filterCondition.getMin_participants(), filterCondition.getMax_participants()));
         }
         //성향
         if(filterCondition.getTendency() != null){

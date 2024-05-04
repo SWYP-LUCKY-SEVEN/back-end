@@ -61,10 +61,10 @@ public class StudyApiController {
     @GetMapping("/study/{type}/filter")
     public Result filterAndSortStudy(
             @PathVariable("type") String pageType,
-            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String quickMatch,  //빠른 매칭 / 승인제
+            @RequestParam(required = false) List<String> categories,
             @RequestParam(required = false) LocalDateTime startDate,
             @RequestParam(required = false) String duration,
-            @RequestParam(required = false) Integer minParticipants,
             @RequestParam(required = false) Integer maxParticipants,
             @RequestParam(required = false) String tendency,
             @RequestParam(required = false) String orderType)
@@ -72,10 +72,10 @@ public class StudyApiController {
         // 필터링 조건 객체 생성
         StudyFilterCondition filterCondition = StudyFilterCondition.builder()
                 .pageType(pageType)
-                .category(category)
+                .quick_match(quickMatch)
+                .categories(categories)
                 .start_date(startDate)
                 .duration(duration)
-                .min_participants(minParticipants)
                 .max_participants(maxParticipants)
                 .tendency(tendency)
                 .order_type(orderType)

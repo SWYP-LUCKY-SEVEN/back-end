@@ -18,12 +18,12 @@ public class StudyFilterResponse {
     private int max_participants_num;
     private int cur_participants_num;
     private LocalDateTime created_time;
-    //private List<String> studyCategories = new ArrayList<>();
+    private String category;
     //private List<String> additionalInfos = new ArrayList<>(); //태그
 
 
     @QueryProjection
-    public StudyFilterResponse(Long id, String title, LocalDateTime start_date, LocalDateTime end_date, int max_participants_num, int cur_participants_num, LocalDateTime created_time) {
+    public StudyFilterResponse(Long id, String title, LocalDateTime start_date, LocalDateTime end_date, int max_participants_num, int cur_participants_num, LocalDateTime created_time, String category) {
         this.id = id;
         this.title = title;
         this.start_date = start_date;
@@ -31,7 +31,7 @@ public class StudyFilterResponse {
         this.max_participants_num = max_participants_num;
         this.cur_participants_num = cur_participants_num;
         this.created_time = created_time;
-        //this.studyCategories = studyCategories;
+        this.category = category;
         //this.additionalInfos = additionalInfos;
     }
 }
