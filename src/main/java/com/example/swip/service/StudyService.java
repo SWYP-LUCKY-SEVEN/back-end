@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,24 +22,22 @@ public class StudyService {
     private final UserService userService;
     private final CategoryService categoryService;
     private final AdditionalInfoService additionalInfoService;
-    private final StudyCategoryService studyCategoryService;
     private final UserStudyService userStudyService;
 
 
     //저장
     @Transactional
-    public Long saveStudy(StudySaveRequest studySaveRequest){
+    public Long saveStudy(StudySaveRequest studySaveRequest, Long writerId){
         //작성자 정보 조회
-        User writer = userService.findUserById(studySaveRequest.getWriterId()); //작성자 정보 조회
+        User writer = userService.findUserById(writerId); //작성자 정보 조회
 
-        //category ids 조회
-        List<Category> findCategories = categoryService.findCategoryIdsMyName(studySaveRequest.getCategories());
+        //category id 조회
+        Category findCategory = categoryService.findCategoryIdByName(studySaveRequest.getCategory());
 
         //study 저장
-        Study savedStudy = studyRepository.save(studySaveRequest.toStudyEntity());
-
-        //study_category 저장
-        studyCategoryService.saveStudyCategory(findCategories, savedStudy);
+        Study savedStudy = studyRepository.save(
+                studySaveRequest.toStudyEntity(findCategory)
+        );
 
         //additional_info 저장
         additionalInfoService.saveAddInfo(studySaveRequest.getTags(), savedStudy);
@@ -64,9 +63,7 @@ public class StudyService {
                         study.getEnd_date(),
                         study.getMax_participants_num(),
                         study.getCur_participants_num(),
-                        study.getStudyCategories().stream()
-                                .map(studyCategory -> studyCategory.getCategory().getName())
-                                .collect(Collectors.toList()),
+                        study.getCategory().getName(),
                         study.getAdditionalInfos().stream()
                                 .map(additionalInfo -> additionalInfo.getName())
                                 .collect(Collectors.toList()))

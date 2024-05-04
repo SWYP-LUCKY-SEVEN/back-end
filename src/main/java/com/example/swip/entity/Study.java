@@ -45,14 +45,15 @@ public class Study {
 
     private int view_count; //조회수
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private Category category;
+
     @CreationTimestamp
     private LocalDateTime created_time;
 
     @OneToMany(mappedBy = "study")
     private List<Todo> todos = new ArrayList<>();
-
-    @OneToMany(mappedBy = "study")
-    private List<StudyCategory> studyCategories = new ArrayList<>();
 
     @OneToMany(mappedBy = "study")
     private List<AdditionalInfo> additionalInfos = new ArrayList<>();

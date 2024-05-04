@@ -18,7 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class StudySaveRequest {
-    private List<String> categories;  //카테고리들
+    private String category;  //카테고리
     private String title;
     private String description;
     private List<String> tags; //태그 - additional info 들
@@ -28,11 +28,9 @@ public class StudySaveRequest {
     private String matching_type;
     private String tendency;
 
-    private Long writerId; //작성자 ID
-
 
     //DTO 들어온 뒤, Study, StudyCategory, Category, AddicionalInfo, UserStudy 에 정보 저장해야함.
-    public Study toStudyEntity() {
+    public Study toStudyEntity(Category findCategory) {
         return Study.builder()
                 .title(this.title)
                 .description(this.description)
@@ -45,6 +43,7 @@ public class StudySaveRequest {
                 .matching_type(toMatchingType(this.matching_type))
                 .status(toStatus())
                 .recruit_status(true) //모집중
+                .category(findCategory)
                 .build();
     }
 

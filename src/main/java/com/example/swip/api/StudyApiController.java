@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,25 +26,30 @@ public class StudyApiController {
 
     //저장
     @Operation(summary = "스터디 생성 메소드",
-            description = "스터디 생성 메소드입니다." +
-                    "/ categories: 정해진 분야(수능, 대학생, 코딩 ... 등 11가지) 중 선택된 값을 배열 형태로 넣기." +
+            description = "스터디 생성 메소드입니다.[Athentication token 필요 - Baerer 타입]" +
+                    "/ category: 정해진 분야(수능, 대학생, 코딩 ... 등 11가지) 중 선택된 1개의 값 문자열 형태로 넣기." +
                     "/ tags: 추가정보(태그)를 배열 형태로 넣기." +
-                    "/ duration: (미정, 일주일, 한 달, 3개월, ...) 같이 문자열의 형태 그대로 넣기" +
+                    "/ duration: (미정, 일주일, 한 달, 3개월, ...) 같이 문자열의 형태로 넣기" +
                     "/ max_participants_num : 최대 참여 인원" +
                     "/ matching_tye: 스터디 신청 방식 - (빠른 매칭 or 인증제) - 문자열로 넣기" +
                     "/ tendency: 스터디 성향: (활발한 대화와 동기부여 원해요), ... - 문자열로 넣기")
     @PostMapping("/study")
-    public Long saveStudy(@RequestBody StudySaveRequest dto){
-        // 권한 인증 코드 구현 필요
-        Long saveStudy = studyService.saveStudy(dto);
-        return saveStudy;
+    public ResponseEntity<Long> saveStudy(
+            @AuthenticationPrincipal UserPrincipal principal, // 권한 인증
+            @RequestBody StudySaveRequest dto
+    ){
+        Long writerId = principal.getUserId();
+        if(principal != null) {
+            Long saveStudy = studyService.saveStudy(dto, writerId);
+            return ResponseEntity.ok(saveStudy);
+        }
+        return ResponseEntity.status(403).build();
     }
 
     //조회
     @Operation(summary = "스터디 전체 리스트 조회 메소드")
     @GetMapping("/study")
     public Result showStudy(){
-        // 권한 인증 코드 구현 필요
         List<StudyResponse> allStudies = studyService.findAllStudies();
         int totalCount = allStudies.size(); //전체 리스트 개수
         return new Result(allStudies, totalCount); // TODO: Result 타입으로 한번 감싸기
