@@ -9,7 +9,9 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -28,6 +30,7 @@ public class Study {
 
     private LocalDateTime start_date; //시작 날짜
     private LocalDateTime end_date; //종료 날짜
+    private String duration;
 
     private int max_participants_num;
     private int cur_participants_num;
@@ -40,6 +43,8 @@ public class Study {
 
     private MatchingType matching_type;
 
+    private int view_count; //조회수
+
     @CreationTimestamp
     private LocalDateTime created_time;
 
@@ -51,8 +56,6 @@ public class Study {
 
     @OneToMany(mappedBy = "study")
     private List<AdditionalInfo> additionalInfos = new ArrayList<>();
-
-
 
 
     //comment entity 추가
