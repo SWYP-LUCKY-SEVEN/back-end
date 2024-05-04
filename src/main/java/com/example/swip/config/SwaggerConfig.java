@@ -19,7 +19,19 @@ import java.util.Arrays;
     ))
 @Configuration
 public class SwaggerConfig {
+    
+    @Bean
+    public OpenAPI api() {    //Authorization 처리 
+        SecurityScheme apiKey = new SecurityScheme()
+                .type(SecurityScheme.Type.APIKEY)
+                .in(SecurityScheme.In.HEADER)
+                .name("Authorization");
 
+        SecurityRequirement securityRequirement = new SecurityRequirement()
+                .addList("Bearer Token");
 
-
+        return new OpenAPI()
+                .components(new Components().addSecuritySchemes("Bearer Token", apiKey))
+                .addSecurityItem(securityRequirement);
+    }
 }
