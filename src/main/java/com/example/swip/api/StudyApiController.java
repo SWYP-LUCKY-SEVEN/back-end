@@ -26,7 +26,7 @@ public class StudyApiController {
 
     //저장
     @Operation(summary = "스터디 생성 메소드",
-            description = "스터디 생성 메소드입니다." +
+            description = "스터디 생성 메소드입니다.[Athentication token 필요 - Baerer 타입]" +
                     "/ category: 정해진 분야(수능, 대학생, 코딩 ... 등 11가지) 중 선택된 1개의 값 문자열 형태로 넣기." +
                     "/ tags: 추가정보(태그)를 배열 형태로 넣기." +
                     "/ duration: (미정, 일주일, 한 달, 3개월, ...) 같이 문자열의 형태로 넣기" +
