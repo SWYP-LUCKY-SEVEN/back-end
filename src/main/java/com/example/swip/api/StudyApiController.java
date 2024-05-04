@@ -3,6 +3,7 @@ package com.example.swip.api;
 import com.example.swip.config.UserPrincipal;
 import com.example.swip.dto.*;
 import com.example.swip.entity.Study;
+import com.example.swip.service.StudyQuickService;
 import com.example.swip.service.StudyService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 public class StudyApiController {
 
     private final StudyService studyService;
+    private final StudyQuickService studyQuickService;
 
     //저장
     @Operation(summary = "스터디 생성 메소드",
@@ -87,6 +89,39 @@ public class StudyApiController {
         int totalCount = filteredStudy.size(); //전체 리스트 개수
         return new Result(filteredStudy, totalCount); // TODO: Result 타입으로 한번 감싸기
         //return filteredStudy;
+    }
+    @Operation(summary = "신규/전체/마감임박/승인없음 스터디 리스트 필터링 & 정렬 메소드",
+            description = "pageType : recent/ all/ deadline/ nonApproval 중 하나로 작성(각각 신규, 전체, 마감임박, 승인없는 페이지) / requestParam으로 필터링 조건 작성. 각각은 모두 Null 허용. 모두 null이면 필터가 걸리지 않은 상태 / 마지막 orderType에 정렬 조건 넣기(ex. 최신 등록순)")
+    @GetMapping("/study/quick/filter")
+    public Result filterAndSortStudy(
+            @AuthenticationPrincipal UserPrincipal principal, // 권한 인증
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) LocalDateTime startDate,
+            @RequestParam(required = false) String duration,
+            @RequestParam(required = false) String participants_scope,
+            @RequestParam(required = false) String tendency,
+            @RequestParam(required = false) boolean remember)
+    {
+        Long writerId = principal.getUserId();
+        // 필터링 조건 객체 생성
+        QuickMatchDto quickMatchDto = QuickMatchDto.builder()
+                .category(category)
+                .start_date(startDate)
+                .duration(duration)
+                .tendency(tendency)
+                .participants_scope(participants_scope)
+                .build();
+
+        // 필터 저장 여부 선택시
+        if(remember)
+            studyQuickService.saveQuickMatchFilter(quickMatchDto, writerId);
+            //save
+        // 필터링된 결과 리스트
+        // List<StudyFilterResponse> filteredStudy = studyService.findFilteredStudy(filterCondition);
+        //int totalCount = filteredStudy.size(); //전체 리스트 개수
+        //return new Result(filteredStudy, totalCount); // TODO: Result 타입으로 한번 감싸기
+
+        return new Result("test",3);
     }
 
 
