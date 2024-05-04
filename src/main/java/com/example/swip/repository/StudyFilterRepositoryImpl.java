@@ -5,11 +5,9 @@ import com.example.swip.dto.StudyFilterCondition;
 import com.example.swip.dto.StudyFilterResponse;
 import com.example.swip.entity.QAdditionalInfo;
 import com.example.swip.entity.QCategory;
-import com.example.swip.entity.QStudyCategory;
 import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.Tendency;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -35,7 +33,6 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
     }
     @Override
     public List<StudyFilterResponse> filterStudy(StudyFilterCondition filterCondition) {
-        QStudyCategory studyCategory = QStudyCategory.studyCategory;
         QCategory category = QCategory.category;
         QAdditionalInfo additionalInfo = QAdditionalInfo.additionalInfo;
 
@@ -53,8 +50,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                                 study.created_time)
                 )
                 .from(study)
-                .leftJoin(study.studyCategories, studyCategory)
-                .leftJoin(studyCategory.category, category)
+                .leftJoin(study.category, category)
                 .leftJoin(study.additionalInfos, additionalInfo);
 
         /**

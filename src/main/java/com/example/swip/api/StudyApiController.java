@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,9 +33,12 @@ public class StudyApiController {
                     "/ matching_tye: 스터디 신청 방식 - (빠른 매칭 or 인증제) - 문자열로 넣기" +
                     "/ tendency: 스터디 성향: (활발한 대화와 동기부여 원해요), ... - 문자열로 넣기")
     @PostMapping("/study")
-    public Long saveStudy(@RequestBody StudySaveRequest dto){
-        // 권한 인증 코드 구현 필요
-        Long saveStudy = studyService.saveStudy(dto);
+    public Long saveStudy(
+            @AuthenticationPrincipal UserPrincipal principal, // 권한 인증
+            @RequestBody StudySaveRequest dto
+    ){
+        Long writerId = principal.getUserId();
+        Long saveStudy = studyService.saveStudy(dto, writerId);
         return saveStudy;
     }
 
@@ -42,7 +46,6 @@ public class StudyApiController {
     @Operation(summary = "스터디 전체 리스트 조회 메소드")
     @GetMapping("/study")
     public Result showStudy(){
-        // 권한 인증 코드 구현 필요
         List<StudyResponse> allStudies = studyService.findAllStudies();
         int totalCount = allStudies.size(); //전체 리스트 개수
         return new Result(allStudies, totalCount); // TODO: Result 타입으로 한번 감싸기
