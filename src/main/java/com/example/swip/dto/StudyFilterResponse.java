@@ -1,7 +1,7 @@
 package com.example.swip.dto;
 
+import com.example.swip.entity.AdditionalInfo;
 import com.querydsl.core.annotations.QueryProjection;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -19,11 +19,11 @@ public class StudyFilterResponse {
     private int cur_participants_num;
     private LocalDateTime created_time;
     private String category;
-    //private List<String> additionalInfos = new ArrayList<>(); //태그
+    private List<String> additionalInfos = new ArrayList<>(); //태그
 
 
     @QueryProjection
-    public StudyFilterResponse(Long id, String title, LocalDateTime start_date, LocalDateTime end_date, int max_participants_num, int cur_participants_num, LocalDateTime created_time, String category) {
+    public StudyFilterResponse(Long id, String title, LocalDateTime start_date, LocalDateTime end_date, int max_participants_num, int cur_participants_num, LocalDateTime created_time, String category, List<String> additionalInfos) {
         this.id = id;
         this.title = title;
         this.start_date = start_date;
@@ -32,6 +32,15 @@ public class StudyFilterResponse {
         this.cur_participants_num = cur_participants_num;
         this.created_time = created_time;
         this.category = category;
-        //this.additionalInfos = additionalInfos;
+        this.additionalInfos = additionalInfos;
+    }
+
+    @Getter
+    public static class AdditionalInfoDto {
+        private String name;
+
+        public AdditionalInfoDto(String name) {
+            this.name = name;
+        }
     }
 }
