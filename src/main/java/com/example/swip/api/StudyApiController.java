@@ -57,14 +57,18 @@ public class StudyApiController {
 
     // 조회 - 필터링
     @Operation(summary = "신규/전체/마감임박/승인없음 스터디 리스트 필터링 & 정렬 메소드",
-                description = "pageType : recent/ all/ deadline/ nonApproval 중 하나로 작성(각각 신규, 전체, 마감임박, 승인없는 페이지) / requestParam으로 필터링 조건 작성. 각각은 모두 Null 허용. 모두 null이면 필터가 걸리지 않은 상태 / 마지막 orderType에 정렬 조건 넣기(ex. 최신 등록순)")
+                description = "pageType : recent/ all/ deadline/ nonApproval 중 하나로 작성(각각 신규, 전체, 마감임박, 승인없는 페이지) " +
+                        "/ requestParam으로 필터링 조건 작성. 각각은 모두 Null 허용. 모두 null이면 필터가 걸리지 않은 상태 " +
+                        "/ quickMatch는 빠른 매칭 선택시 '빠른 매칭'으로 작성" +
+                        "/ categories는 여러 항목 넣을 수 있음. ex) '대학생, 코딩'" +
+                        "/ 마지막 orderType에 정렬 조건 넣기(ex. 최신 등록순)")
     @GetMapping("/study/{type}/filter")
     public Result filterAndSortStudy(
             @PathVariable("type") String pageType,
-            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String quickMatch,  //빠른 매칭 / 승인제
+            @RequestParam(required = false) List<String> categories,
             @RequestParam(required = false) LocalDateTime startDate,
             @RequestParam(required = false) String duration,
-            @RequestParam(required = false) Integer minParticipants,
             @RequestParam(required = false) Integer maxParticipants,
             @RequestParam(required = false) String tendency,
             @RequestParam(required = false) String orderType)
@@ -72,10 +76,10 @@ public class StudyApiController {
         // 필터링 조건 객체 생성
         StudyFilterCondition filterCondition = StudyFilterCondition.builder()
                 .pageType(pageType)
-                .category(category)
+                .quick_match(quickMatch)
+                .categories(categories)
                 .start_date(startDate)
                 .duration(duration)
-                .min_participants(minParticipants)
                 .max_participants(maxParticipants)
                 .tendency(tendency)
                 .order_type(orderType)

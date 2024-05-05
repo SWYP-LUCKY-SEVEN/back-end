@@ -5,6 +5,7 @@ import com.example.swip.dto.StudyFilterCondition;
 import com.example.swip.dto.StudyFilterResponse;
 import com.example.swip.entity.QAdditionalInfo;
 import com.example.swip.entity.QCategory;
+import com.example.swip.entity.Study;
 import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.Tendency;
 import com.querydsl.core.BooleanBuilder;
@@ -20,6 +21,7 @@ import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.example.swip.entity.QStudy.study;
 
@@ -33,25 +35,31 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
     }
     @Override
     public List<StudyFilterResponse> filterStudy(StudyFilterCondition filterCondition) {
+
         QCategory category = QCategory.category;
         QAdditionalInfo additionalInfo = QAdditionalInfo.additionalInfo;
 
         BooleanBuilder builder = new BooleanBuilder();
 
-        JPAQuery<StudyFilterResponse> query = queryFactory
-                .select(
-                        new QStudyFilterResponse(
-                                study.id,
-                                study.title,
-                                study.start_date,
-                                study.end_date,
-                                study.max_participants_num,
-                                study.cur_participants_num,
-                                study.created_time)
-                )
-                .from(study)
-                .leftJoin(study.category, category)
-                .leftJoin(study.additionalInfos, additionalInfo);
+//        JPAQuery<StudyFilterResponse> query = queryFactory
+//                .select(
+//                        new QStudyFilterResponse(
+//                                study.id,
+//                                study.title,
+//                                study.start_date,
+//                                study.end_date,
+//                                study.max_participants_num,
+//                                study.cur_participants_num,
+//                                study.created_time,
+//                                study.category.name)
+//                )
+//                .from(study)
+//                .leftJoin(study.category, category)
+//                .leftJoin(study.additionalInfos, additionalInfo);
+
+
+
+                //.leftJoin(study.additionalInfos, additionalInfo);
 
         /**
          * 리스트 종류 구분 - 신규, 전체, 마감임박, 승인 없는 / 검색 결과 => path variable로 받기
@@ -90,9 +98,21 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
          *  필터 조건에 따라 쿼리에 조건 추가
          */
 
+        // 빠른 매칭 or 승인제
+        if(filterCondition.getQuick_match() != null){
+            String quickMatch = filterCondition.getQuick_match();
+            switch (quickMatch){
+                case "빠른 매칭":
+                    builder.and(study.matching_type.eq(MatchingType.Quick));
+                    break;
+                case "승인제":
+                    builder.and(study.matching_type.eq(MatchingType.Approval));
+                    break;
+            }
+        }
         // 카테고리 선택
-        if(filterCondition.getCategory() != null){
-            builder.and(category.name.eq(filterCondition.getCategory()));
+        if(filterCondition.getCategories() != null && !filterCondition.getCategories().isEmpty()){
+            builder.and(category.name.in(filterCondition.getCategories())); //하나라도 일치하는 것 출력.
         }
         //시작 날짜만 선택 -> 시작 날짜 일치하는 것
         if (filterCondition.getStart_date() != null && filterCondition.getDuration() == null){
@@ -109,12 +129,8 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         }
         //인원 수
         //최대 인원만 존재
-        if (filterCondition.getMax_participants() == null && filterCondition.getMax_participants() != null){
+        if (filterCondition.getMax_participants() != null){
             builder.and(study.max_participants_num.eq(filterCondition.getMax_participants()));
-        }
-        //최대, 최소 인원 존재
-        if (filterCondition.getMin_participants() != null && filterCondition.getMax_participants() != null){
-            builder.and(study.max_participants_num.between(filterCondition.getMin_participants(), filterCondition.getMax_participants()));
         }
         //성향
         if(filterCondition.getTendency() != null){
@@ -143,12 +159,35 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         //정렬 조건 설정
         OrderSpecifier[] orderSpecifiers = createOrderSpecifier(filterCondition.getOrder_type());
 
-        return query
+        JPAQuery<Study> query = queryFactory
+                .selectFrom(study)
+                .leftJoin(study.category, category).fetchJoin();
+
+        List<Study> findStudy = query
                 .where(builder) //필터링
                 .orderBy(orderSpecifiers) //정렬
                 .distinct() //중복 제거
                 .fetch();
+
+        List<StudyFilterResponse> responses = findStudy.stream()
+                .map(r -> new StudyFilterResponse(
+                        r.getId(),
+                        r.getTitle(),
+                        r.getStart_date(),
+                        r.getEnd_date(),
+                        r.getMax_participants_num(),
+                        r.getCur_participants_num(),
+                        r.getCreated_time(),
+                        r.getCategory().getName(),
+                        r.getAdditionalInfos().stream()
+                                .map(info -> info.getName())
+                                .collect(Collectors.toList())
+                ))
+                .collect(Collectors.toList());
+
+        return responses;
     }
+
 
     private OrderSpecifier[] createOrderSpecifier(String orderType){
         List<OrderSpecifier> orderSpecifiers = new ArrayList<>();
