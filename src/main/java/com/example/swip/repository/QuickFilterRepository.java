@@ -1,8 +1,9 @@
 package com.example.swip.repository;
 
-import com.example.swip.entity.QuickFilter;
-import com.example.swip.entity.S3AccessTime;
+import com.example.swip.entity.SavedQuickMatchFilter;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface QuickFilterRepository extends JpaRepository<QuickFilter, Long> {
+import java.util.List;
+
+public interface QuickFilterRepository extends JpaRepository<SavedQuickMatchFilter, Long>{
 }

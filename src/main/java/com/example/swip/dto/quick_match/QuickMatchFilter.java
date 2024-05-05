@@ -1,27 +1,28 @@
-package com.example.swip.dto;
+package com.example.swip.dto.quick_match;
 
 import com.example.swip.entity.Category;
-import com.example.swip.entity.QuickFilter;
+import com.example.swip.entity.SavedQuickMatchFilter;
 import com.example.swip.entity.enumtype.Tendency;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
-public class QuickMatchDto {
+public class QuickMatchFilter {
     private String category;
     private LocalDateTime start_date;
     private String duration;
-    private String participants_scope;
     private String tendency;
+    private List<Long> mem_scope;
     //DTO 들어온 뒤, Study, StudyCategory, Category, AddicionalInfo, UserStudy 에 정보 저장해야함.
-    public QuickFilter toQuickFilterEntity(Long userId, Category findCategory) {
-        return QuickFilter.builder()
+    public SavedQuickMatchFilter toQuickFilterEntity(Long userId, Category findCategory) {
+        return SavedQuickMatchFilter.builder()
                 .id(userId)
                 .start_date(this.start_date)
                 .duration(this.duration)
-                .participants_scope(this.participants_scope) //생성시 작성자 1명 참여하므로 1
+                .mem_scope(this.mem_scope) //생성시 작성자 1명 참여하므로 1
                 .tendency(toTendency(this.tendency))
                 .category(findCategory)
                 .build();

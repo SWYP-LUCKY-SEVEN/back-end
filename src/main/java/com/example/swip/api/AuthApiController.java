@@ -35,8 +35,6 @@ public class AuthApiController {
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(value = "user_id") Long user_id
     ){
-        if(principal == null)
-            return ResponseEntity.status(403).build();
 
         return ResponseEntity.status(200).body(ValidateTokenResponse.builder()
                 .validated(principal.getUserId() == user_id)

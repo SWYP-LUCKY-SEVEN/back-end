@@ -1,16 +1,20 @@
 package com.example.swip.repository;
 
-import com.example.swip.dto.QStudyFilterResponse;
-import com.example.swip.dto.StudyFilterCondition;
-import com.example.swip.dto.StudyFilterResponse;
+import com.example.swip.dto.*;
+import com.example.swip.dto.quick_match.QuickMatchFilter;
+import com.example.swip.dto.quick_match.QuickMatchResponse;
+import com.example.swip.dto.quick_match.QQuickMatchResponse;
 import com.example.swip.entity.QAdditionalInfo;
 import com.example.swip.entity.QCategory;
+import com.example.swip.entity.Study;
 import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.Tendency;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -20,6 +24,7 @@ import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.example.swip.entity.QStudy.study;
 
@@ -117,28 +122,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
             builder.and(study.max_participants_num.between(filterCondition.getMin_participants(), filterCondition.getMax_participants()));
         }
         //성향
-        if(filterCondition.getTendency() != null){
-            String tendency = filterCondition.getTendency();
-            Tendency result = null;
-            switch (tendency) {
-                case "활발한 대화와 동기부여 원해요":
-                    result = Tendency.Active;
-                    break;
-                case "학습 피드백을 주고 받고 싶어요":
-                    result = Tendency.Feedback;
-                    break;
-                case "조용히 집중하고 싶어요":
-                    result = Tendency.Focus;
-                    break;
-                default:
-                    // 예상치 못한 값이 들어온 경우 처리하지 않음
-                    break;
-            }
-
-            if (result != null) {
-                builder.and(study.tendency.eq(result));
-            }
-        }
+        builder.and(eqTendency(filterCondition.getTendency()));
 
         //정렬 조건 설정
         OrderSpecifier[] orderSpecifiers = createOrderSpecifier(filterCondition.getOrder_type());
@@ -173,4 +157,89 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         return orderSpecifiers.toArray(new OrderSpecifier[orderSpecifiers.size()]);
     }
 
+    @Override
+    public List<QuickMatchResponse> quickFilterStudy(QuickMatchFilter quickMatchFilter) {
+
+        QCategory category = QCategory.category;
+        QAdditionalInfo additionalInfo = QAdditionalInfo.additionalInfo;
+
+        BooleanBuilder builder = new BooleanBuilder();
+        builder
+                .and(study.matching_type.eq(MatchingType.Quick))
+                .or(study.start_date.eq(quickMatchFilter.getStart_date()))
+                .or(study.duration.eq(quickMatchFilter.getDuration()))
+                .or(study.category.name.eq(quickMatchFilter.getCategory()))
+                .or(eqTendency(quickMatchFilter.getTendency()));
+
+        NumberExpression<Integer> categoryRank = new CaseBuilder()
+                .when(study.category.name.eq(quickMatchFilter.getCategory())).then(1)
+                .otherwise(2);  //나머지는 2로 취급
+        NumberExpression<Integer> startDateRank = new CaseBuilder()
+                .when(study.start_date.eq(quickMatchFilter.getStart_date())).then(1)
+                .otherwise(2);  //나머지는 2로 취급
+        NumberExpression<Integer> durationRank = new CaseBuilder()
+                .when(study.duration.eq(quickMatchFilter.getDuration())).then(1)
+                .otherwise(2);
+        NumberExpression<Integer> tendencyRank = new CaseBuilder()
+                .when(eqTendency(quickMatchFilter.getTendency())).then(1)
+                .otherwise(2);
+
+        // 분야 > 시작일 > 진행기간 > 성향 > 인원
+        List<OrderSpecifier> orderSpecifiers = new ArrayList<>();
+        orderSpecifiers.add(categoryRank.asc());
+        orderSpecifiers.add(startDateRank.asc());
+        orderSpecifiers.add(durationRank.asc());
+        orderSpecifiers.add(tendencyRank.asc());
+
+        JPAQuery<Study> query = queryFactory
+                .selectFrom(study)
+                .leftJoin(study.category, category)
+                .fetchJoin();
+
+        List<Study> findStudy = query.
+                where(builder)
+                .orderBy()
+                .distinct()
+                .fetch();
+
+        List<QuickMatchResponse> responses = findStudy.stream()
+                .map(study -> new QuickMatchResponse(
+                        study.getId(),
+                        study.getTitle(),
+                        study.getCategory().getName(),
+                        study.getStart_date(),
+                        study.getDuration(),
+                        study.getMax_participants_num(),
+                        study.getCur_participants_num(),
+                        study.getCreated_time()
+                ))
+                .collect(Collectors.toList());
+
+        return responses;
+    }
+
+    private BooleanExpression eqTendency(String tendency){
+        if(tendency != null){
+            Tendency result = null;
+            switch (tendency) {
+                case "활발한 대화와 동기부여 원해요":
+                    result = Tendency.Active;
+                    break;
+                case "학습 피드백을 주고 받고 싶어요":
+                    result = Tendency.Feedback;
+                    break;
+                case "조용히 집중하고 싶어요":
+                    result = Tendency.Focus;
+                    break;
+                default:
+                    // 예상치 못한 값이 들어온 경우 처리하지 않음
+                    break;
+            }
+            if (result != null) {
+                return study.tendency.eq(result);
+            }
+        }
+        return null;
+    }
 }
+
