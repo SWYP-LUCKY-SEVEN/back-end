@@ -2,16 +2,13 @@ package com.example.swip.dto;
 
 import com.example.swip.entity.Category;
 import com.example.swip.entity.Study;
-import com.example.swip.entity.User;
-import com.example.swip.entity.UserStudy;
-import com.example.swip.entity.compositeKey.UserStudyId;
-import com.example.swip.entity.enumtype.ExitStatus;
 import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.example.swip.entity.enumtype.Tendency;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Getter
@@ -22,7 +19,7 @@ public class StudySaveRequest {
     private String title;
     private String description;
     private List<String> tags; //태그 - additional info 들
-    private LocalDateTime start_date;
+    private String start_date; // yyyy-MM-dd 형식
     private String duration;
     private int max_participants_num;
     private String matching_type;
@@ -34,8 +31,8 @@ public class StudySaveRequest {
         return Study.builder()
                 .title(this.title)
                 .description(this.description)
-                .start_date(this.start_date)
-                .end_date(toEndDate(this.start_date, this.duration))
+                .start_date(toLocalDate(this.start_date))
+                .end_date(toEndDate(toLocalDate(this.start_date), this.duration))
                 .duration(this.duration)
                 .max_participants_num(this.max_participants_num)
                 .cur_participants_num(1) //생성시 작성자 1명 참여하므로 1
@@ -47,9 +44,14 @@ public class StudySaveRequest {
                 .build();
     }
 
+    // String을 LocalDate로 변환하는 메서드
+    private LocalDate toLocalDate(String dateString) {
+        return LocalDate.parse(dateString, DateTimeFormatter.ISO_DATE);
+    }
+
     //end date 계산하는 메서드
-    private LocalDateTime toEndDate(LocalDateTime start_date, String duration){
-        LocalDateTime end_date = null;
+    private LocalDate toEndDate(LocalDate start_date, String duration){
+        LocalDate end_date = null;
         // end_date = start_date + duration
         if(duration.equals("일주일")){
             end_date = start_date.plusWeeks(1);
@@ -87,9 +89,9 @@ public class StudySaveRequest {
     }
     // progress_status 검사 => client에서 enddate가 오늘보다 이전인 스터디 생성하면 안됨.
     private StudyProgressStatus toStatus(){
-        LocalDateTime today = LocalDateTime.now();
+        LocalDate today = LocalDate.now();
         StudyProgressStatus result = StudyProgressStatus.BeforeStart;
-        if (today.isBefore(start_date)){
+        if (today.isBefore(toLocalDate(start_date))){
             result = StudyProgressStatus.BeforeStart;
         }
         else{
