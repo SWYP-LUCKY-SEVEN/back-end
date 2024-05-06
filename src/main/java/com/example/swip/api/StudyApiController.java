@@ -90,9 +90,9 @@ public class StudyApiController {
 
         // 필터링된 결과 리스트
         List<StudyFilterResponse> filteredStudy = new ArrayList<>();
+
         //로그인된 사용자인 & 검색어가 존재 하는 경우
         if(queryString!=null && userDetails != null) {
-            //UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             UserPrincipal principal = (UserPrincipal) userDetails;
             filteredStudy = studyService.findQueryAndFilteredStudy(filterCondition, principal.getUserId());
         } else { //필터링만 or 알 수 없는 사용자
