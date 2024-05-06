@@ -36,13 +36,13 @@ public class Study {
     private int max_participants_num;
     private int cur_participants_num;
 
-    private Tendency tendency; //스터디 성향 - enum?
+    private Tendency.Element tendency; //스터디 성향 - enum?
 
     private StudyProgressStatus status; //스터디 진행 상태 - enum?
 
     private boolean recruit_status; //스터디 모집 상태 - false: 모집완료, true: 모집중
 
-    private MatchingType matching_type;
+    private MatchingType.Element matching_type;
 
     private int view_count; //조회수
 
@@ -54,9 +54,11 @@ public class Study {
     private LocalDateTime created_time;
 
     @OneToMany(mappedBy = "study")
+    @Builder.Default
     private List<Todo> todos = new ArrayList<>();
 
     @OneToMany(mappedBy = "study")
+    @Builder.Default
     private List<AdditionalInfo> additionalInfos = new ArrayList<>();
 
 }

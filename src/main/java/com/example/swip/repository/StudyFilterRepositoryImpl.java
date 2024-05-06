@@ -70,7 +70,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                     );
                     break;
                 case "nonApproval": //승인없는
-                    builder.and(study.matching_type.eq(MatchingType.Quick)); //빠른 매칭 타입
+                    builder.and(study.matching_type.eq(MatchingType.Element.Quick)); //빠른 매칭 타입
                     break;
                 default:
                     break;
@@ -92,8 +92,8 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         if(filterCondition.getQuick_match() != null){
             String quickMatch = filterCondition.getQuick_match();
             switch (quickMatch){
-                case "빠른 매칭":
-                    builder.and(study.matching_type.eq(MatchingType.Quick));
+                case "quick":
+                    builder.and(study.matching_type.eq(MatchingType.Element.Quick));
                     break;
                 default:
                     break;
@@ -161,16 +161,13 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         List<OrderSpecifier> orderSpecifiers = new ArrayList<>();
         if(orderType != null) {
             switch (orderType) {
-                case "최근 등록순":
+                case "recent":
                     orderSpecifiers.add(new OrderSpecifier(Order.DESC, study.created_time));
                     break;
-                case "인기순":
+                case "popular":
                     orderSpecifiers.add(new OrderSpecifier(Order.DESC, study.view_count));
                     break;
-                case "마감 임박순":
-                    orderSpecifiers.add(new OrderSpecifier(Order.ASC, study.start_date));
-                    break;
-                case "가나다순":
+                case "abc":
                     orderSpecifiers.add(new OrderSpecifier(Order.ASC, study.title));
                     break;
                 default:
@@ -189,7 +186,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
 
         BooleanBuilder builder = new BooleanBuilder();
         builder
-                .and(study.matching_type.eq(MatchingType.Quick))
+                .and(study.matching_type.eq(MatchingType.Element.Quick))
                 .or(study.start_date.eq(quickMatchFilter.getStart_date()))
                 .or(study.duration.eq(quickMatchFilter.getDuration()))
                 .or(study.category.name.eq(quickMatchFilter.getCategory()))
@@ -256,16 +253,16 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
 
     private BooleanExpression eqTendency(String tendency){
         if(tendency != null){
-            Tendency result = null;
+            Tendency.Element result = null;
             switch (tendency) {
-                case "활발한 대화와 동기부여 원해요":    //active
-                    result = Tendency.Active;
+                case "active":    //active
+                    result = Tendency.Element.Active;
                     break;
-                case "학습 피드백을 주고 받고 싶어요":   //Feedback
-                    result = Tendency.Feedback;
+                case "feedback":   //feedback
+                    result = Tendency.Element.Feedback;
                     break;
-                case "조용히 집중하고 싶어요":        //
-                    result = Tendency.Focus;
+                case "focus":        //focus
+                    result = Tendency.Element.Focus;
                     break;
                 default:
                     // 예상치 못한 값이 들어온 경우 처리하지 않음
