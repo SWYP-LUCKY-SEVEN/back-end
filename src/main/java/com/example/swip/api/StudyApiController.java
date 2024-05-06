@@ -3,7 +3,6 @@ package com.example.swip.api;
 import com.example.swip.config.UserPrincipal;
 import com.example.swip.dto.*;
 import com.example.swip.dto.quick_match.QuickMatchFilter;
-import com.example.swip.dto.quick_match.QuickMatchRequest;
 import com.example.swip.dto.quick_match.QuickMatchResponse;
 import com.example.swip.service.StudyQuickService;
 import com.example.swip.service.StudyService;
@@ -89,11 +88,37 @@ public class StudyApiController {
         return new Result(filteredStudy, totalCount); // TODO: Result 타입으로 한번 감싸기
         //return filteredStudy;
     }
-    @Operation(summary = "빠른 매칭 (필터 저장 X)",
-            description = "pageType : recent/ all/ deadline/ nonApproval 중 하나로 작성(각각 신규, 전체, 마감임박, 승인없는 페이지) / requestParam으로 필터링 조건 작성. 각각은 모두 Null 허용. 모두 null이면 필터가 걸리지 않은 상태 / 마지막 orderType에 정렬 조건 넣기(ex. 최신 등록순)")
+    @Operation(summary = "저장된 빠른 매칭 가져오기")
     @GetMapping("/study/quick/filter")
+    public QuickMatchFilter getQuickFilter(
+            @AuthenticationPrincipal UserPrincipal principal // 권한 인증
+    )
+    {
+        if (principal == null)
+            return null;
+        Long user_id = principal.getUserId();
+        QuickMatchFilter quickMatchFilter = studyQuickService.getQuickMatchFilter(user_id);
+        return quickMatchFilter;
+    }
+    @Operation(summary = "빠른 매칭 저장하기")
+    @PostMapping("/study/quick/filter")
+    public QuickMatchFilter postQuickFilter(
+            @AuthenticationPrincipal UserPrincipal principal, // 권한 인증
+            @RequestBody QuickMatchFilter quickMatchFilter
+    )
+    {
+        if (principal != null) {
+            Long user_id = principal.getUserId();
+            studyQuickService.saveQuickMatchFilter(quickMatchFilter, user_id);
+        }
+        return quickMatchFilter;
+    }
+    @Operation(summary = "빠른 매칭 (필터 저장 X - 기존 필터도 삭제)",
+            description = "pageType : recent/ all/ deadline/ nonApproval 중 하나로 작성(각각 신규, 전체, 마감임박, 승인없는 페이지) / requestParam으로 필터링 조건 작성. 각각은 모두 Null 허용. 모두 null이면 필터가 걸리지 않은 상태 / 마지막 orderType에 정렬 조건 넣기(ex. 최신 등록순)")
+    @GetMapping("/study/quick/filter/{page}")
     public Result quickMatchStudy(
             @AuthenticationPrincipal UserPrincipal principal, // 권한 인증
+            @PathVariable("page") Long page,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) LocalDateTime startDate,
             @RequestParam(required = false) String duration,
@@ -101,40 +126,58 @@ public class StudyApiController {
             @RequestParam(required = false) String tendency
     )
     {
-        Long writerId = principal.getUserId();
         // 필터링 조건 객체 생성
         QuickMatchFilter quickMatchFilter = QuickMatchFilter.builder()
                 .category(category)
                 .start_date(startDate)
                 .duration(duration)
                 .tendency(tendency)
-                .mem_scope(mem_scope)   //0: 1대1, 1: 3명~5명, 2: 6명~8명 3: 9명~11명, 4: 11명 초과
+                .mem_scope(mem_scope)   //0: 1대1, 1: 3명~5명, 2: 6명~10명, 3: 11명 초과
                 .build();
 
-            //save
         // 필터링된 결과 리스트
-        List<QuickMatchResponse> filteredStudy = studyQuickService.quickFilteredStudy(quickMatchFilter);
+        List<QuickMatchResponse> filteredStudy = studyQuickService.quickFilteredStudy(quickMatchFilter, page);
         int totalCount = filteredStudy.size(); //전체 리스트 개수
 
         return new Result("filteredStudy",totalCount);
     }
     @Operation(summary = "빠른 매칭 (필터 저장 O)")
-    @PostMapping("/study/quick/filter")
+    @PostMapping("/study/quick/filter/{page}")
     public Result quickMatchStudyAndSave(
             @AuthenticationPrincipal UserPrincipal principal, // 권한 인증
-            @RequestBody QuickMatchFilter QuickMatchFilter)
+            @PathVariable("page") Long page,
+            @RequestBody QuickMatchFilter quickMatchFilter)
     {
-        Long userId = principal.getUserId();
-
+        if (principal == null)
+            return null;
+        Long user_id = principal.getUserId();
         // 필터링된 결과 리스트
-        List<QuickMatchResponse> filteredStudy = studyQuickService.quickFilteredStudy(QuickMatchFilter);
-        studyQuickService.saveQuickMatchFilter(QuickMatchFilter, userId);
+        List<QuickMatchResponse> filteredStudy = studyQuickService.quickFilteredStudy(quickMatchFilter, page);
+        studyQuickService.saveQuickMatchFilter(quickMatchFilter, user_id);
 
         int totalCount = filteredStudy.size(); //전체 리스트 개수
 
-        return new Result("filteredStudy",3);
+        return new Result(filteredStudy, totalCount);
     }
 
+    @Operation(summary = "빠른 매칭 (필터 저장 X - 기존 필터도 삭제)")
+    @DeleteMapping("/study/quick/filter/{page}")
+    public Result quickMatchStudyAndDelete(
+            @AuthenticationPrincipal UserPrincipal principal, // 권한 인증
+            @PathVariable("page") Long page,
+            @RequestBody QuickMatchFilter quickMatchFilter)
+    {
+        if (principal == null)
+            return null;
+        Long user_id = principal.getUserId();
+        // 기존 필터 삭제
+        studyQuickService.deleteQuickMatchFilter(user_id);
+        // 퀵 매칭 정보 반환
+        List<QuickMatchResponse> filteredStudy = studyQuickService.quickFilteredStudy(quickMatchFilter, page);
+        int totalCount = filteredStudy.size();
+
+        return new Result(filteredStudy,totalCount);
+    }
 
     /**
      * 조회 - 스터디 상세 (보류)

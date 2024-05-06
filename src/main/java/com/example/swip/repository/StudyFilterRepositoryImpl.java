@@ -23,6 +23,8 @@ import jakarta.persistence.EntityManager;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -158,7 +160,8 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
     }
 
     @Override
-    public List<QuickMatchResponse> quickFilterStudy(QuickMatchFilter quickMatchFilter) {
+    public List<QuickMatchResponse> quickFilterStudy(QuickMatchFilter quickMatchFilter, Long page) {
+
 
         QCategory category = QCategory.category;
         QAdditionalInfo additionalInfo = QAdditionalInfo.additionalInfo;
@@ -170,6 +173,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                 .or(study.duration.eq(quickMatchFilter.getDuration()))
                 .or(study.category.name.eq(quickMatchFilter.getCategory()))
                 .or(eqTendency(quickMatchFilter.getTendency()));
+        includeMemberNumber(builder, quickMatchFilter.getMem_scope());
 
         NumberExpression<Integer> categoryRank = new CaseBuilder()
                 .when(study.category.name.eq(quickMatchFilter.getCategory())).then(1)
@@ -186,10 +190,11 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
 
         // 분야 > 시작일 > 진행기간 > 성향 > 인원
         List<OrderSpecifier> orderSpecifiers = new ArrayList<>();
-        orderSpecifiers.add(categoryRank.asc());
-        orderSpecifiers.add(startDateRank.asc());
-        orderSpecifiers.add(durationRank.asc());
-        orderSpecifiers.add(tendencyRank.asc());
+        //우선순위는 어떻게 이뤄질까?
+        orderSpecifiers.add(tendencyRank.asc());    //인원
+        orderSpecifiers.add(durationRank.asc());    //진행기간
+        orderSpecifiers.add(startDateRank.asc());   //시작일
+        orderSpecifiers.add(categoryRank.asc());    //분야
 
         JPAQuery<Study> query = queryFactory
                 .selectFrom(study)
@@ -200,6 +205,8 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                 where(builder)
                 .orderBy()
                 .distinct()
+                .offset(page*3)  //반환 시작 index 0, 3, 6
+                .limit(3)   //최대 조회 건수
                 .fetch();
 
         List<QuickMatchResponse> responses = findStudy.stream()
@@ -217,18 +224,26 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
 
         return responses;
     }
+    private BooleanBuilder includeMemberNumber(BooleanBuilder builder, List<Long> test){
+        int[][] scope = {{2,2},{3,5},{6,10},{11, 100}};
+        test.stream().forEach(item -> {
+            int i = item.intValue();
+            builder.or(study.max_participants_num.between(scope[i][0], scope[i][1]));
+        });
+        return builder;
+    }
 
     private BooleanExpression eqTendency(String tendency){
         if(tendency != null){
             Tendency result = null;
             switch (tendency) {
-                case "활발한 대화와 동기부여 원해요":
+                case "활발한 대화와 동기부여 원해요":    //active
                     result = Tendency.Active;
                     break;
-                case "학습 피드백을 주고 받고 싶어요":
+                case "학습 피드백을 주고 받고 싶어요":   //Feedback
                     result = Tendency.Feedback;
                     break;
-                case "조용히 집중하고 싶어요":
+                case "조용히 집중하고 싶어요":        //
                     result = Tendency.Focus;
                     break;
                 default:
