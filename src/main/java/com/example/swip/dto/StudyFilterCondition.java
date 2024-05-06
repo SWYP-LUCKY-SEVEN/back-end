@@ -2,7 +2,7 @@ package com.example.swip.dto;
 
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -22,14 +22,11 @@ public class StudyFilterCondition {
     private String quick_match; //빠른매칭: true, 승인제:false
 
     private List<String> categories;
-    private LocalDateTime start_date;
+    private LocalDate start_date;
     private String duration; //또는 end_date
     private Integer max_participants;
     private String tendency;
 
     private String order_type;
-
-    //빠른 매칭 - 다음에도 조건 기억할래요.
-    //private boolean remember;
 
 }
