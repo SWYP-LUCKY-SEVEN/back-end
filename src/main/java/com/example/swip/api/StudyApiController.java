@@ -13,8 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,7 +69,7 @@ public class StudyApiController {
             @RequestParam(required = false) String queryString, //검색어
             @RequestParam(required = false) String quickMatch,  //빠른 매칭 / 승인제
             @RequestParam(required = false) List<String> categories,
-            @RequestParam(required = false) LocalDateTime startDate,
+            @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) String duration,
             @RequestParam(required = false) Integer maxParticipants,
             @RequestParam(required = false) String tendency,
@@ -135,7 +134,7 @@ public class StudyApiController {
             @AuthenticationPrincipal UserPrincipal principal, // 권한 인증
             @PathVariable("page") Long page,
             @RequestParam(required = false) String category,
-            @RequestParam(required = false) LocalDateTime startDate,
+            @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) String duration,
             @RequestParam(value="mem_scope", required = false) List<Long> mem_scope,
             @RequestParam(required = false) String tendency
