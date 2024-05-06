@@ -37,36 +37,15 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
     public List<StudyFilterResponse> filterStudy(StudyFilterCondition filterCondition) {
 
         QCategory category = QCategory.category;
-        QAdditionalInfo additionalInfo = QAdditionalInfo.additionalInfo;
 
         BooleanBuilder builder = new BooleanBuilder();
-
-//        JPAQuery<StudyFilterResponse> query = queryFactory
-//                .select(
-//                        new QStudyFilterResponse(
-//                                study.id,
-//                                study.title,
-//                                study.start_date,
-//                                study.end_date,
-//                                study.max_participants_num,
-//                                study.cur_participants_num,
-//                                study.created_time,
-//                                study.category.name)
-//                )
-//                .from(study)
-//                .leftJoin(study.category, category)
-//                .leftJoin(study.additionalInfos, additionalInfo);
-
-
-
-                //.leftJoin(study.additionalInfos, additionalInfo);
 
         /**
          * 리스트 종류 구분 - 신규, 전체, 마감임박, 승인 없는 / 검색 결과 => path variable로 받기
          */
 
-        if(filterCondition.getPageType() != null){
-            String pageType = filterCondition.getPageType();
+        if(filterCondition.getPage_type() != null){
+            String pageType = filterCondition.getPage_type();
             switch (pageType){
                 case "recent": //신규
                     builder.and(study.created_time.before(LocalDateTime.now().plusWeeks(2))); //최근 2주간 등록
@@ -82,9 +61,8 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
 
                     builder.and(
                             study.start_date.before(LocalDateTime.now().plusDays(7)) //스터디 시작 일자가 7일 전일 경우
-                            .or(recruitPercentage.gt(80))
+                            .or(recruitPercentage.gt(80)) //스터디 모집 인원이 80% 초과인 경우
                     );
-                    //스터디 모집 인원이 80% 초과인 경우
                     break;
                 case "nonApproval": //승인없는
                     builder.and(study.matching_type.eq(MatchingType.Quick)); //빠른 매칭 타입
@@ -93,20 +71,26 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                     break;
             }
         }
+        // 검색어 : 검색결과 -> title일치 or additional info 에 포함
+        if(filterCondition.getQuery_string()!=null) {
+            String queryString = filterCondition.getQuery_string();
+            builder.and(
+                    study.title.contains(queryString)
+                            .or(study.additionalInfos.any().name.contains(queryString))
+            );
+        }
 
         /**
          *  필터 조건에 따라 쿼리에 조건 추가
          */
-
-        // 빠른 매칭 or 승인제
+        // 빠른 매칭
         if(filterCondition.getQuick_match() != null){
             String quickMatch = filterCondition.getQuick_match();
             switch (quickMatch){
                 case "빠른 매칭":
                     builder.and(study.matching_type.eq(MatchingType.Quick));
                     break;
-                case "승인제":
-                    builder.and(study.matching_type.eq(MatchingType.Approval));
+                default:
                     break;
             }
         }

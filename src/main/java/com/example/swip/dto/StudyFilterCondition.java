@@ -15,7 +15,9 @@ public class StudyFilterCondition {
     //인원 - min, max
     //타입 - 3가지
     // + 정렬 순서 : 최근 등록순(default), 인기순, 마감 임박순, 가나다순
-    private String pageType; //신규, 전체, 마감임박, 승인없음
+    private String page_type; //신규, 전체, 마감임박, 승인없음
+
+    private String query_string;
 
     private String quick_match; //빠른매칭: true, 승인제:false
 
