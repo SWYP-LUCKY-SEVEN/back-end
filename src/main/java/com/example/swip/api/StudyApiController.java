@@ -59,6 +59,7 @@ public class StudyApiController {
                 description = "pageType : recent/ all/ deadline/ nonApproval 중 하나로 작성(각각 신규, 전체, 마감임박, 승인없는 페이지) " +
                         "/ requestParam으로 필터링 조건 작성. 각각은 모두 Null 허용. 모두 null이면 필터가 걸리지 않은 상태 " +
                         "/ 검색기능 => queryString에 검색어 작성 (ex. '모각코')" +
+                        "/ 검색 : 로그인 한 유저(token 필요), 로그인 x 유저(token 필요x)" +
                         "/ quickMatch는 빠른 매칭 선택시 '빠른 매칭'으로 작성" +
                         "/ categories는 여러 항목 넣을 수 있음. (ex. '대학생, 코딩')" +
                         "/ 마지막 orderType에 정렬 조건 넣기(ex. '최신 등록순')")
