@@ -39,8 +39,8 @@ public class StudySaveRequest {
                 .duration(this.duration)
                 .max_participants_num(this.max_participants_num)
                 .cur_participants_num(1) //생성시 작성자 1명 참여하므로 1
-                .tendency(toTendency(this.tendency))
-                .matching_type(toMatchingType(this.matching_type))
+                .tendency(Tendency.toTendency(this.tendency))
+                .matching_type(MatchingType.toMatchingType(this.matching_type))
                 .status(toStatus())
                 .recruit_status(true) //모집중
                 .category(findCategory)
@@ -51,40 +51,19 @@ public class StudySaveRequest {
     private LocalDateTime toEndDate(LocalDateTime start_date, String duration){
         LocalDateTime end_date = null;
         // end_date = start_date + duration
-        if(duration.equals("일주일")){
+        if(duration.equals("1w")){
             end_date = start_date.plusWeeks(1);
-        } else if (duration.equals("한 달")) {
+        } else if (duration.equals("1m")) {
             end_date = start_date.plusMonths(1);
-        } else if (duration.equals("3개월")) {
+        } else if (duration.equals("3m")) {
             end_date = start_date.plusMonths(3);
-        } else if (duration.equals("6개월")) {
+        } else if (duration.equals("6m")) {
             end_date = start_date.plusMonths(6);
         }
         // duration == 상시, 미정 -> end_date = null
         return end_date;
     }
-    // tendency 검사
-    private Tendency toTendency(String tendency){
-        Tendency result = null;
-        if(tendency.equals("활발한 대화와 동기부여 원해요")){
-            result = Tendency.Active;
-        } else if (tendency.equals("학습 피드백을 주고 받고 싶어요")) {
-            result = Tendency.Feedback;
-        } else if (tendency.equals("조용히 집중하고 싶어요")) {
-            result = Tendency.Focus;
-        }
-        return result;
-    }
-    // matching type 검사
-    private MatchingType toMatchingType(String matching_type){
-        MatchingType result = null;
-        if(matching_type.equals("승인제")){
-            result = MatchingType.Approval;
-        } else if (matching_type.equals("빠른 매칭")) {
-            result = MatchingType.Quick;
-        }
-        return result;
-    }
+
     // progress_status 검사 => client에서 enddate가 오늘보다 이전인 스터디 생성하면 안됨.
     private StudyProgressStatus toStatus(){
         LocalDateTime today = LocalDateTime.now();

@@ -39,13 +39,17 @@ public class User {
         this.nickname = nickname;
         this.join_date = LocalDateTime.now();
     }
+
     @OneToMany(mappedBy = "user")
+    @Builder.Default
     private List<Evaluation> evaluations = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
+    @Builder.Default
     private List<UserStudy> userStudies = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
+    @Builder.Default
     private List<JoinRequest> joinRequests = new ArrayList<>();
 
     //기존 error 때문에 넣어둔 field => 추후 삭제 요망 (현재는 테스트 코드 용으로 사용중)

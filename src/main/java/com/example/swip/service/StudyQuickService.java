@@ -25,17 +25,6 @@ public class StudyQuickService {
     private final UserService userService;
     private final CategoryService categoryService;
 
-    private String toString(Tendency tendency){
-        String result = null;
-        if(tendency.equals(Tendency.Active)){
-            result = "활발한 대화와 동기부여 원해요";
-        } else if (tendency.equals(Tendency.Feedback)) {
-            result = "학습 피드백을 주고 받고 싶어요";
-        } else if (tendency.equals(Tendency.Focus)) {
-            result = "조용히 집중하고 싶어요";
-        }
-        return result;
-    }
     @Transactional
     public QuickMatchFilter getQuickMatchFilter(Long userId) {
         SavedQuickMatchFilter savedFilter = quickFilterRepository.findById(userId).orElse(null);
@@ -44,7 +33,7 @@ public class StudyQuickService {
                 .start_date(savedFilter.getStart_date())
                 .duration(savedFilter.getDuration())
                 .mem_scope(savedFilter.getMem_scope())
-                .tendency(toString(savedFilter.getTendency()))
+                .tendency(Tendency.toString(savedFilter.getTendency()))
                 .build();
     }
     @Transactional

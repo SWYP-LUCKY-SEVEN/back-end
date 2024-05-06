@@ -16,10 +16,9 @@ public class SavedQuickMatchFilter {
     @Id
     @Column(name = "filter_id")
     private Long id;    //user의 id를
-
     private LocalDateTime start_date; //시작 날짜
     private String duration;    //진행 기간
-    private Tendency tendency; //스터디 성향
+    private Tendency.Element tendency; //스터디 성향
     private List<Long> mem_scope;  //스터디 멤버 수
 
     @OneToOne(fetch = FetchType.LAZY)

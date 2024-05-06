@@ -23,21 +23,8 @@ public class QuickMatchFilter {
                 .start_date(this.start_date)
                 .duration(this.duration)
                 .mem_scope(this.mem_scope) //생성시 작성자 1명 참여하므로 1
-                .tendency(toTendency(this.tendency))
+                .tendency(Tendency.toTendency(this.tendency))
                 .category(findCategory)
                 .build();
-    }
-
-    // tendency 검사
-    private Tendency toTendency(String tendency){
-        Tendency result = null;
-        if(tendency.equals("활발한 대화와 동기부여 원해요")){
-            result = Tendency.Active;
-        } else if (tendency.equals("학습 피드백을 주고 받고 싶어요")) {
-            result = Tendency.Feedback;
-        } else if (tendency.equals("조용히 집중하고 싶어요")) {
-            result = Tendency.Focus;
-        }
-        return result;
     }
 }
