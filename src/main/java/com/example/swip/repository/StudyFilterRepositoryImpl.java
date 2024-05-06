@@ -1,8 +1,9 @@
 package com.example.swip.repository;
 
-import com.example.swip.dto.QStudyFilterResponse;
-import com.example.swip.dto.StudyFilterCondition;
-import com.example.swip.dto.StudyFilterResponse;
+import com.example.swip.dto.*;
+import com.example.swip.dto.quick_match.QuickMatchFilter;
+import com.example.swip.dto.quick_match.QuickMatchResponse;
+import com.example.swip.dto.quick_match.QQuickMatchResponse;
 import com.example.swip.entity.QAdditionalInfo;
 import com.example.swip.entity.QCategory;
 import com.example.swip.entity.Study;
@@ -12,6 +13,8 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -20,6 +23,8 @@ import jakarta.persistence.EntityManager;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -117,28 +122,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
             builder.and(study.max_participants_num.eq(filterCondition.getMax_participants()));
         }
         //성향
-        if(filterCondition.getTendency() != null){
-            String tendency = filterCondition.getTendency();
-            Tendency result = null;
-            switch (tendency) {
-                case "활발한 대화와 동기부여 원해요":
-                    result = Tendency.Active;
-                    break;
-                case "학습 피드백을 주고 받고 싶어요":
-                    result = Tendency.Feedback;
-                    break;
-                case "조용히 집중하고 싶어요":
-                    result = Tendency.Focus;
-                    break;
-                default:
-                    // 예상치 못한 값이 들어온 경우 처리하지 않음
-                    break;
-            }
-
-            if (result != null) {
-                builder.and(study.tendency.eq(result));
-            }
-        }
+        builder.and(eqTendency(filterCondition.getTendency()));
 
         //정렬 조건 설정
         OrderSpecifier[] orderSpecifiers = createOrderSpecifier(filterCondition.getOrder_type());
@@ -196,4 +180,102 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         return orderSpecifiers.toArray(new OrderSpecifier[orderSpecifiers.size()]);
     }
 
+    @Override
+    public List<QuickMatchResponse> quickFilterStudy(QuickMatchFilter quickMatchFilter, Long page) {
+
+
+        QCategory category = QCategory.category;
+        QAdditionalInfo additionalInfo = QAdditionalInfo.additionalInfo;
+
+        BooleanBuilder builder = new BooleanBuilder();
+        builder
+                .and(study.matching_type.eq(MatchingType.Quick))
+                .or(study.start_date.eq(quickMatchFilter.getStart_date()))
+                .or(study.duration.eq(quickMatchFilter.getDuration()))
+                .or(study.category.name.eq(quickMatchFilter.getCategory()))
+                .or(eqTendency(quickMatchFilter.getTendency()));
+        includeMemberNumber(builder, quickMatchFilter.getMem_scope());
+
+        NumberExpression<Integer> categoryRank = new CaseBuilder()
+                .when(study.category.name.eq(quickMatchFilter.getCategory())).then(1)
+                .otherwise(2);  //나머지는 2로 취급
+        NumberExpression<Integer> startDateRank = new CaseBuilder()
+                .when(study.start_date.eq(quickMatchFilter.getStart_date())).then(1)
+                .otherwise(2);  //나머지는 2로 취급
+        NumberExpression<Integer> durationRank = new CaseBuilder()
+                .when(study.duration.eq(quickMatchFilter.getDuration())).then(1)
+                .otherwise(2);
+        NumberExpression<Integer> tendencyRank = new CaseBuilder()
+                .when(eqTendency(quickMatchFilter.getTendency())).then(1)
+                .otherwise(2);
+
+        // 분야 > 시작일 > 진행기간 > 성향 > 인원
+        List<OrderSpecifier> orderSpecifiers = new ArrayList<>();
+        //우선순위는 어떻게 이뤄질까?
+        orderSpecifiers.add(tendencyRank.asc());    //인원
+        orderSpecifiers.add(durationRank.asc());    //진행기간
+        orderSpecifiers.add(startDateRank.asc());   //시작일
+        orderSpecifiers.add(categoryRank.asc());    //분야
+
+        JPAQuery<Study> query = queryFactory
+                .selectFrom(study)
+                .leftJoin(study.category, category)
+                .fetchJoin();
+
+        List<Study> findStudy = query.
+                where(builder)
+                .orderBy()
+                .distinct()
+                .offset(page*3)  //반환 시작 index 0, 3, 6
+                .limit(3)   //최대 조회 건수
+                .fetch();
+
+        List<QuickMatchResponse> responses = findStudy.stream()
+                .map(study -> new QuickMatchResponse(
+                        study.getId(),
+                        study.getTitle(),
+                        study.getCategory().getName(),
+                        study.getStart_date(),
+                        study.getDuration(),
+                        study.getMax_participants_num(),
+                        study.getCur_participants_num(),
+                        study.getCreated_time()
+                ))
+                .collect(Collectors.toList());
+
+        return responses;
+    }
+    private BooleanBuilder includeMemberNumber(BooleanBuilder builder, List<Long> test){
+        int[][] scope = {{2,2},{3,5},{6,10},{11, 100}};
+        test.stream().forEach(item -> {
+            int i = item.intValue();
+            builder.or(study.max_participants_num.between(scope[i][0], scope[i][1]));
+        });
+        return builder;
+    }
+
+    private BooleanExpression eqTendency(String tendency){
+        if(tendency != null){
+            Tendency result = null;
+            switch (tendency) {
+                case "활발한 대화와 동기부여 원해요":    //active
+                    result = Tendency.Active;
+                    break;
+                case "학습 피드백을 주고 받고 싶어요":   //Feedback
+                    result = Tendency.Feedback;
+                    break;
+                case "조용히 집중하고 싶어요":        //
+                    result = Tendency.Focus;
+                    break;
+                default:
+                    // 예상치 못한 값이 들어온 경우 처리하지 않음
+                    break;
+            }
+            if (result != null) {
+                return study.tendency.eq(result);
+            }
+        }
+        return null;
+    }
 }
+
