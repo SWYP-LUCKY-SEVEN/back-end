@@ -8,9 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,6 +27,27 @@ public class AuthApiController {
         }
         return ResponseEntity.status(403).build();
     }
+
+    @Operation(summary = "회원 탈퇴", description = "JWT 토큰 해당하는 계정을 지웁니다.")
+    @DeleteMapping("/auth/user_id") // user id 반환
+    public String deleteUserById(@AuthenticationPrincipal UserPrincipal principal){  // Authorization 내 principal 없으면 null 값
+        if(principal != null)
+            return authService.deleteUser(principal.getUserId());
+        return "need JWT in Authorization";
+    }
+    @Operation(summary = "회원 탈퇴", description = "입력된 ID의 계정을 지웁니다.")
+    @DeleteMapping("/auth/{user_id}") // user id 반환
+    public String deleteUserByUserId(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable("user_id") Long user_id
+    ){  // Authorization 내 principal 없으면 null 값
+        if(principal != null)
+            return authService.deleteUser(user_id);
+        return "need JWT in Authorization";
+    }
+
+
+
     @Operation(summary = "JWT 검증 with HTTP header", description = "JWT가 userID와 일치하는지 확인합니다. JWT는 헤더 내 Authorization:Bearer ~ 형태의 입력이 필요로 합니다.")
     @GetMapping("/auth/validate/token")
     public ResponseEntity<ValidateTokenResponse> validateToken(

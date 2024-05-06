@@ -82,6 +82,11 @@ public class AuthServiceImpl implements AuthService {
         return "SignUp success";
     }
 
+    public String deleteUser(Long id) {
+        if(userRepository.existsById(id))
+            userRepository.deleteById(id);
+        return "SignUp success";
+    }
     public OauthKakaoResponse oauthLogin(User user) {
         System.out.println("test : " + user.getEmail() + ", " + user.getValidate());
 

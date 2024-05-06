@@ -12,7 +12,7 @@ public interface AuthService {
     public OauthKakaoResponse oauthLogin(User user);
 
     public String addUser(String email, String password);
-
+    public String deleteUser(Long id);
     public User kakaoRegisterUser(KakaoRegisterDto kakaoRegisterDto);
 
     public ValidateTokenResponse compareJWTWithId(String jwt, long user_id);
