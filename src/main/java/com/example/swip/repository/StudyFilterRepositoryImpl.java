@@ -21,6 +21,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,7 +66,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                             .multiply(100);
 
                     builder.and(
-                            study.start_date.before(LocalDateTime.now().plusDays(7)) //스터디 시작 일자가 7일 전일 경우
+                            study.start_date.before(LocalDate.now().plusDays(7)) //스터디 시작 일자가 7일 전일 경우
                             .or(recruitPercentage.gt(80)) //스터디 모집 인원이 80% 초과인 경우
                     );
                     break;
