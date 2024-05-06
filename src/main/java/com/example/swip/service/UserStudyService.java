@@ -19,6 +19,7 @@ public class UserStudyService {
     private final UserStudyRepository userStudyRepository;
 
     //저장
+    @Transactional
     public void saveUserStudy(User writer, Study savedStudy, boolean is_owner){
 
         UserStudy userStudy = UserStudy.builder()

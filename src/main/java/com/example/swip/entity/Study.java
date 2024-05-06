@@ -45,7 +45,7 @@ public class Study {
 
     private int view_count; //조회수
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
 
@@ -57,12 +57,5 @@ public class Study {
 
     @OneToMany(mappedBy = "study")
     private List<AdditionalInfo> additionalInfos = new ArrayList<>();
-
-
-    //comment entity 추가
-    public void updateBoard(String title, String description){
-        this.title = title;
-        this.description = description;
-    }
 
 }

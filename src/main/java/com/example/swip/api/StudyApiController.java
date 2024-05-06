@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -34,16 +35,14 @@ public class StudyApiController {
                     "/ matching_tye: 스터디 신청 방식 - (빠른 매칭 or 인증제) - 문자열로 넣기" +
                     "/ tendency: 스터디 성향: (활발한 대화와 동기부여 원해요), ... - 문자열로 넣기")
     @PostMapping("/study")
-    public ResponseEntity<Long> saveStudy(
+    public Long saveStudy(
             @AuthenticationPrincipal UserPrincipal principal, // 권한 인증
             @RequestBody StudySaveRequest dto
     ){
         Long writerId = principal.getUserId();
-        if(principal != null) {
-            Long saveStudy = studyService.saveStudy(dto, writerId);
-            return ResponseEntity.ok(saveStudy);
-        }
-        return ResponseEntity.status(403).build();
+        System.out.println("writerId = " + writerId);
+        Long saveStudy = studyService.saveStudy(dto, writerId);
+        return saveStudy;
     }
 
     //조회
@@ -59,12 +58,16 @@ public class StudyApiController {
     @Operation(summary = "신규/전체/마감임박/승인없음 스터디 리스트 필터링 & 정렬 메소드",
                 description = "pageType : recent/ all/ deadline/ nonApproval 중 하나로 작성(각각 신규, 전체, 마감임박, 승인없는 페이지) " +
                         "/ requestParam으로 필터링 조건 작성. 각각은 모두 Null 허용. 모두 null이면 필터가 걸리지 않은 상태 " +
+                        "/ 검색기능 => queryString에 검색어 작성 (ex. '모각코')" +
+                        "/ 검색 : 로그인 한 유저(token 필요), 로그인 x 유저(token 필요x)" +
                         "/ quickMatch는 빠른 매칭 선택시 '빠른 매칭'으로 작성" +
-                        "/ categories는 여러 항목 넣을 수 있음. ex) '대학생, 코딩'" +
-                        "/ 마지막 orderType에 정렬 조건 넣기(ex. 최신 등록순)")
+                        "/ categories는 여러 항목 넣을 수 있음. (ex. '대학생, 코딩')" +
+                        "/ 마지막 orderType에 정렬 조건 넣기(ex. '최신 등록순')")
     @GetMapping("/study/{type}/filter")
     public Result filterAndSortStudy(
+            @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable("type") String pageType,
+            @RequestParam(required = false) String queryString, //검색어
             @RequestParam(required = false) String quickMatch,  //빠른 매칭 / 승인제
             @RequestParam(required = false) List<String> categories,
             @RequestParam(required = false) LocalDateTime startDate,
@@ -75,7 +78,8 @@ public class StudyApiController {
     {
         // 필터링 조건 객체 생성
         StudyFilterCondition filterCondition = StudyFilterCondition.builder()
-                .pageType(pageType)
+                .page_type(pageType)
+                .query_string(queryString)
                 .quick_match(quickMatch)
                 .categories(categories)
                 .start_date(startDate)
@@ -86,11 +90,18 @@ public class StudyApiController {
                 .build();
 
         // 필터링된 결과 리스트
-        List<StudyFilterResponse> filteredStudy = studyService.findFilteredStudy(filterCondition);
+        List<StudyFilterResponse> filteredStudy = new ArrayList<>();
+
+        //로그인된 사용자인 & 검색어가 존재 하는 경우
+        if(queryString!=null && userDetails != null) {
+            UserPrincipal principal = (UserPrincipal) userDetails;
+            filteredStudy = studyService.findQueryAndFilteredStudy(filterCondition, principal.getUserId());
+        } else { //필터링만 or 알 수 없는 사용자
+            filteredStudy = studyService.findFilteredStudy(filterCondition);
+        }
 
         int totalCount = filteredStudy.size(); //전체 리스트 개수
         return new Result(filteredStudy, totalCount); // TODO: Result 타입으로 한번 감싸기
-        //return filteredStudy;
     }
 
 
