@@ -5,6 +5,7 @@ import com.example.swip.entity.SavedQuickMatchFilter;
 import com.example.swip.entity.enumtype.Tendency;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -12,7 +13,7 @@ import java.util.List;
 @Builder
 public class QuickMatchFilter {
     private String category;
-    private LocalDateTime start_date;
+    private LocalDate start_date;
     private String duration;
     private String tendency;
     private List<Long> mem_scope;

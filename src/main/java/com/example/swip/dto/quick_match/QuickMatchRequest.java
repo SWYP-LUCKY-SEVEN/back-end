@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -16,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class QuickMatchRequest {
     private String category;
-    private LocalDateTime startDate;
+    private LocalDate startDate;
     private String duration;
     private String tendency;
     private List<Long> mem_scope;

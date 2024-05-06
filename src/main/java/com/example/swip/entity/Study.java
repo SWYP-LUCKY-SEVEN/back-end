@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,8 +29,8 @@ public class Study {
 
     private String description;
 
-    private LocalDateTime start_date; //시작 날짜
-    private LocalDateTime end_date; //종료 날짜
+    private LocalDate start_date; //시작 날짜
+    private LocalDate end_date; //종료 날짜
     private String duration;
 
     private int max_participants_num;
