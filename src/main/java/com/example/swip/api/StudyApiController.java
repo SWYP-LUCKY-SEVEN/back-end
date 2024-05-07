@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -121,18 +122,19 @@ public class StudyApiController {
     @PostMapping("/study/quick/filter/{page}")
     public Result quickMatchStudy(
             @AuthenticationPrincipal UserPrincipal principal, // 권한 인증
-            @PathVariable("page") Long page,
             @RequestParam boolean save,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) String duration,
             @RequestParam(required = false) Long minMember,
             @RequestParam(required = false) Long maxMember,
-            @RequestParam(required = false) String tendency
+            @RequestParam(required = false) String tendency,
+            Pageable pageable
     )
     {
         // 필터링 조건 객체 생성
         QuickMatchFilter quickMatchFilter = QuickMatchFilter.builder()
+                .quick_match("quick")
                 .category(category)
                 .start_date(startDate)
                 .duration(duration)
@@ -151,7 +153,7 @@ public class StudyApiController {
             studyQuickService.deleteQuickMatchFilter(user_id);
 
         // 필터링된 결과 리스트
-        List<QuickMatchResponse> filteredStudy = studyQuickService.quickFilteredStudy(quickMatchFilter, page);
+        List<QuickMatchResponse> filteredStudy = studyQuickService.quickFilteredStudy(quickMatchFilter, pageable);
         int totalCount = filteredStudy.size(); //전체 리스트 개수
 
         return new Result(filteredStudy,totalCount);

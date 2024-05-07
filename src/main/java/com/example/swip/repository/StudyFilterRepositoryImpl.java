@@ -20,6 +20,7 @@ import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -182,30 +183,26 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
     }
 
     @Override
-    public List<QuickMatchResponse> quickFilterStudy(QuickMatchFilter quickMatchFilter, Long page) {
+    public List<QuickMatchResponse> quickFilterStudy(QuickMatchFilter quickMatchFilter, Pageable pageable) {
         QCategory category = QCategory.category;
-
         // 카테고리 정렬
         NumberExpression<Integer> categoryRank = quickMatchFilter.getStart_date() != null ?
                 new CaseBuilder()
                         .when(study.start_date.eq(quickMatchFilter.getStart_date())).then(1)
                         .otherwise(2)
                 : null ;  //나머지는 2로 취급;
-
         // 시작일 정렬
         NumberExpression<Integer> startDateRank = quickMatchFilter.getDuration() != null ?
                 new CaseBuilder()
                         .when(study.start_date.eq(quickMatchFilter.getStart_date())).then(1)
                         .otherwise(2)
                 :null;
-
         // 진행 기간 정렬
         NumberExpression<Integer> durationRank = quickMatchFilter.getCategory() != null ?
                 new CaseBuilder()
                         .when(study.category.name.eq(quickMatchFilter.getCategory())).then(1)
                         .otherwise(2)
                 :null;
-
         // 성향 정렬
         NumberExpression<Integer> tendencyRank = quickMatchFilter.getTendency() != null ?
                 new CaseBuilder()
@@ -239,8 +236,8 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                 .where(quickFilter(quickMatchFilter))   //첫 BooleanExpression는 무조건 AND 연산이 적용된다.
                 .orderBy(orderSpecifiers.toArray(new OrderSpecifier[orderSpecifiers.size()]))
                 .distinct()
-                .offset(page*3)  //반환 시작 index 0, 3, 6
-                .limit(3)   //최대 조회 건수
+                .offset(pageable.getOffset())  //반환 시작 index 0, 3, 6
+                .limit(pageable.getPageSize())   //최대 조회 건수
                 .fetch();
 
         List<QuickMatchResponse> responses = findStudy.stream()
@@ -265,13 +262,16 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         beList.add(eqCategory(quickMatchFilter.getCategory()));
         beList.add(eqTendency(quickMatchFilter.getTendency()));
 
-        BooleanExpression temp = study.matching_type.eq(MatchingType.Element.Quick);
+        BooleanExpression temp = matchingSelect(MatchingType.toMatchingType(quickMatchFilter.getQuick_match()));
         for (BooleanExpression be : beList) {
             if(be != null) {
                 temp.or(be);
             }
         }
         return temp;
+    }
+    private BooleanExpression matchingSelect(MatchingType.Element element) {
+        return element != null?study.matching_type.eq(MatchingType.Element.Quick) : Expressions.asBoolean(true);
     }
 
     private BooleanExpression eqStart_date(LocalDate startDate) {
