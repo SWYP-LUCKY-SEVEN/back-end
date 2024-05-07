@@ -21,7 +21,7 @@ public class StudyFilterCondition {
 
     private String quick_match; //빠른매칭: true, 승인제:false
 
-    private List<String> categories;
+    private String category;
     private LocalDate start_date;
     private String duration; //또는 end_date
     private Integer max_participants;

@@ -101,8 +101,8 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
             }
         }
         // 카테고리 선택
-        if(filterCondition.getCategories() != null && !filterCondition.getCategories().isEmpty()){
-            builder.and(category.name.in(filterCondition.getCategories())); //하나라도 일치하는 것 출력.
+        if(filterCondition.getCategory() != null){
+            builder.and(category.name.eq(filterCondition.getCategory())); //일치하는 것 출력.
         }
         //시작 날짜만 선택 -> 시작 날짜 일치하는 것
         if (filterCondition.getStart_date() != null && filterCondition.getDuration() == null){
@@ -167,6 +167,9 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                     break;
                 case "popular":
                     orderSpecifiers.add(new OrderSpecifier(Order.DESC, study.view_count));
+                    break;
+                case "deadline":
+                    orderSpecifiers.add(new OrderSpecifier(Order.ASC, study.start_date));
                     break;
                 case "abc":
                     orderSpecifiers.add(new OrderSpecifier(Order.ASC, study.title));
