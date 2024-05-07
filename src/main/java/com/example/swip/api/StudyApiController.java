@@ -29,10 +29,10 @@ public class StudyApiController {
             description = "스터디 생성 메소드입니다.[Athentication token 필요 - Baerer 타입]" +
                     "/ category: 정해진 분야(수능, 대학생, 코딩 ... 등 11가지) 중 선택된 1개의 값 문자열 형태로 넣기." +
                     "/ tags: 추가정보(태그)를 배열 형태로 넣기." +
-                    "/ duration: (미정, 일주일, 한 달, 3개월, ...) 같이 문자열의 형태로 넣기" +
+                    "/ duration: (미정: x, 일주일: 1w, 한 달: 1m, 3개월: 3m, 6개월: 6m) 같이 문자열의 형태로 넣기" +
                     "/ max_participants_num : 최대 참여 인원" +
-                    "/ matching_tye: 스터디 신청 방식 - (빠른 매칭 or 인증제) - 문자열로 넣기" +
-                    "/ tendency: 스터디 성향: (활발한 대화와 동기부여 원해요), ... - 문자열로 넣기")
+                    "/ matching_tye: 스터디 신청 방식 - (빠른 매칭: quick or 인증제: approval) - 문자열로 넣기" +
+                    "/ tendency: 스터디 성향: (활발한 대화와 동기부여 원해요: active, 학습 피드백을 주고 받고 싶어요: feedback, 조용히 집중하고 싶어요: focus)- 문자열로 넣기")
     @PostMapping("/study")
     public Long saveStudy(
             @AuthenticationPrincipal UserPrincipal principal, // 권한 인증
@@ -54,21 +54,21 @@ public class StudyApiController {
     }
 
     // 조회 - 필터링
-    @Operation(summary = "신규/전체/마감임박/승인없음 스터디 리스트 필터링 & 정렬 메소드",
-                description = "pageType : recent/ all/ deadline/ nonApproval 중 하나로 작성(각각 신규, 전체, 마감임박, 승인없는 페이지) " +
+    @Operation(summary = "신규/전체/마감임박 스터디 리스트 필터링 & 정렬 메소드",
+                description = "{type}: recent/ all/ deadline 중 하나로 작성(각각 신규, 전체, 마감임박 페이지) " +
                         "/ requestParam으로 필터링 조건 작성. 각각은 모두 Null 허용. 모두 null이면 필터가 걸리지 않은 상태 " +
                         "/ 검색기능 => queryString에 검색어 작성 (ex. '모각코')" +
                         "/ 검색 : 로그인 한 유저(token 필요), 로그인 x 유저(token 필요x)" +
-                        "/ quickMatch는 빠른 매칭 선택시 '빠른 매칭'으로 작성" +
-                        "/ categories는 여러 항목 넣을 수 있음. (ex. '대학생, 코딩')" +
-                        "/ 마지막 orderType에 정렬 조건 넣기(ex. '최신 등록순')")
+                        "/ quickMatch는 빠른 매칭 선택시 'quick'으로 작성" +
+                        "/ category는 카테고리 (ex. '코딩')" +
+                        "/ 마지막 orderType에 정렬 조건 넣기. 최근 등록순: recent, 인기순: popular, 마감 임박순: deadline, 가나다순: abd")
     @GetMapping("/study/{type}/filter")
     public Result filterAndSortStudy(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable("type") String pageType,
             @RequestParam(required = false) String queryString, //검색어
             @RequestParam(required = false) String quickMatch,  //빠른 매칭 / 승인제
-            @RequestParam(required = false) List<String> categories,
+            @RequestParam(required = false) String category,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) String duration,
             @RequestParam(required = false) Integer maxParticipants,
@@ -80,7 +80,7 @@ public class StudyApiController {
                 .page_type(pageType)
                 .query_string(queryString)
                 .quick_match(quickMatch)
-                .categories(categories)
+                .category(category)
                 .start_date(startDate)
                 .duration(duration)
                 .max_participants(maxParticipants)
