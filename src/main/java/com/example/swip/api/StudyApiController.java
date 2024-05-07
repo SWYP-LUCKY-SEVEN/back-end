@@ -115,7 +115,9 @@ public class StudyApiController {
         return quickMatchFilter;
     }
     @Operation(summary = "빠른 매칭 - 상위 리스트 3개씩 반환",
-            description = "page : 다시 매칭한 횟수 (0~2)")
+            description = "page : 다시 매칭한 횟수 (0~2)\n" +
+                    "1. Save 옵션 True시 조건 저장. false시 조건 삭제\n" +
+                    "2. 일치하는 조건은 (분야 > 시작일 > 진행기간 > 성향 > 인원) 순으로 정렬된다.")
     @PostMapping("/study/quick/filter/{page}")
     public Result quickMatchStudy(
             @AuthenticationPrincipal UserPrincipal principal, // 권한 인증
