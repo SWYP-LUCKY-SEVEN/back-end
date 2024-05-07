@@ -183,49 +183,61 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
 
     @Override
     public List<QuickMatchResponse> quickFilterStudy(QuickMatchFilter quickMatchFilter, Long page) {
-
-
         QCategory category = QCategory.category;
-        QAdditionalInfo additionalInfo = QAdditionalInfo.additionalInfo;
 
-        BooleanBuilder builder = new BooleanBuilder();
-        builder
-                .and(study.matching_type.eq(MatchingType.Element.Quick))
-                .or(study.start_date.eq(quickMatchFilter.getStart_date()))
-                .or(study.duration.eq(quickMatchFilter.getDuration()))
-                .or(study.category.name.eq(quickMatchFilter.getCategory()))
-                .or(eqTendency(quickMatchFilter.getTendency()));
-        includeMemberNumber(builder, quickMatchFilter.getMem_scope());
+        // 카테고리 정렬
+        NumberExpression<Integer> categoryRank = quickMatchFilter.getStart_date() != null ?
+                new CaseBuilder()
+                        .when(study.start_date.eq(quickMatchFilter.getStart_date())).then(1)
+                        .otherwise(2)
+                : null ;  //나머지는 2로 취급;
 
-        NumberExpression<Integer> categoryRank = new CaseBuilder()
-                .when(study.category.name.eq(quickMatchFilter.getCategory())).then(1)
-                .otherwise(2);  //나머지는 2로 취급
-        NumberExpression<Integer> startDateRank = new CaseBuilder()
-                .when(study.start_date.eq(quickMatchFilter.getStart_date())).then(1)
-                .otherwise(2);  //나머지는 2로 취급
-        NumberExpression<Integer> durationRank = new CaseBuilder()
-                .when(study.duration.eq(quickMatchFilter.getDuration())).then(1)
+        // 시작일 정렬
+        NumberExpression<Integer> startDateRank = quickMatchFilter.getDuration() != null ?
+                new CaseBuilder()
+                        .when(study.start_date.eq(quickMatchFilter.getStart_date())).then(1)
+                        .otherwise(2)
+                :null;
+
+        // 진행 기간 정렬
+        NumberExpression<Integer> durationRank = quickMatchFilter.getCategory() != null ?
+                new CaseBuilder()
+                        .when(study.category.name.eq(quickMatchFilter.getCategory())).then(1)
+                        .otherwise(2)
+                :null;
+
+        // 성향 정렬
+        NumberExpression<Integer> tendencyRank = quickMatchFilter.getTendency() != null ?
+                new CaseBuilder()
+                        .when(eqTendency(quickMatchFilter.getTendency())).then(1)
+                        .otherwise(2)
+                :null;
+
+        // 인원 정렬
+        Long min = quickMatchFilter.getMin_member() != null ? quickMatchFilter.getMin_member() : 0L;
+        Long max = quickMatchFilter.getMax_member() != null ? quickMatchFilter.getMax_member() : 20L;
+        NumberExpression<Integer> memberRank = new CaseBuilder()
+                .when(study.max_participants_num.between(min, max)).then(1)
                 .otherwise(2);
-        NumberExpression<Integer> tendencyRank = new CaseBuilder()
-                .when(eqTendency(quickMatchFilter.getTendency())).then(1)
-                .otherwise(2);
+
 
         // 분야 > 시작일 > 진행기간 > 성향 > 인원
         List<OrderSpecifier> orderSpecifiers = new ArrayList<>();
         //우선순위는 어떻게 이뤄질까?
-        orderSpecifiers.add(tendencyRank.asc());    //인원
-        orderSpecifiers.add(durationRank.asc());    //진행기간
-        orderSpecifiers.add(startDateRank.asc());   //시작일
-        orderSpecifiers.add(categoryRank.asc());    //분야
+        orderSpecifiers.add(memberRank.asc());    //성향
+        if(tendencyRank != null) orderSpecifiers.add(tendencyRank.asc());    //성향
+        if(durationRank != null) orderSpecifiers.add(durationRank.asc());    //진행기간
+        if(startDateRank != null) orderSpecifiers.add(startDateRank.asc());   //시작일
+        if(categoryRank != null) orderSpecifiers.add(categoryRank.asc());    //분야
 
         JPAQuery<Study> query = queryFactory
                 .selectFrom(study)
                 .leftJoin(study.category, category)
                 .fetchJoin();
 
-        List<Study> findStudy = query.
-                where(builder)
-                .orderBy()
+        List<Study> findStudy = query
+                .where(quickFilter(quickMatchFilter))   //첫 BooleanExpression는 무조건 AND 연산이 적용된다.
+                .orderBy(orderSpecifiers.toArray(new OrderSpecifier[orderSpecifiers.size()]))
                 .distinct()
                 .offset(page*3)  //반환 시작 index 0, 3, 6
                 .limit(3)   //최대 조회 건수
@@ -246,13 +258,30 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
 
         return responses;
     }
-    private BooleanBuilder includeMemberNumber(BooleanBuilder builder, List<Long> test){
-        int[][] scope = {{2,2},{3,5},{6,10},{11, 100}};
-        test.stream().forEach(item -> {
-            int i = item.intValue();
-            builder.or(study.max_participants_num.between(scope[i][0], scope[i][1]));
-        });
-        return builder;
+    private BooleanExpression quickFilter(QuickMatchFilter quickMatchFilter) {
+        List<BooleanExpression> beList = new ArrayList<>();
+        beList.add(eqStart_date(quickMatchFilter.getStart_date()));
+        beList.add(eqDuration(quickMatchFilter.getDuration()));
+        beList.add(eqCategory(quickMatchFilter.getCategory()));
+        beList.add(eqTendency(quickMatchFilter.getTendency()));
+
+        BooleanExpression temp = study.matching_type.eq(MatchingType.Element.Quick);
+        for (BooleanExpression be : beList) {
+            if(be != null) {
+                temp.or(be);
+            }
+        }
+        return temp;
+    }
+
+    private BooleanExpression eqStart_date(LocalDate startDate) {
+        return startDate != null ? study.start_date.eq(startDate) : null;
+    }
+    private BooleanExpression eqDuration(String duration) {
+        return duration != null ? study.duration.eq(duration) : null;
+    }
+    private BooleanExpression eqCategory(String category) {
+        return category != null ? study.category.name.eq(category) : null;
     }
 
     private BooleanExpression eqTendency(String tendency){

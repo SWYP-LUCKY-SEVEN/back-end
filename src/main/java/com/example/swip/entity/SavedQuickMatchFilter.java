@@ -22,7 +22,8 @@ public class SavedQuickMatchFilter {
   
     private String duration;    //진행 기간
     private Tendency.Element tendency; //스터디 성향
-    private List<Long> mem_scope;  //스터디 멤버 수
+    private Long min_member;
+    private Long max_member;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
