@@ -59,8 +59,8 @@ public class StudyApiController {
                         "/ requestParam으로 필터링 조건 작성. 각각은 모두 Null 허용. 모두 null이면 필터가 걸리지 않은 상태 " +
                         "/ 검색기능 => queryString에 검색어 작성 (ex. '모각코')" +
                         "/ 검색 : 로그인 한 유저(token 필요), 로그인 x 유저(token 필요x)" +
-                        "/ quickMatch는 빠른 매칭 선택시 'qiick'으로 작성" +
-                        "/ categories는 카테고리 (ex. '코딩')" +
+                        "/ quickMatch는 빠른 매칭 선택시 'quick'으로 작성" +
+                        "/ category는 카테고리 (ex. '코딩')" +
                         "/ 마지막 orderType에 정렬 조건 넣기. 최근 등록순: recent, 인기순: popular, 마감 임박순: deadline, 가나다순: abd")
     @GetMapping("/study/{type}/filter")
     public Result filterAndSortStudy(
