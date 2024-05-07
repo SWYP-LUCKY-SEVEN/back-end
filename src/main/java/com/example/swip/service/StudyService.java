@@ -42,7 +42,8 @@ public class StudyService {
         );
 
         //additional_info 저장
-        additionalInfoService.saveAddInfo(studySaveRequest.getTags(), savedStudy);
+        if(studySaveRequest.getTags() != null)
+            additionalInfoService.saveAddInfo(studySaveRequest.getTags(), savedStudy);
 
         //user_study - 방장 정보 저장
         userStudyService.saveUserStudy(writer, savedStudy, true);
