@@ -114,8 +114,8 @@ public class StudyApiController {
         QuickMatchFilter quickMatchFilter = studyQuickService.getQuickMatchFilter(user_id);
         return quickMatchFilter;
     }
-    @Operation(summary = "빠른 매칭 (필터 저장 X - 기존 필터도 삭제)",
-            description = "pageType : recent/ all/ deadline/ nonApproval 중 하나로 작성(각각 신규, 전체, 마감임박, 승인없는 페이지) / requestParam으로 필터링 조건 작성. 각각은 모두 Null 허용. 모두 null이면 필터가 걸리지 않은 상태 / 마지막 orderType에 정렬 조건 넣기(ex. 최신 등록순)")
+    @Operation(summary = "빠른 매칭 - 상위 리스트 3개씩 반환",
+            description = "page : 다시 매칭한 횟수 (0~2)")
     @PostMapping("/study/quick/filter/{page}")
     public Result quickMatchStudy(
             @AuthenticationPrincipal UserPrincipal principal, // 권한 인증
