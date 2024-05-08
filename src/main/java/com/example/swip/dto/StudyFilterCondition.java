@@ -24,8 +24,9 @@ public class StudyFilterCondition {
     private String category;
     private LocalDate start_date;
     private String duration; //또는 end_date
+    private Integer min_participants;
     private Integer max_participants;
-    private String tendency;
+    private List<String> tendency;
 
     private String order_type;
 

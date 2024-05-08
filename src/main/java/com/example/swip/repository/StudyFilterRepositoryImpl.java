@@ -3,7 +3,6 @@ package com.example.swip.repository;
 import com.example.swip.dto.*;
 import com.example.swip.dto.quick_match.QuickMatchFilter;
 import com.example.swip.dto.quick_match.QuickMatchResponse;
-import com.example.swip.dto.quick_match.QQuickMatchResponse;
 import com.example.swip.entity.QAdditionalInfo;
 import com.example.swip.entity.QCategory;
 import com.example.swip.entity.Study;
@@ -24,8 +23,6 @@ import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -119,12 +116,22 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         }
         //인원 수
         //최대 인원만 존재
-        if (filterCondition.getMax_participants() != null){
-            builder.and(study.max_participants_num.eq(filterCondition.getMax_participants()));
+        if (filterCondition.getMax_participants() != null && filterCondition.getMin_participants()==null){
+            builder.and(study.max_participants_num.between(2, filterCondition.getMax_participants()));
         }
-        //성향
-        builder.and(eqTendency(filterCondition.getTendency()));
+        //최소 인원만 존재
+        if(filterCondition.getMin_participants() != null && filterCondition.getMax_participants() == null){
+            builder.and(study.max_participants_num.between(filterCondition.getMin_participants(), 20));
+        }
+        //최소&최대 인원 존재 -> 사이
+        if(filterCondition.getMin_participants() != null && filterCondition.getMax_participants()!=null){
+            builder.and(study.max_participants_num.between(filterCondition.getMin_participants(),filterCondition.getMax_participants()));
+        }
 
+        //성향
+        if(filterCondition.getTendency()!=null) {
+            builder.and(study.tendency.in(toTendencyList(filterCondition.getTendency())));
+        }
         //정렬 조건 설정
         OrderSpecifier[] orderSpecifiers = createOrderSpecifier(filterCondition.getOrder_type());
 
@@ -179,6 +186,21 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
             }
         }
         return orderSpecifiers.toArray(new OrderSpecifier[orderSpecifiers.size()]);
+    }
+
+    private List<Tendency.Element> toTendencyList(List<String> tendency){
+        if(tendency != null){
+            List<Tendency.Element> tendencyList = new ArrayList<>();
+
+            for (String t : tendency) {
+                System.out.println("t = " + t);
+                Tendency.Element result = Tendency.toTendency(t);
+                tendencyList.add(result);
+            }
+            System.out.println("tendencyList = " + tendencyList);
+            return tendencyList;
+        }
+        return null;
     }
 
     @Override
@@ -308,4 +330,5 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         return null;
     }
 }
+
 
