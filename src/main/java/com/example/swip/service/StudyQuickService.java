@@ -61,8 +61,8 @@ public class StudyQuickService {
         //return
         return savedFilter.getId();
     }
-    public List<QuickMatchResponse> quickFilteredStudy(QuickMatchFilter quickMatchFilter, Pageable pageable){
-        List<QuickMatchResponse> FilteredStudyList = studyRepository.quickFilterStudy(quickMatchFilter, pageable);
+    public List<QuickMatchResponse> quickFilteredStudy(QuickMatchFilter quickMatchFilter, Long page, Long size){
+        List<QuickMatchResponse> FilteredStudyList = studyRepository.quickFilterStudy(quickMatchFilter, page, size);
         return FilteredStudyList;
     }
 }

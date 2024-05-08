@@ -183,7 +183,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
     }
 
     @Override
-    public List<QuickMatchResponse> quickFilterStudy(QuickMatchFilter quickMatchFilter, Pageable pageable) {
+    public List<QuickMatchResponse> quickFilterStudy(QuickMatchFilter quickMatchFilter, Long page, Long size) {
         QCategory category = QCategory.category;
         // 카테고리 정렬
         NumberExpression<Integer> categoryRank = quickMatchFilter.getStart_date() != null ?
@@ -236,8 +236,8 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                 .where(quickFilter(quickMatchFilter))   //첫 BooleanExpression는 무조건 AND 연산이 적용된다.
                 .orderBy(orderSpecifiers.toArray(new OrderSpecifier[orderSpecifiers.size()]))
                 .distinct()
-                .offset(pageable.getOffset())  //반환 시작 index 0, 3, 6
-                .limit(pageable.getPageSize())   //최대 조회 건수
+                .offset(page*size)  //반환 시작 index 0, 3, 6
+                .limit(size)   //최대 조회 건수
                 .fetch();
 
         List<QuickMatchResponse> responses = findStudy.stream()
@@ -262,7 +262,8 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         beList.add(eqCategory(quickMatchFilter.getCategory()));
         beList.add(eqTendency(quickMatchFilter.getTendency()));
 
-        BooleanExpression temp = matchingSelect(MatchingType.toMatchingType(quickMatchFilter.getQuick_match()));
+        MatchingType.Element element = MatchingType.toMatchingType(quickMatchFilter.getQuick_match());
+        BooleanExpression temp = matchingSelect(element);
         for (BooleanExpression be : beList) {
             if(be != null) {
                 temp.or(be);

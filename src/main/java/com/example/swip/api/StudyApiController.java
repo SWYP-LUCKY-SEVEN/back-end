@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -116,20 +117,20 @@ public class StudyApiController {
         return quickMatchFilter;
     }
     @Operation(summary = "빠른 매칭 - 상위 리스트 3개씩 반환",
-            description = "page : 다시 매칭한 횟수 (0~2)\n" +
+            description = "page : 다시 매칭한 횟수\n" +
                     "1. Save 옵션 True시 조건 저장. false시 조건 삭제\n" +
                     "2. 일치하는 조건은 (분야 > 시작일 > 진행기간 > 성향 > 인원) 순으로 정렬된다.")
-    @PostMapping("/study/quick/filter/{page}")
+    @PostMapping("/study/quick/match")
     public Result quickMatchStudy(
             @AuthenticationPrincipal UserPrincipal principal, // 권한 인증
             @RequestParam boolean save,
+            @RequestParam(required = false) Long page,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) String duration,
             @RequestParam(required = false) Long minMember,
             @RequestParam(required = false) Long maxMember,
-            @RequestParam(required = false) String tendency,
-            Pageable pageable
+            @RequestParam(required = false) String tendency
     )
     {
         // 필터링 조건 객체 생성
@@ -145,7 +146,6 @@ public class StudyApiController {
 
         if(principal == null)
             return null;
-
         Long user_id = principal.getUserId();
         if(save == true)
             studyQuickService.saveQuickMatchFilter(quickMatchFilter, user_id);
@@ -153,7 +153,11 @@ public class StudyApiController {
             studyQuickService.deleteQuickMatchFilter(user_id);
 
         // 필터링된 결과 리스트
-        List<QuickMatchResponse> filteredStudy = studyQuickService.quickFilteredStudy(quickMatchFilter, pageable);
+        List<QuickMatchResponse> filteredStudy =
+                studyQuickService.quickFilteredStudy(
+                        quickMatchFilter,
+                        page!=null?page:0L,
+                        3L);
         int totalCount = filteredStudy.size(); //전체 리스트 개수
 
         return new Result(filteredStudy,totalCount);
