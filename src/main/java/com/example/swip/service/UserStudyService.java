@@ -32,4 +32,7 @@ public class UserStudyService {
 
         userStudyRepository.save(userStudy);
     }
+    public boolean getAlreadyJoin(Long userId, Long studyId) {
+        return userStudyRepository.existsById(new UserStudyId(userId, studyId));
+    }
 }
