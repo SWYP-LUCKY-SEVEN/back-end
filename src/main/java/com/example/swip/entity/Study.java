@@ -46,7 +46,7 @@ public class Study {
 
     private int view_count; //조회수
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false) //not null
     @JoinColumn(name = "category_id")
     private Category category;
 

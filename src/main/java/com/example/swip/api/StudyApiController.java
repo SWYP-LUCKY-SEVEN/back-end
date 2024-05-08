@@ -61,6 +61,8 @@ public class StudyApiController {
                         "/ 검색 : 로그인 한 유저(token 필요), 로그인 x 유저(token 필요x)" +
                         "/ quickMatch는 빠른 매칭 선택시 'quick'으로 작성" +
                         "/ category는 카테고리 (ex. '코딩')" +
+                        "/ minParticipants: 최소인원, maxParticipants: 최대인원" +
+                        "/ tendency: active, feedback, focus (여러개 선택시 ,로 연결하여 입력): " +
                         "/ 마지막 orderType에 정렬 조건 넣기. 최근 등록순: recent, 인기순: popular, 마감 임박순: deadline, 가나다순: abd")
     @GetMapping("/study/{type}/filter")
     public Result filterAndSortStudy(
@@ -71,8 +73,9 @@ public class StudyApiController {
             @RequestParam(required = false) String category,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) String duration,
+            @RequestParam(required = false) Integer minParticipants,
             @RequestParam(required = false) Integer maxParticipants,
-            @RequestParam(required = false) String tendency,
+            @RequestParam(required = false) List<String> tendency, //active, feedback, focus
             @RequestParam(required = false) String orderType)
     {
         // 필터링 조건 객체 생성
@@ -83,6 +86,7 @@ public class StudyApiController {
                 .category(category)
                 .start_date(startDate)
                 .duration(duration)
+                .min_participants(minParticipants)
                 .max_participants(maxParticipants)
                 .tendency(tendency)
                 .order_type(orderType)
