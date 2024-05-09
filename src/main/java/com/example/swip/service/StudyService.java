@@ -1,17 +1,17 @@
 package com.example.swip.service;
 
-import com.example.swip.dto.*;
-import com.example.swip.entity.Category;
-import com.example.swip.entity.Search;
-import com.example.swip.entity.Study;
-import com.example.swip.entity.User;
+import com.example.swip.dto.study.StudyFilterCondition;
+import com.example.swip.dto.study.StudyFilterResponse;
+import com.example.swip.dto.study.StudyResponse;
+import com.example.swip.dto.study.StudySaveRequest;
+import com.example.swip.entity.*;
 import com.example.swip.repository.StudyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -97,18 +97,27 @@ public class StudyService {
             //검색어 중복 검색 -> 없으면 검색어 table에 저장 , search_user table에 저장
             String queryString = filterCondition.getQuery_string();
             Boolean isExist = searchService.KeywordIsExist(queryString);
-            if (!isExist) { //회원이 존재하지 않으면 search_user에 저장 x
+            if (!isExist) { //검색어가 없으면, 검색어 table에 저장 & search_user table에 저장
                 User user = userService.findUserById(writerId); //작성자 정보 조회
 
                 searchService.saveKeyword(queryString);
                 Search findKeyword = searchService.findByKeyword(queryString);
                 userSearchService.saveSearchLog(findKeyword, user);
-            } else if (isExist) { //search_user 저장 -> id가 일치하면 count 증가, updatetime 갱신
+            } else if (isExist) { //검색어가 있으면, user_search에 있는지 조회/ 없으면 search_user table에만 저장 / 있으면 count 증가, updatetime 갱신
                 User user = userService.findUserById(writerId); //작성자 정보 조회
 
-                Search findKeyword = searchService.findByKeyword(queryString);
-                //search 정보 업데이트 - count +1 , update_time
-                userSearchService.updateSearchLog(findKeyword, user);
+                Search findKeyword = searchService.findByKeyword(queryString); //검색어 조회
+
+                Optional<UserSearch> findUserSearch = userSearchService.findById(writerId, findKeyword.getId()); //작성자별 검색어 정보 조회
+
+                //search_user 에 있으면, search 정보 업데이트 - count +1 , update_time
+                if(findUserSearch.isPresent()) {
+                    userSearchService.updateSearchLog(findKeyword, user);
+                } else {  //search_user 에 없으면,  search_user 에 저장
+                    userSearchService.saveSearchLog(findKeyword, user);
+                }
+                // 두 경우 모두, total count 증가
+                findKeyword.updateCount();
             }
         }
     }

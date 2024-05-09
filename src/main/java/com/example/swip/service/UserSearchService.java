@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -33,5 +34,22 @@ public class UserSearchService {
         UserSearchId id = new UserSearchId(user.getId(), findKeyword.getId());
         UserSearch findUserSearch = userSearchRepository.findById(id).orElse(null);
         findUserSearch.updateLog(); //count +1
+    }
+
+    //user id로 유저별 최근 검색기록 조회
+    public List<UserSearch> findRecentSearchByUserId(Long userId) {
+        return userSearchRepository.findSearchById(userId);
+    }
+
+    //userId에 해당하는 검색어 모두 삭제
+    @Transactional
+    public long deleteRecentSearch(Long userId) {
+        long deletedCount = userSearchRepository.deleteAllByUserId(userId);
+        return deletedCount;
+    }
+
+    public Optional<UserSearch> findById(Long writerId, Long searchId) {
+        Optional<UserSearch> findUserSearch = userSearchRepository.findById(new UserSearchId(writerId, searchId));
+        return findUserSearch;
     }
 }

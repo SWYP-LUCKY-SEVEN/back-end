@@ -1,4 +1,4 @@
-package com.example.swip.dto;
+package com.example.swip.dto.study;
 
 import com.example.swip.entity.Category;
 import com.example.swip.entity.Study;
