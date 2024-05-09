@@ -17,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class QuickMatchRequest {
     private String category;
-    private LocalDate startDate;
+    private LocalDate start_date;
     private String duration;
     private String tendency;
     private List<Long> mem_scope;

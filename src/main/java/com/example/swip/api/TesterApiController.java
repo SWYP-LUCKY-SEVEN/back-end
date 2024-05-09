@@ -31,12 +31,9 @@ public class TesterApiController {
     @Operation(summary = "회원 탈퇴 (테스트용 API)", description = "입력된 ID의 계정을 지웁니다.")
     @DeleteMapping("/auth/{user_id}") // user id 반환
     public String deleteUserByUserId(
-            @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable("user_id") Long user_id
     ){  // Authorization 내 principal 없으면 null 값
-        if(principal != null)
-            return authService.deleteUser(user_id);
-        return "need JWT in Authorization";
+        return authService.deleteUser(user_id);
     }
 
     @Operation(summary = "특정 유저 스터디 참가 (테스트용 API)",
@@ -44,15 +41,12 @@ public class TesterApiController {
                     "존재하는 user id는 auth/")
     @PostMapping("/study/join/{study_id}/{user_id}")
     public ResponseEntity testMatchStudy(
-            @AuthenticationPrincipal UserPrincipal userPrincipal, // 권한 인증
             @PathVariable("study_id") Long studyId,
             @PathVariable("user_id") Long userId
     ) {
-        if(userPrincipal == null)
-            return ResponseEntity.status(403).body(
-                    DefaultResponse.builder()
-                            .message("로그인이 필요합니다.")
-                            .build());
-        return studyService.joinStudy(studyId, userId);
+        return ResponseEntity.status(403).body(
+                DefaultResponse.builder()
+                        .message("로그인이 필요합니다.")
+                        .build());
     }
 }

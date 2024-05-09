@@ -29,6 +29,8 @@ public class StudyQuickService {
     @Transactional
     public QuickMatchFilter getQuickMatchFilter(Long userId) {
         SavedQuickMatchFilter savedFilter = quickFilterRepository.findById(userId).orElse(null);
+        if(savedFilter == null)
+            return null;
         return QuickMatchFilter.builder()
                 .category(savedFilter.getCategory().getName())
                 .start_date(savedFilter.getStart_date())
