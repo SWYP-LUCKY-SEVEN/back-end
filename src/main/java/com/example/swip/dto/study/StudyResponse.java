@@ -1,4 +1,4 @@
-package com.example.swip.dto;
+package com.example.swip.dto.study;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

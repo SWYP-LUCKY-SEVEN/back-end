@@ -1,4 +1,4 @@
-package com.example.swip.dto;
+package com.example.swip.dto.study;
 
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.Getter;

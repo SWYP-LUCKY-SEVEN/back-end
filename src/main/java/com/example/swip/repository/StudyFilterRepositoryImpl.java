@@ -1,8 +1,9 @@
 package com.example.swip.repository;
 
-import com.example.swip.dto.*;
 import com.example.swip.dto.quick_match.QuickMatchFilter;
 import com.example.swip.dto.quick_match.QuickMatchResponse;
+import com.example.swip.dto.study.StudyFilterCondition;
+import com.example.swip.dto.study.StudyFilterResponse;
 import com.example.swip.entity.QAdditionalInfo;
 import com.example.swip.entity.QCategory;
 import com.example.swip.entity.Study;

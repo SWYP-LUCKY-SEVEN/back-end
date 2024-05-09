@@ -1,19 +1,19 @@
 package com.example.swip.api;
 
 import com.example.swip.config.UserPrincipal;
-import com.example.swip.dto.*;
+import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.quick_match.QuickMatchFilter;
 import com.example.swip.dto.quick_match.QuickMatchResponse;
-import com.example.swip.entity.User;
+import com.example.swip.dto.study.StudyFilterCondition;
+import com.example.swip.dto.study.StudyFilterResponse;
+import com.example.swip.dto.study.StudyResponse;
+import com.example.swip.dto.study.StudySaveRequest;
 import com.example.swip.service.StudyQuickService;
 import com.example.swip.service.StudyService;
-import com.example.swip.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
