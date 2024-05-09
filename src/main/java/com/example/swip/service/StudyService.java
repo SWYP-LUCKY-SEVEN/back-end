@@ -1,12 +1,20 @@
 package com.example.swip.service;
 
+
 import com.example.swip.dto.study.StudyFilterCondition;
 import com.example.swip.dto.study.StudyFilterResponse;
 import com.example.swip.dto.study.StudyResponse;
 import com.example.swip.dto.study.StudySaveRequest;
 import com.example.swip.entity.*;
+import com.example.swip.dto.*;
+import com.example.swip.entity.Category;
+import com.example.swip.entity.Search;
+import com.example.swip.entity.Study;
+import com.example.swip.entity.User;
+import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.repository.StudyRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,7 +50,8 @@ public class StudyService {
         );
 
         //additional_info 저장
-        additionalInfoService.saveAddInfo(studySaveRequest.getTags(), savedStudy);
+        if(studySaveRequest.getTags() != null)
+            additionalInfoService.saveAddInfo(studySaveRequest.getTags(), savedStudy);
 
         //user_study - 방장 정보 저장
         userStudyService.saveUserStudy(writer, savedStudy, true);
@@ -82,7 +91,7 @@ public class StudyService {
 
     //조회 - 필터 & 검색어
     @Transactional
-    public  List<StudyFilterResponse> findQueryAndFilteredStudy(StudyFilterCondition filterCondition, Long writerId){
+    public List<StudyFilterResponse> findQueryAndFilteredStudy(StudyFilterCondition filterCondition, Long writerId){
         //검색어 저장
         handleSearch(filterCondition, writerId);
         //제목, additional Info가 검색어와 일치하는 study 모두 return
@@ -122,6 +131,30 @@ public class StudyService {
         }
     }
 
+    @Transactional
+    public ResponseEntity joinStudy(Long studyId, Long userId) {
+       Study study = studyRepository.findById(studyId).orElse(null);
+       User user = userService.findUserById(userId);
+       if(study==null || user==null)
+           return ResponseEntity.status(400).body(DefaultResponse.builder()
+                   .message("존재하지 않는 식별자입니다.")
+                   .build());
+       if(userStudyService.getAlreadyJoin(userId, studyId))
+           return ResponseEntity.status(200).body(DefaultResponse.builder()
+                   .message("이미 참가중인 사용자입니다.")
+                   .build());
+
+        if(study.getMatching_type().equals(MatchingType.Element.Quick)) {
+            userStudyService.saveUserStudy(user, study, false);
+            return ResponseEntity.status(200).body(DefaultResponse.builder()
+                    .message("스터디에 참가되었습니다.")
+                    .build());
+        }else {
+            return ResponseEntity.status(204).body(DefaultResponse.builder()
+                    .message("즉시 가입을 허용하는 스터디가 아닙니다. 현재는 즉시 가입 기능만 존재합니다.")
+                    .build());
+        }
+    }
     /*
     public Study findStudy(Long id){
         Study findStudy = studyRepository.findById(id).orElse(null);
