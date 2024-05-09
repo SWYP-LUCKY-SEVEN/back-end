@@ -1,10 +1,7 @@
 package com.example.swip.service;
 
 
-import com.example.swip.dto.study.StudyFilterCondition;
-import com.example.swip.dto.study.StudyFilterResponse;
-import com.example.swip.dto.study.StudyResponse;
-import com.example.swip.dto.study.StudySaveRequest;
+import com.example.swip.dto.study.*;
 import com.example.swip.entity.*;
 import com.example.swip.dto.*;
 import com.example.swip.entity.Category;
@@ -13,14 +10,17 @@ import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
 import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.repository.StudyRepository;
+import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Transactional(readOnly = true)
@@ -62,25 +62,9 @@ public class StudyService {
 
 
     //조회
-    public List<StudyResponse> findAllStudies(){
+    public List<Study> findAllStudies(){
         List<Study> allStudies = studyRepository.findAll();
-
-        //DTO로 변환
-        List<StudyResponse> result = allStudies.stream()
-                .map(study -> new StudyResponse(
-                        study.getId(),
-                        study.getTitle(),
-                        study.getStart_date(),
-                        study.getEnd_date(),
-                        study.getMax_participants_num(),
-                        study.getCur_participants_num(),
-                        study.getCategory().getName(),
-                        study.getAdditionalInfos().stream()
-                                .map(additionalInfo -> additionalInfo.getName())
-                                .collect(Collectors.toList()))
-                )
-                .collect(Collectors.toList());
-        return result;
+        return allStudies;
     }
 
     //조회 - 필터 조건 추가
@@ -155,12 +139,56 @@ public class StudyService {
                     .build());
         }
     }
-    /*
-    public Study findStudy(Long id){
-        Study findStudy = studyRepository.findById(id).orElse(null);
-        return findStudy;
+
+
+    public List<StudyDetailResponse> findStudyDetail(Long StudyId){
+        //study 상세 page에 나오는 모든 것들을 반환
+        //study 상세 정보
+        List<Study> studyDetailById = studyRepository.findStudyDetailById(StudyId);
+        //study 멤버 정보
+        List<Tuple> allUsersByStudyId = userStudyService.getAllUsersByStudyId(StudyId);
+
+        List<StudyDetailResponse> collect = studyDetailById.stream()
+                .map(study -> {
+
+                    String category = study.getCategory().getName();
+                    List<String> tags = study.getAdditionalInfos().stream()
+                            .map(tag -> {
+                                return tag.getName();
+                            }).collect(Collectors.toList());
+
+                    return StudyDetailResponse.builder()
+                            .title(study.getTitle())
+                            .description(study.getDescription())
+                            .tags(tags)
+                            .category(category)
+                            .matching_type(study.getMatching_type().toString())
+                            .start_date(study.getStart_date())
+                            .end_date(study.getEnd_date())
+                            .duration(study.getDuration())
+                            .max_participants_num(study.getMax_participants_num())
+                            .cur_participants_num(study.getCur_participants_num())
+                            .tendency(study.getTendency().toString())
+                            .membersList(
+                                    allUsersByStudyId.stream()
+                                            .map(member -> {
+                                                User user = member.get(1, User.class);
+                                                UserStudy userStudy = member.get(0, UserStudy.class);
+                                                return StudyDetailMembers.builder()
+                                                        .nickname(user.getNickname())
+                                                        .is_owner(userStudy.is_owner())
+                                                        .build();
+                                            })
+                                            .collect(Collectors.toList())
+                            )
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        return collect;
     }
 
+    /*
     //수정
     @Transactional
     public Long updateStudy(Long id, StudyUpdateRequest studyUpdateRequest) {

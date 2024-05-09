@@ -6,10 +6,13 @@ import com.example.swip.entity.UserStudy;
 import com.example.swip.entity.compositeKey.UserStudyId;
 import com.example.swip.entity.enumtype.ExitStatus;
 import com.example.swip.repository.UserStudyRepository;
+import com.querydsl.core.Tuple;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -34,5 +37,10 @@ public class UserStudyService {
     }
     public boolean getAlreadyJoin(Long userId, Long studyId) {
         return userStudyRepository.existsById(new UserStudyId(userId, studyId));
+    }
+
+    public List<Tuple> getAllUsersByStudyId(Long studyId){
+        List<Tuple> allUsersByStudyId = userStudyRepository.findAllUsersByStudyId(studyId);
+        return allUsersByStudyId;
     }
 }

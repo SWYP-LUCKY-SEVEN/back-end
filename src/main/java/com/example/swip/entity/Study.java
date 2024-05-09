@@ -50,6 +50,7 @@ public class Study {
     @JoinColumn(name = "category_id")
     private Category category;
 
+
     @CreationTimestamp
     private LocalDateTime created_time;
 
@@ -60,5 +61,9 @@ public class Study {
     @OneToMany(mappedBy = "study")
     @Builder.Default
     private List<AdditionalInfo> additionalInfos = new ArrayList<>();
+
+    @OneToMany(mappedBy = "study")
+    @Builder.Default
+    private List<UserStudy> userStudies = new ArrayList<>();
 
 }

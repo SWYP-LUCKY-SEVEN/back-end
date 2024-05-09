@@ -4,10 +4,8 @@ import com.example.swip.config.UserPrincipal;
 import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.quick_match.QuickMatchFilter;
 import com.example.swip.dto.quick_match.QuickMatchResponse;
-import com.example.swip.dto.study.StudyFilterCondition;
-import com.example.swip.dto.study.StudyFilterResponse;
-import com.example.swip.dto.study.StudyResponse;
-import com.example.swip.dto.study.StudySaveRequest;
+import com.example.swip.dto.study.*;
+import com.example.swip.entity.Study;
 import com.example.swip.service.StudyQuickService;
 import com.example.swip.service.StudyService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -53,9 +52,26 @@ public class StudyApiController {
     @Operation(summary = "스터디 전체 리스트 조회 메소드")
     @GetMapping("/study")
     public Result showStudy(){
-        List<StudyResponse> allStudies = studyService.findAllStudies();
-        int totalCount = allStudies.size(); //전체 리스트 개수
-        return new Result(allStudies, totalCount); // TODO: Result 타입으로 한번 감싸기
+        List<Study> allStudies = studyService.findAllStudies();
+
+        //DTO로 변환
+        List<StudyResponse> result = allStudies.stream()
+                .map(study -> new StudyResponse(
+                        study.getId(),
+                        study.getTitle(),
+                        study.getStart_date(),
+                        study.getEnd_date(),
+                        study.getMax_participants_num(),
+                        study.getCur_participants_num(),
+                        study.getCategory().getName(),
+                        study.getAdditionalInfos().stream()
+                                .map(additionalInfo -> additionalInfo.getName())
+                                .collect(Collectors.toList()))
+                )
+                .collect(Collectors.toList());
+
+        int totalCount = result.size(); //전체 리스트 개수
+        return new Result(result, totalCount); // TODO: Result 타입으로 한번 감싸기
     }
 
     // 조회 - 필터링
@@ -186,25 +202,18 @@ public class StudyApiController {
     }
 
     /**
-     * 조회 - 스터디 상세 (보류)
+     * 조회 - 스터디 상세
      */
-    /*
+
+    @Operation(summary = "스터디 상세 정보 조회 API")
     @GetMapping("/study/{id}")
-    public StudyDetailResponse showBoardDetail(@PathVariable("id") Long boardId){
-        Study findStudy = studyService.findStudy(boardId);
+    public List<StudyDetailResponse> showBoardDetail(@PathVariable("id") Long studyId){
+        List<StudyDetailResponse> studyDetail = studyService.findStudyDetail(studyId);
 
-        // Dto 로 변환
-        StudyDetailResponse response = new StudyDetailResponse(
-                findStudy.getId(),
-                findStudy.getTitle(),
-                findStudy.getContent(),
-                findStudy.getWriter().getId(),
-                findStudy.getCreated_time(),
-                findStudy.getUpdated_time());
-
-        return response;
+        return studyDetail;
     }
 
+    /*
     //수정
     @PutMapping("/study/{id}/edit")
     public Long updateBoardDetail(
