@@ -66,7 +66,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
 
                     builder.and(
                             study.start_date.before(LocalDate.now().plusDays(7)) //스터디 시작 일자가 7일 전일 경우
-                            .or(recruitPercentage.gt(80)) //스터디 모집 인원이 80% 초과인 경우
+                                    .or(recruitPercentage.gt(80)) //스터디 모집 인원이 80% 초과인 경우
                     );
                     break;
                 case "nonApproval": //승인없는
@@ -114,7 +114,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         //시작 날짜 & duration 지정 -> 둘다 일치하는 것
         if (filterCondition.getDuration() != null && filterCondition.getStart_date() != null){
             builder.and(study.start_date.eq(filterCondition.getStart_date()))
-                            .and(study.duration.eq(filterCondition.getDuration()));
+                    .and(study.duration.eq(filterCondition.getDuration()));
         }
         //인원 수
         //최대 인원만 존재
@@ -332,5 +332,3 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         return null;
     }
 }
-
-

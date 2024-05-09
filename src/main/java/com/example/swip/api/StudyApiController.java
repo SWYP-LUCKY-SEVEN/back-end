@@ -6,6 +6,7 @@ import com.example.swip.dto.quick_match.QuickMatchFilter;
 import com.example.swip.dto.quick_match.QuickMatchResponse;
 import com.example.swip.dto.study.*;
 import com.example.swip.entity.Study;
+import com.example.swip.service.FavoriteStudyService;
 import com.example.swip.service.StudyQuickService;
 import com.example.swip.service.StudyService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,6 +28,7 @@ public class StudyApiController {
 
     private final StudyService studyService;
     private final StudyQuickService studyQuickService;
+    private final FavoriteStudyService favoriteStudyService;
 
     //저장
     @Operation(summary = "스터디 생성 메소드",
@@ -76,15 +78,15 @@ public class StudyApiController {
 
     // 조회 - 필터링
     @Operation(summary = "신규/전체/마감임박 스터디 리스트 필터링 & 정렬 메소드",
-                description = "{type}: recent/ all/ deadline 중 하나로 작성(각각 신규, 전체, 마감임박 페이지) " +
-                        "/ requestParam으로 필터링 조건 작성. 각각은 모두 Null 허용. 모두 null이면 필터가 걸리지 않은 상태 " +
-                        "/ 검색기능 => queryString에 검색어 작성 (ex. '모각코')" +
-                        "/ 검색 : 로그인 한 유저(token 필요), 로그인 x 유저(token 필요x)" +
-                        "/ quickMatch는 빠른 매칭 선택시 'quick'으로 작성" +
-                        "/ category는 카테고리 (ex. '코딩')" +
-                        "/ minParticipants: 최소인원, maxParticipants: 최대인원" +
-                        "/ tendency: active, feedback, focus (여러개 선택시 ,로 연결하여 입력): " +
-                        "/ 마지막 orderType에 정렬 조건 넣기. 최근 등록순: recent, 인기순: popular, 마감 임박순: deadline, 가나다순: abd")
+            description = "{type}: recent/ all/ deadline 중 하나로 작성(각각 신규, 전체, 마감임박 페이지) " +
+                    "/ requestParam으로 필터링 조건 작성. 각각은 모두 Null 허용. 모두 null이면 필터가 걸리지 않은 상태 " +
+                    "/ 검색기능 => queryString에 검색어 작성 (ex. '모각코')" +
+                    "/ 검색 : 로그인 한 유저(token 필요), 로그인 x 유저(token 필요x)" +
+                    "/ quickMatch는 빠른 매칭 선택시 'quick'으로 작성" +
+                    "/ category는 카테고리 (ex. '코딩')" +
+                    "/ minParticipants: 최소인원, maxParticipants: 최대인원" +
+                    "/ tendency: active, feedback, focus (여러개 선택시 ,로 연결하여 입력): " +
+                    "/ 마지막 orderType에 정렬 조건 넣기. 최근 등록순: recent, 인기순: popular, 마감 임박순: deadline, 가나다순: abd")
     @GetMapping("/study/{type}/filter")
     public Result filterAndSortStudy(
             @AuthenticationPrincipal UserDetails userDetails,
@@ -186,13 +188,64 @@ public class StudyApiController {
         return new Result(filteredStudy,totalCount);
     }
 
+    @Operation(summary = "찜 추가",
+            description = "스터디 찜 추가")
+    @PostMapping("/study/{study_id}/favorite")
+    public ResponseEntity postFavoriteStudy(
+            @AuthenticationPrincipal UserPrincipal userPrincipal, // 권한 인증
+            @PathVariable("study_id") Long studyId
+    ) {
+        if(userPrincipal == null)
+            return ResponseEntity.status(403).body(
+                    DefaultResponse.builder()
+                            .message("로그인이 필요합니다.")
+                            .build());
+
+        boolean status = favoriteStudyService.postFavoriteStudy( userPrincipal.getUserId(), studyId);
+        if(status)
+            return ResponseEntity.status(200).body(
+                    DefaultResponse.builder()
+                            .message("일단은 성공적")
+                            .build());
+
+        return ResponseEntity.status(404).body(
+                DefaultResponse.builder()
+                        .message("올바르지 않은 ID")
+                        .build());
+    }
+
+    @Operation(summary = "찜 목록 확인",
+            description = "스터디 찜 리스트 확인")
+    @GetMapping("/study/favorite")
+    public ResponseEntity getFavoriteStudy(
+            @AuthenticationPrincipal UserPrincipal userPrincipal // 권한 인증
+    ) {
+        if(userPrincipal == null)
+            return ResponseEntity.status(403).body(
+                    DefaultResponse.builder()
+                            .message("로그인이 필요합니다.")
+                            .build());
+
+        List<Study> list =
+                favoriteStudyService.getFavoriteStudyList(userPrincipal.getUserId());
+
+        List<StudyFilterResponse> filteredStudy =
+                studyService.studyListToStudyFilterResponse(list);
+        int totalCount = filteredStudy.size(); //전체 리스트 개수
+
+        return ResponseEntity.status(200).body(
+                new Result(filteredStudy,totalCount)
+        );
+    }
+
+
     @Operation(summary = "스터디 참가 (정식 기능)",
             description = "현재 즉시 참가 기능만 지원.")
     @PostMapping("/study/join/{study_id}")
     public ResponseEntity matchStudy(
             @AuthenticationPrincipal UserPrincipal userPrincipal, // 권한 인증
             @PathVariable("study_id") Long studyId
-            ) {
+    ) {
         if(userPrincipal == null)
             return ResponseEntity.status(403).body(
                     DefaultResponse.builder()

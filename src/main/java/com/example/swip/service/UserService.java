@@ -63,7 +63,7 @@ public class UserService {
         UserRelatedStudyCount urscount = new UserRelatedStudyCount();
         urscount.setIn_progress(userRepositoryCustom.countInUserStudy(user_id, false));
         urscount.setIn_complete(userRepositoryCustom.countInUserStudy(user_id, true));
-        //urscount.setIn_favorite(userRepositoryCustom.testCount(user_id));
+        urscount.setIn_favorite(userRepositoryCustom.countFavorite(user_id));
         //urscount.setIn_proposal(userRepositoryCustom.countProposer(user_id));
         return urscount;
     }
