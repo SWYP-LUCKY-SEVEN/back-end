@@ -10,6 +10,7 @@ import com.example.swip.repository.QuickFilterRepository;
 import com.example.swip.repository.StudyFilterRepository;
 import com.example.swip.repository.StudyRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,8 +61,8 @@ public class StudyQuickService {
         //return
         return savedFilter.getId();
     }
-    public List<QuickMatchResponse> quickFilteredStudy(QuickMatchFilter quickMatchFilter, Long page){
-        List<QuickMatchResponse> FilteredStudyList = studyRepository.quickFilterStudy(quickMatchFilter, page);
+    public List<QuickMatchResponse> quickFilteredStudy(QuickMatchFilter quickMatchFilter, Long page, Long size){
+        List<QuickMatchResponse> FilteredStudyList = studyRepository.quickFilterStudy(quickMatchFilter, page, size);
         return FilteredStudyList;
     }
 }

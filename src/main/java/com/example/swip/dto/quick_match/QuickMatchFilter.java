@@ -12,6 +12,12 @@ import java.util.List;
 @Getter
 @Builder
 public class QuickMatchFilter {
+    private String page_type; //신규, 전체, 마감임박, 승인없음
+    private String query_string; // 검색 관련인듯함.
+    private String quick_match; //빠른매칭: quick, 승인제:false
+
+    private String order_type;
+
     private String category;
     private LocalDate start_date;
     private String duration;
