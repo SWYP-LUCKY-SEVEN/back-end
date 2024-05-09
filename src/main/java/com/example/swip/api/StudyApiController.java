@@ -4,14 +4,17 @@ import com.example.swip.config.UserPrincipal;
 import com.example.swip.dto.*;
 import com.example.swip.dto.quick_match.QuickMatchFilter;
 import com.example.swip.dto.quick_match.QuickMatchResponse;
+import com.example.swip.entity.User;
 import com.example.swip.service.StudyQuickService;
 import com.example.swip.service.StudyService;
+import com.example.swip.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -165,6 +168,21 @@ public class StudyApiController {
         int totalCount = filteredStudy.size(); //전체 리스트 개수
 
         return new Result(filteredStudy,totalCount);
+    }
+
+    @Operation(summary = "스터디 참가 (정식 기능)",
+            description = "현재 즉시 참가 기능만 지원.")
+    @PostMapping("/study/join/{study_id}")
+    public ResponseEntity matchStudy(
+            @AuthenticationPrincipal UserPrincipal userPrincipal, // 권한 인증
+            @PathVariable("study_id") Long studyId
+            ) {
+        if(userPrincipal == null)
+            return ResponseEntity.status(403).body(
+                    DefaultResponse.builder()
+                            .message("로그인이 필요합니다.")
+                            .build());
+        return studyService.joinStudy(studyId, userPrincipal.getUserId());
     }
 
     /**

@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -125,6 +126,14 @@ public class AuthServiceImpl implements AuthService {
         return ValidateTokenResponse.builder()
                 .validated(userPrincipal.getUserId() == user_id)
                 .build();
+    }
+    public List<Long> getAllUserId() {
+        List<Long> ids = new ArrayList<>();
+        List<User> users = userRepository.findAll();
 
+        for(User user : users) {
+            ids.add(user.getId());
+        }
+        return ids;
     }
 }
