@@ -1,6 +1,7 @@
 package com.example.swip.api;
 
 import com.example.swip.config.UserPrincipal;
+import com.example.swip.dto.auth.GetNicknameDupleResponse;
 import com.example.swip.dto.auth.GetUserIDResponse;
 import com.example.swip.dto.auth.ValidateTokenResponse;
 import com.example.swip.service.AuthService;

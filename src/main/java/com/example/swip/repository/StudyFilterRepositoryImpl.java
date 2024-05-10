@@ -229,7 +229,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         // 성향 정렬
         NumberExpression<Integer> tendencyRank = quickMatchFilter.getTendency() != null ?
                 new CaseBuilder()
-                        .when(eqTendency(quickMatchFilter.getTendency())).then(1)
+                        .when(study.tendency.in(toTendencyList(quickMatchFilter.getTendency()))).then(1)
                         .otherwise(2)
                 :null;
 
@@ -244,7 +244,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         // 분야 > 시작일 > 진행기간 > 성향 > 인원
         List<OrderSpecifier> orderSpecifiers = new ArrayList<>();
         //우선순위는 어떻게 이뤄질까?
-        orderSpecifiers.add(memberRank.asc());    //성향
+        orderSpecifiers.add(memberRank.asc());    //인원
         if(tendencyRank != null) orderSpecifiers.add(tendencyRank.asc());    //성향
         if(durationRank != null) orderSpecifiers.add(durationRank.asc());    //진행기간
         if(startDateRank != null) orderSpecifiers.add(startDateRank.asc());   //시작일
@@ -272,7 +272,8 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                         study.getDuration(),
                         study.getMax_participants_num(),
                         study.getCur_participants_num(),
-                        study.getCreated_time()
+                        study.getCreated_time(),
+                        study.getTendency()
                 ))
                 .collect(Collectors.toList());
 
@@ -283,7 +284,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         beList.add(eqStart_date(quickMatchFilter.getStart_date()));
         beList.add(eqDuration(quickMatchFilter.getDuration()));
         beList.add(eqCategory(quickMatchFilter.getCategory()));
-        beList.add(eqTendency(quickMatchFilter.getTendency()));
+        beList.add(inTendency(quickMatchFilter.getTendency()));
 
         MatchingType.Element element = MatchingType.toMatchingType(quickMatchFilter.getQuick_match());
         BooleanExpression temp = matchingSelect(element);
@@ -297,38 +298,16 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
     private BooleanExpression matchingSelect(MatchingType.Element element) {
         return element != null?study.matching_type.eq(MatchingType.Element.Quick) : Expressions.asBoolean(true);
     }
-
     private BooleanExpression eqStart_date(LocalDate startDate) {
         return startDate != null ? study.start_date.eq(startDate) : null;
     }
     private BooleanExpression eqDuration(String duration) {
-        return duration != null ? study.duration.eq(duration) : null;
+            return duration != null ? study.duration.eq(duration) : null;
     }
     private BooleanExpression eqCategory(String category) {
         return category != null ? study.category.name.eq(category) : null;
     }
-
-    private BooleanExpression eqTendency(String tendency){
-        if(tendency != null){
-            Tendency.Element result = null;
-            switch (tendency) {
-                case "active":    //active
-                    result = Tendency.Element.Active;
-                    break;
-                case "feedback":   //feedback
-                    result = Tendency.Element.Feedback;
-                    break;
-                case "focus":        //focus
-                    result = Tendency.Element.Focus;
-                    break;
-                default:
-                    // 예상치 못한 값이 들어온 경우 처리하지 않음
-                    break;
-            }
-            if (result != null) {
-                return study.tendency.eq(result);
-            }
-        }
-        return null;
+    private BooleanExpression inTendency(List<String> tendency){
+        return tendency != null ? study.tendency.in(toTendencyList(tendency)) : null;
     }
 }

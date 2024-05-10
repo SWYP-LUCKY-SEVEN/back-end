@@ -34,7 +34,7 @@ public class User {
   
     private LocalDateTime withdrawal_date;
 
-    public void createProfile(String nickname, String profile_image){
+    public void updateProfile(String nickname, String profile_image){
         this.profile_image = profile_image;
         this.nickname = nickname;
         this.join_date = LocalDateTime.now();
