@@ -53,7 +53,7 @@ public class UserRepositoryCustom {
                 .fetchJoin()
                 .where(
                         favoriteStudy.user.id.eq(userId),
-                        userStudy.study.status.ne(StudyProgressStatus.Done)
+                        favoriteStudy.study.status.ne(StudyProgressStatus.Done)
                 ).fetchOne();
     }
     public Long countInUserStudy(Long userId, boolean isComplete) {   //InProgress 상태의 스터디 개수

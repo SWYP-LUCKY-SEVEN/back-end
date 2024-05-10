@@ -44,9 +44,6 @@ public class TesterApiController {
             @PathVariable("study_id") Long studyId,
             @PathVariable("user_id") Long userId
     ) {
-        return ResponseEntity.status(403).body(
-                DefaultResponse.builder()
-                        .message("로그인이 필요합니다.")
-                        .build());
+        return studyService.joinStudy(studyId, userId);
     }
 }

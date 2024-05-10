@@ -44,14 +44,18 @@ public class UserService {
         String temp = postProfileDto.getNickname().replaceAll("[^가-힣a-zA-Z0-9]","");
         if(findUser == null || postProfileDto.getNickname().length() != temp.length())
             return false;
-        findUser.createProfile(postProfileDto.getNickname(), postProfileDto.getProfileImage());
+        findUser.updateProfile(postProfileDto.getNickname(), postProfileDto.getProfileImage());
         return true;
     }
-
-    public UserMainProfileDto getMainProfile(Long user_id) {
+    public UserMainProfileDto getMainProfileByNickname(String nickname) {
+        User user = userRepository.findByNickname(nickname);
+        return getMainProfile(user);
+    }
+    public UserMainProfileDto getMainProfileById(Long user_id) {
         User user = userRepository.findById(user_id).orElse(null);
-        if(user == null) return null;
-
+        return getMainProfile(user);
+    }
+    public UserMainProfileDto getMainProfile(User user) {
         return UserMainProfileDto.builder()
                 .nickname(user.getNickname())
                 .profile_img(user.getProfile_image())
@@ -65,6 +69,12 @@ public class UserService {
         urscount.setIn_complete(userRepositoryCustom.countInUserStudy(user_id, true));
         urscount.setIn_favorite(userRepositoryCustom.countFavorite(user_id));
         //urscount.setIn_proposal(userRepositoryCustom.countProposer(user_id));
+        return urscount;
+    }
+    public UserRelatedStudyCount getPublicRelatedStudyNum(Long user_id) {
+        UserRelatedStudyCount urscount = new UserRelatedStudyCount();
+        urscount.setIn_progress(userRepositoryCustom.countInUserStudy(user_id, false));
+        urscount.setIn_complete(userRepositoryCustom.countInUserStudy(user_id, true));
         return urscount;
     }
 
