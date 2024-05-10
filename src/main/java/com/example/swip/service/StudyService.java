@@ -8,6 +8,7 @@ import com.example.swip.entity.Category;
 import com.example.swip.entity.Search;
 import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
+import com.example.swip.entity.compositeKey.JoinRequestId;
 import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.repository.StudyRepository;
 import com.querydsl.core.Tuple;
@@ -34,6 +35,7 @@ public class StudyService {
     private final UserStudyService userStudyService;
     private final SearchService searchService;
     private final UserSearchService userSearchService;
+    private final JoinRequestService joinRequestService;
 
     //저장
     @Transactional
@@ -127,16 +129,31 @@ public class StudyService {
             return ResponseEntity.status(200).body(DefaultResponse.builder()
                     .message("이미 참가중인 사용자입니다.")
                     .build());
+        if(!(study.getMax_participants_num() > study.getCur_participants_num()))
+            return ResponseEntity.status(200).body(DefaultResponse.builder()
+                    .message("참가 인원이 꽉 찬 스터디입니다.")
+                    .build());
 
-        if(study.getMatching_type().equals(MatchingType.Element.Quick)) {
+        else if(study.getMatching_type().equals(MatchingType.Element.Quick)) {
             userStudyService.saveUserStudy(user, study, false);
+            //study entity의 cur_participants_num update
+            study.updateCurParticipants();
             return ResponseEntity.status(200).body(DefaultResponse.builder()
                     .message("스터디에 참가되었습니다.")
                     .build());
-        }else {
-            return ResponseEntity.status(204).body(DefaultResponse.builder()
-                    .message("즉시 가입을 허용하는 스터디가 아닙니다. 현재는 즉시 가입 기능만 존재합니다.")
-                    .build());
+        } else { //approval
+            //이미 스터디 참가 신청한 경우
+            if(joinRequestService.getAlreadyRequest(userId, studyId)){
+                return ResponseEntity.status(200).body(DefaultResponse.builder()
+                        .message("이미 가입 신청한 사용자입니다.")
+                        .build());
+            }
+            else { //처음 참가 신청하는 경우
+                joinRequestService.saveJoinRequest(user, study);
+                return ResponseEntity.status(200).body(DefaultResponse.builder()
+                        .message("스터디 가입 신청이 완료되었습니다.")
+                        .build());
+            }
         }
     }
 

@@ -259,8 +259,8 @@ public class StudyApiController {
      */
 
     @Operation(summary = "스터디 상세 정보 조회 API")
-    @GetMapping("/study/{id}")
-    public List<StudyDetailResponse> showBoardDetail(@PathVariable("id") Long studyId){
+    @GetMapping("/study/{study_id}")
+    public List<StudyDetailResponse> showBoardDetail(@PathVariable("study_id") Long studyId){
         List<StudyDetailResponse> studyDetail = studyService.findStudyDetail(studyId);
 
         return studyDetail;

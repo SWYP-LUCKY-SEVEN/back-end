@@ -66,4 +66,8 @@ public class Study {
     @Builder.Default
     private List<UserStudy> userStudies = new ArrayList<>();
 
+    public void updateCurParticipants(){
+        this.cur_participants_num = this.cur_participants_num + 1;
+    }
+
 }
