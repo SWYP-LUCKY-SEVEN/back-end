@@ -27,4 +27,16 @@ public class UserStudyRepositoryImpl implements UserStudyRepositoryCustom {
 
         return findAllUsers;
     }
+
+    @Override
+    public Long findOwnerByStudyId(Long studyId) {
+        return queryFactory
+                .select(userStudy.id.userId)
+                .from(userStudy)
+                .where(
+                        userStudy.id.studyId.eq(studyId),
+                        userStudy.is_owner.eq(true)
+                )
+                .fetchOne();
+    }
 }
