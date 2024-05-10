@@ -25,7 +25,7 @@ public class UserApiController {
     private final ChatServerService chatServerService;
     private final UserService userService;
 
-    @Operation(summary = "프로필 정보 반환", description = ".")
+    @Operation(summary = "공유 프로필 정보 반환", description = "마이프로필 외 위치에서 사용자 프로필을 조회할 때, 사용됩니다.")
     @GetMapping("/user/profile") // swagger를 위해 변형을 줌
     public ResponseEntity<UserProfileGetResponse> getUserProfile(
             @AuthenticationPrincipal UserPrincipal principal,
@@ -51,7 +51,7 @@ public class UserApiController {
                         .build()
         );
     }
-    @Operation(summary = "프로필 정보 반환", description = ".")
+    @Operation(summary = "마이프로필 정보 반환 (JWT 필요)", description = "마이프로필에서 사용자 정보를 확인할 때 사용됩니다. 자신의 프로필을 받아옵니다.")
     @GetMapping("/user/profile/me") // swagger를 위해 변형을 줌
     public ResponseEntity<UserProfileGetResponse> getMyProfile(
             @AuthenticationPrincipal UserPrincipal principal

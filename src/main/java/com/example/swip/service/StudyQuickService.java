@@ -37,7 +37,7 @@ public class StudyQuickService {
                 .duration(savedFilter.getDuration())
                 .min_member(savedFilter.getMin_member())
                 .max_member(savedFilter.getMax_member())
-                .tendency(Tendency.toString(savedFilter.getTendency()))
+                .tendency(Tendency.longToString(savedFilter.getTendency()))
                 .build();
     }
     @Transactional

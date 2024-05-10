@@ -21,7 +21,7 @@ public class QuickMatchFilter {
     private String category;
     private LocalDate start_date;
     private String duration;
-    private String tendency;
+    private List<String> tendency;
     private Long min_member;
     private Long max_member;
     //DTO 들어온 뒤, Study, StudyCategory, Category, AddicionalInfo, UserStudy 에 정보 저장해야함.
@@ -32,7 +32,7 @@ public class QuickMatchFilter {
                 .duration(this.duration)
                 .min_member(this.min_member)
                 .max_member(this.max_member)
-                .tendency(Tendency.toTendency(this.tendency))
+                .tendency(Tendency.stringToLong(tendency))
                 .category(findCategory)
                 .build();
     }

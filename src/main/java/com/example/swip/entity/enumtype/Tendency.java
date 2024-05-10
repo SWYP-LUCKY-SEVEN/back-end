@@ -1,7 +1,9 @@
 package com.example.swip.entity.enumtype;
 
 import javax.swing.text.html.parser.Entity;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Tendency {
@@ -28,5 +30,31 @@ public class Tendency {
                 result = key;
         }
         return result;
+    }
+
+    public static List<String> longToString (Long tendency) {
+        List<String> tendencyList = new ArrayList<>();
+        for (Element type : Element.values()) {
+            if(tendency == 0)
+                break;
+            if(tendency % 2 == 1)
+                tendencyList.add(toString(type));
+            tendency = tendency >> 1;
+        }
+        return tendencyList;
+    }
+    public static Long stringToLong (List<String> tendencyList) {  //2^0: Active, 2^1: Focus, 2^2: Feedback
+        Long tendency = 0L;
+        for (String value : tendencyList) {
+            Long addValue = 1L;
+            for (Element type : Element.values()) {
+                if (toTendency(value).equals(type)) {
+                    tendency += addValue;
+                    break;
+                }
+                addValue = addValue << 1;
+            }
+        }
+        return tendency;
     }
 }
