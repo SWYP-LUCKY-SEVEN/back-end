@@ -29,5 +29,7 @@ public class JoinRequest {
     private LocalDateTime request_date;
     private JoinStatus join_status; //대기중:Waiting, 승인됨:Approved 거절됨:Rejected, 취소:Canceled
 
-
+    public void updateJoinStatus(JoinStatus join_status){
+        this.join_status = join_status;
+    }
 }

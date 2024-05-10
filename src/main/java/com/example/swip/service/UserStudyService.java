@@ -23,11 +23,11 @@ public class UserStudyService {
 
     //저장
     @Transactional
-    public void saveUserStudy(User writer, Study savedStudy, boolean is_owner){
+    public void saveUserStudy(User user, Study savedStudy, boolean is_owner){
 
         UserStudy userStudy = UserStudy.builder()
-                .id(new UserStudyId(writer.getId(), savedStudy.getId()))
-                .user(writer)
+                .id(new UserStudyId(user.getId(), savedStudy.getId()))
+                .user(user)
                 .study(savedStudy)
                 .is_owner(is_owner)
                 .exit_status(ExitStatus.None)
@@ -42,5 +42,9 @@ public class UserStudyService {
     public List<Tuple> getAllUsersByStudyId(Long studyId){
         List<Tuple> allUsersByStudyId = userStudyRepository.findAllUsersByStudyId(studyId);
         return allUsersByStudyId;
+    }
+
+    public Long getOwnerbyStudyId(Long studyId) {
+        return userStudyRepository.findOwnerByStudyId(studyId);
     }
 }

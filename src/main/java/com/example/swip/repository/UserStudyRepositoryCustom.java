@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface UserStudyRepositoryCustom {
     List<Tuple> findAllUsersByStudyId(Long studyId);
+
+    Long findOwnerByStudyId(Long studyId);
 }
