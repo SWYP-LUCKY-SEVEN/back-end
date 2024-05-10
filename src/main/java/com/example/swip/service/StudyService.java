@@ -117,16 +117,16 @@ public class StudyService {
 
     @Transactional
     public ResponseEntity joinStudy(Long studyId, Long userId) {
-       Study study = studyRepository.findById(studyId).orElse(null);
-       User user = userService.findUserById(userId);
-       if(study==null || user==null)
-           return ResponseEntity.status(400).body(DefaultResponse.builder()
-                   .message("존재하지 않는 식별자입니다.")
-                   .build());
-       if(userStudyService.getAlreadyJoin(userId, studyId))
-           return ResponseEntity.status(200).body(DefaultResponse.builder()
-                   .message("이미 참가중인 사용자입니다.")
-                   .build());
+        Study study = studyRepository.findById(studyId).orElse(null);
+        User user = userService.findUserById(userId);
+        if(study==null || user==null)
+            return ResponseEntity.status(400).body(DefaultResponse.builder()
+                    .message("존재하지 않는 식별자입니다.")
+                    .build());
+        if(userStudyService.getAlreadyJoin(userId, studyId))
+            return ResponseEntity.status(200).body(DefaultResponse.builder()
+                    .message("이미 참가중인 사용자입니다.")
+                    .build());
 
         if(study.getMatching_type().equals(MatchingType.Element.Quick)) {
             userStudyService.saveUserStudy(user, study, false);
@@ -188,6 +188,29 @@ public class StudyService {
         return collect;
     }
 
+    public Study findStudyById(Long id){
+        return studyRepository.findById(id).orElse(null);
+    }
+
+    public List<StudyFilterResponse> studyListToStudyFilterResponse(List<Study> studyList) {
+        List<StudyFilterResponse> responses = studyList.stream()
+                .map(r -> new StudyFilterResponse(
+                        r.getId(),
+                        r.getTitle(),
+                        r.getStart_date(),
+                        r.getEnd_date(),
+                        r.getMax_participants_num(),
+                        r.getCur_participants_num(),
+                        r.getCreated_time(),
+                        r.getCategory().getName(),
+                        r.getAdditionalInfos().stream()
+                                .map(info -> info.getName())
+                                .collect(Collectors.toList())
+                ))
+                .collect(Collectors.toList());
+        return responses;
+    }
+
     /*
     //수정
     @Transactional
@@ -213,3 +236,5 @@ public class StudyService {
     }
     */
 }
+
+

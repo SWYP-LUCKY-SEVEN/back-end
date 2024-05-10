@@ -1,6 +1,7 @@
 package com.example.swip.api;
 
 import com.example.swip.config.UserPrincipal;
+import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.UserMainProfileDto;
 import com.example.swip.dto.UserProfileGetResponse;
 import com.example.swip.dto.UserRelatedStudyCount;
@@ -9,6 +10,7 @@ import com.example.swip.dto.auth.PostProfileDto;
 import com.example.swip.dto.auth.PostProfileRequest;
 import com.example.swip.dto.auth.PostProfileResponse;
 import com.example.swip.service.ChatServerService;
+import com.example.swip.service.FavoriteStudyService;
 import com.example.swip.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 public class UserApiController {
+    private final FavoriteStudyService favoriteStudyService;
     private final ChatServerService chatServerService;
     private final UserService userService;
 

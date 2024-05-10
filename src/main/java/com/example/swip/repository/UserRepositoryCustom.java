@@ -1,9 +1,6 @@
 package com.example.swip.repository;
 
-import com.example.swip.entity.QCategory;
-import com.example.swip.entity.QStudy;
-import com.example.swip.entity.Study;
-import com.example.swip.entity.UserStudy;
+import com.example.swip.entity.*;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
@@ -15,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import static com.example.swip.entity.QUserStudy.userStudy;
+import static com.example.swip.entity.QFavoriteStudy.favoriteStudy;
 
 @Repository
 @RequiredArgsConstructor
@@ -22,6 +20,18 @@ public class UserRepositoryCustom {
     // 이를 위해서는 빈으로 등록이 필요하다. => QuerydslConfiguration
     private final JPAQueryFactory queryFactory;
 
+    public List<Study> favoriteStudyList(Long userId) {
+        QStudy study = QStudy.study;
+        List<Study> findStudy = queryFactory
+                .select(favoriteStudy.study)
+                .from(favoriteStudy)
+                .innerJoin(study)
+                .on(favoriteStudy.study.eq(study))
+                .fetchJoin()
+                .where(favoriteStudy.user.id.eq(userId))
+                .fetch();
+        return findStudy;
+    }
     public Long countProposer(Long userId) {   //신청중인 개수 카운트
         QStudy study = QStudy.study;
         return queryFactory
@@ -32,6 +42,19 @@ public class UserRepositoryCustom {
                 .fetchJoin()
                 .distinct()
                 .fetchFirst();
+    }
+    public Long countFavorite(Long userId) {   //신청중인 개수 카운트
+        QStudy study = QStudy.study;
+        return queryFactory
+                .select(favoriteStudy.count())
+                .from(favoriteStudy)
+                .innerJoin(study)
+                .on(favoriteStudy.study.eq(study))
+                .fetchJoin()
+                .where(
+                        favoriteStudy.user.id.eq(userId),
+                        userStudy.study.status.ne(StudyProgressStatus.Done)
+                ).fetchOne();
     }
     public Long countInUserStudy(Long userId, boolean isComplete) {   //InProgress 상태의 스터디 개수
         QStudy study = QStudy.study;
