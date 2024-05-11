@@ -16,7 +16,6 @@ import java.util.List;
 @Builder
 public class SavedQuickMatchFilter {
     @Id
-    @Column(name = "filter_id", nullable = false)
     private Long id;
   
     private LocalDate start_date; //시작 날짜
@@ -25,6 +24,11 @@ public class SavedQuickMatchFilter {
     private Long tendency; //스터디 성향
     private Long min_member;
     private Long max_member;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @MapsId
+    @JoinColumn(name = "id")
+    private User user;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
