@@ -240,6 +240,7 @@ public class StudyService {
         List<Study> list = userService.getRegisteredStudyList(userId, status);
         return studyListToStudyFilterResponse(list);
     }
+  
     @Transactional
     public void progressStartStudy(LocalDate date) {
         List<Study> studyList = studyRepository.progressStartStudy(date);

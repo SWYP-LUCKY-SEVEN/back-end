@@ -139,6 +139,7 @@ public class StudyApiController {
             return null;
         Long user_id = principal.getUserId();
         QuickMatchFilter quickMatchFilter = studyQuickService.getQuickMatchFilter(user_id);
+
         return quickMatchFilter;
     }
     @Operation(summary = "빠른 매칭 - 상위 리스트 3개씩 반환 (JWT 필요)",
@@ -217,7 +218,7 @@ public class StudyApiController {
 
 
     @Operation(summary = "스터디 참가 (정식 기능)",
-            description = "현재 즉시 참가 기능만 지원.")
+            description = "스터디 참가 신청. 빠른 매칭 지원 스터디일 경우 즉시 참가. 승인제일 경우 신청 생성.")
     @PostMapping("/study/join/{study_id}")
     public ResponseEntity matchStudy(
             @AuthenticationPrincipal UserPrincipal userPrincipal, // 권한 인증

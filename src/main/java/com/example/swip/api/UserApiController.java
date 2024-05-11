@@ -128,6 +128,15 @@ public class UserApiController {
                         .build()
         );
     }
+    @Operation(summary = "닉네임 중복 확인", description = "path param으로 입력된 nickname의 존재 여부를 반환함.")
+    @GetMapping("/user/nickname/{nickname}") //
+    public ResponseEntity<GetNicknameDupleResponse> NicknameDuplicateCheck(
+            @PathVariable("nickname") String nickname
+    ) {
+        return ResponseEntity.status(200).body(GetNicknameDupleResponse.builder()
+                .isDuplicate(userService.isDuplicatedNickname(nickname))
+                .build());
+    }
 
     @Operation(summary = "내 찜 목록 확인",
             description = "스터디 찜 리스트 확인")
@@ -191,6 +200,20 @@ public class UserApiController {
 
         return ResponseEntity.status(200).body(
                 new StudyApiController.Result(filteredStudy,totalCount)
+        );
+    }
+  
+    @Operation(summary = "회원 탈퇴", description = "JWT 토큰 해당하는 계정에 탈퇴 과정을 진행합니다.")
+    @PatchMapping("/user/withdrawal") //
+    public ResponseEntity<DefaultResponse> withdrawalUser(@AuthenticationPrincipal UserPrincipal principal) {
+        if(principal == null)
+            return null;
+        Long userId = userService.withdrawal(principal.getUserId());
+        if(userId==null)
+            return ResponseEntity.status(404).build();
+
+        return ResponseEntity.status(200).body(
+                chatServerService.deleteUser(userId)
         );
     }
 }
