@@ -34,14 +34,15 @@ public class UserRepositoryCustom {
         return findStudy;
     }
     public Long countProposer(Long userId) {   //신청중인 개수 카운트
+        QJoinRequest joinRequest = QJoinRequest.joinRequest;
         QStudy study = QStudy.study;
         return queryFactory
-                .select(userStudy.count())
-                .from(userStudy)
-                .where(userStudy.user.id.eq(userId))
-                .leftJoin(userStudy.study, study)
+                .select(joinRequest.count())
+                .from(joinRequest)
+                .innerJoin(study)
+                .on(joinRequest.study.eq(study))
                 .fetchJoin()
-                .distinct()
+                .where(joinRequest.user.id.eq(userId))
                 .fetchFirst();
     }
     public Long countFavorite(Long userId) {   //신청중인 개수 카운트

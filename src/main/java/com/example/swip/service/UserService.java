@@ -69,7 +69,7 @@ public class UserService {
         urscount.setIn_progress(userRepositoryCustom.countInUserStudy(user_id, false));
         urscount.setIn_complete(userRepositoryCustom.countInUserStudy(user_id, true));
         urscount.setIn_favorite(userRepositoryCustom.countFavorite(user_id));
-        //urscount.setIn_proposal(userRepositoryCustom.countProposer(user_id));
+        urscount.setIn_proposal(userRepositoryCustom.countProposer(user_id));
         return urscount;
     }
     public UserRelatedStudyCount getPublicRelatedStudyNum(Long user_id) {
@@ -117,6 +117,6 @@ public class UserService {
     public String deleteUser(Long id) {
         if(userRepository.existsById(id))
             userRepository.deleteById(id);
-        return "SignUp success";
+        return "delete success";
     }
 }

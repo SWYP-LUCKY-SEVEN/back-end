@@ -57,7 +57,7 @@ public class StudyQuickService {
 
         //filter 저장
         SavedQuickMatchFilter savedFilter = quickFilterRepository.save(
-                quickMatchFilter.toQuickFilterEntity(user.getId(), findCategory)
+                quickMatchFilter.toQuickFilterEntity(user, findCategory)
         );
 
         //return
