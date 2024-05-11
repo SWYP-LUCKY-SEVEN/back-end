@@ -73,4 +73,7 @@ public class Study {
     public void updateCurParticipants(){
         this.cur_participants_num = this.cur_participants_num + 1;
     }
+    public void updateStatus(StudyProgressStatus status){
+        this.status = status;
+    }
 }

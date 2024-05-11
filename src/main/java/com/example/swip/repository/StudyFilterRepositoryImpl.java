@@ -6,8 +6,10 @@ import com.example.swip.dto.study.StudyFilterCondition;
 import com.example.swip.dto.study.StudyFilterResponse;
 import com.example.swip.entity.QAdditionalInfo;
 import com.example.swip.entity.QCategory;
+import com.example.swip.entity.QUser;
 import com.example.swip.entity.Study;
 import com.example.swip.entity.enumtype.MatchingType;
+import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.example.swip.entity.enumtype.Tendency;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Ops;
@@ -309,5 +311,23 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
     }
     private BooleanExpression inTendency(List<String> tendency){
         return tendency != null ? study.tendency.in(toTendencyList(tendency)) : null;
+    }
+
+    //모든 스터디,
+    public List<Study> progressStartStudy(LocalDate date) {
+        List<Study> findStudy = queryFactory.select(study)
+                .from(study)
+                .where(study.status.eq(StudyProgressStatus.BeforeStart),
+                        study.start_date.before(date.plusDays(1)))
+                .fetch();
+        return  findStudy;
+    }
+    public List<Study> completeExpiredStudy(LocalDate date) {
+        List<Study> findStudy = queryFactory.select(study)
+                .from(study)
+                .where(study.status.eq(StudyProgressStatus.InProgress),
+                        study.end_date.before(date))
+                .fetch();
+        return  findStudy;
     }
 }

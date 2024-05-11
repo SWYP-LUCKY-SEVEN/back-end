@@ -10,13 +10,17 @@ import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
 import com.example.swip.entity.compositeKey.JoinRequestId;
 import com.example.swip.entity.enumtype.MatchingType;
+import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.example.swip.repository.StudyRepository;
 import com.querydsl.core.Tuple;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -226,6 +230,22 @@ public class StudyService {
                 ))
                 .collect(Collectors.toList());
         return responses;
+    }
+
+    @Transactional
+    public void progressStartStudy(LocalDate date) {
+        List<Study> studyList = studyRepository.progressStartStudy(date);
+        studyList.forEach(study -> {
+            System.out.println(study.getId());
+            study.updateStatus(StudyProgressStatus.InProgress);
+        });
+    }
+    @Transactional
+    public void completeExpiredStudy(LocalDate date) {
+        List<Study> studyList = studyRepository.completeExpiredStudy(date);
+        studyList.forEach(study -> {
+            study.updateStatus(StudyProgressStatus.Done);
+        });
     }
 
     /*
