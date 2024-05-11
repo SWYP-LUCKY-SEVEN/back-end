@@ -216,30 +216,6 @@ public class StudyApiController {
                         .build());
     }
 
-    @Operation(summary = "찜 목록 확인",
-            description = "스터디 찜 리스트 확인")
-    @GetMapping("/study/favorite")
-    public ResponseEntity getFavoriteStudy(
-            @AuthenticationPrincipal UserPrincipal userPrincipal // 권한 인증
-    ) {
-        if(userPrincipal == null)
-            return ResponseEntity.status(403).body(
-                    DefaultResponse.builder()
-                            .message("로그인이 필요합니다.")
-                            .build());
-
-        List<Study> list =
-                favoriteStudyService.getFavoriteStudyList(userPrincipal.getUserId());
-
-        List<StudyFilterResponse> filteredStudy =
-                studyService.studyListToStudyFilterResponse(list);
-        int totalCount = filteredStudy.size(); //전체 리스트 개수
-
-        return ResponseEntity.status(200).body(
-                new Result(filteredStudy,totalCount)
-        );
-    }
-
 
     @Operation(summary = "스터디 참가 (정식 기능)",
             description = "스터디 참가 신청. 빠른 매칭 지원 스터디일 경우 즉시 참가. 승인제일 경우 신청 생성.")

@@ -33,6 +33,36 @@ public class UserRepositoryCustom {
                 .fetch();
         return findStudy;
     }
+    public List<Study> proposerStudyList(Long userId) {   //신청중인 개수 카운트
+        QJoinRequest joinRequest = QJoinRequest.joinRequest;
+        QStudy study = QStudy.study;
+        return queryFactory
+                .select(study)
+                .from(joinRequest)
+                .innerJoin(study)
+                .on(joinRequest.study.eq(study))
+                .fetchJoin()
+                .where(joinRequest.user.id.eq(userId))
+                .fetch();
+    }
+
+    public List<Study> registeredStudyList(Long userId, StudyProgressStatus.Element status) {   //InProgress 상태의 스터디 개수
+        QStudy study = QStudy.study;
+        BooleanExpression be = null;
+        if(status == StudyProgressStatus.Element.Done)
+            be = userStudy.study.status.eq(StudyProgressStatus.Element.Done);
+        else
+            be = userStudy.study.status.ne(StudyProgressStatus.Element.Done);
+
+        return queryFactory
+                .select(study)
+                .from(userStudy)
+                .innerJoin(study)
+                .on(userStudy.study.eq(study))
+                .fetchJoin()
+                .where(userStudy.user.id.eq(userId),be)
+                .fetch();
+    }
     public Long countProposer(Long userId) {   //신청중인 개수 카운트
         QJoinRequest joinRequest = QJoinRequest.joinRequest;
         QStudy study = QStudy.study;
@@ -55,16 +85,16 @@ public class UserRepositoryCustom {
                 .fetchJoin()
                 .where(
                         favoriteStudy.user.id.eq(userId),
-                        favoriteStudy.study.status.ne(StudyProgressStatus.Done)
+                        favoriteStudy.study.status.ne(StudyProgressStatus.Element.Done)
                 ).fetchOne();
     }
-    public Long countInUserStudy(Long userId, boolean isComplete) {   //InProgress 상태의 스터디 개수
+    public Long countInUserStudy(Long userId, boolean isDone) {   //InProgress 상태의 스터디 개수
         QStudy study = QStudy.study;
         BooleanExpression be = null;
-        if(isComplete)
-            be = userStudy.study.status.eq(StudyProgressStatus.Done);
+        if(isDone)
+            be = userStudy.study.status.eq(StudyProgressStatus.Element.Done);
         else
-            be = userStudy.study.status.ne(StudyProgressStatus.Done);
+            be = userStudy.study.status.ne(StudyProgressStatus.Element.Done);
         Long test = queryFactory
                 .select(userStudy.count())
                 .from(userStudy)

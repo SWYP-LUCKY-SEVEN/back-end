@@ -232,19 +232,28 @@ public class StudyService {
         return responses;
     }
 
+    public List<StudyFilterResponse> getProposerStudyList(Long userId) {
+        List<Study> list = userService.getProposerStudyList(userId);
+        return studyListToStudyFilterResponse(list);
+    }
+    public List<StudyFilterResponse> getRegisteredStudyList(Long userId, String status) {
+        List<Study> list = userService.getRegisteredStudyList(userId, status);
+        return studyListToStudyFilterResponse(list);
+    }
+  
     @Transactional
     public void progressStartStudy(LocalDate date) {
         List<Study> studyList = studyRepository.progressStartStudy(date);
         studyList.forEach(study -> {
             System.out.println(study.getId());
-            study.updateStatus(StudyProgressStatus.InProgress);
+            study.updateStatus(StudyProgressStatus.Element.InProgress);
         });
     }
     @Transactional
     public void completeExpiredStudy(LocalDate date) {
         List<Study> studyList = studyRepository.completeExpiredStudy(date);
         studyList.forEach(study -> {
-            study.updateStatus(StudyProgressStatus.Done);
+            study.updateStatus(StudyProgressStatus.Element.Done);
         });
     }
 

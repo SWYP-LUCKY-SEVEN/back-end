@@ -317,7 +317,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
     public List<Study> progressStartStudy(LocalDate date) {
         List<Study> findStudy = queryFactory.select(study)
                 .from(study)
-                .where(study.status.eq(StudyProgressStatus.BeforeStart),
+                .where(study.status.eq(StudyProgressStatus.Element.BeforeStart),
                         study.start_date.before(date.plusDays(1)))
                 .fetch();
         return  findStudy;
@@ -325,7 +325,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
     public List<Study> completeExpiredStudy(LocalDate date) {
         List<Study> findStudy = queryFactory.select(study)
                 .from(study)
-                .where(study.status.eq(StudyProgressStatus.InProgress),
+                .where(study.status.eq(StudyProgressStatus.Element.InProgress),
                         study.end_date.before(date))
                 .fetch();
         return  findStudy;

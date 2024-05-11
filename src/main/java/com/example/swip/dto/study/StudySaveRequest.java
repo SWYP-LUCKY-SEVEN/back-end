@@ -67,14 +67,14 @@ public class StudySaveRequest {
     }
 
     // progress_status 검사 => client에서 enddate가 오늘보다 이전인 스터디 생성하면 안됨.
-    private StudyProgressStatus toStatus(){
+    private StudyProgressStatus.Element toStatus(){
         LocalDate today = LocalDate.now();
-        StudyProgressStatus result = StudyProgressStatus.BeforeStart;
+        StudyProgressStatus.Element result = StudyProgressStatus.Element.BeforeStart;
         if (today.isBefore(toLocalDate(start_date))){
-            result = StudyProgressStatus.BeforeStart;
+            result = StudyProgressStatus.Element.BeforeStart;
         }
         else{
-            result = StudyProgressStatus.InProgress;
+            result = StudyProgressStatus.Element.InProgress;
         }
         return result;
     }
