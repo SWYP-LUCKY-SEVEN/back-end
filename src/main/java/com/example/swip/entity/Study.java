@@ -38,7 +38,7 @@ public class Study {
 
     private Tendency.Element tendency; //스터디 성향 - enum?
 
-    private StudyProgressStatus status; //스터디 진행 상태 - enum?
+    private StudyProgressStatus.Element status; //스터디 진행 상태 - enum?
 
     private boolean recruit_status; //스터디 모집 상태 - false: 모집완료, true: 모집중
 
@@ -69,5 +69,7 @@ public class Study {
     public void updateCurParticipants(){
         this.cur_participants_num = this.cur_participants_num + 1;
     }
-
+    public void updateStatus(StudyProgressStatus.Element status){
+        this.status = status;
+    }
 }

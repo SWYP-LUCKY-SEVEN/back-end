@@ -1,6 +1,7 @@
 package com.example.swip.api;
 
 import com.example.swip.config.UserPrincipal;
+import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.UserMainProfileDto;
 import com.example.swip.dto.UserProfileGetResponse;
 import com.example.swip.dto.UserRelatedStudyCount;
@@ -8,8 +9,10 @@ import com.example.swip.dto.auth.GetNicknameDupleResponse;
 import com.example.swip.dto.auth.PostProfileDto;
 import com.example.swip.dto.auth.PostProfileRequest;
 import com.example.swip.dto.auth.PostProfileResponse;
+import com.example.swip.dto.study.StudyFilterResponse;
 import com.example.swip.service.ChatServerService;
 import com.example.swip.service.FavoriteStudyService;
+import com.example.swip.service.StudyService;
 import com.example.swip.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +21,15 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 public class UserApiController {
     private final FavoriteStudyService favoriteStudyService;
     private final ChatServerService chatServerService;
     private final UserService userService;
+    private final StudyService studyService;
 
     @Operation(summary = "공유 프로필 정보 반환", description = "마이프로필 외 위치에서 사용자 프로필을 조회할 때, 사용됩니다.")
     @GetMapping("/user/profile") // swagger를 위해 변형을 줌
@@ -51,6 +57,52 @@ public class UserApiController {
                         .build()
         );
     }
+
+    @Operation(summary = "닉네임 중복 확인", description = "path param으로 입력된 nickname의 존재 여부를 반환함.")
+    @GetMapping("/user/nickname/{nickname}") //
+    public ResponseEntity<GetNicknameDupleResponse> NicknameDuplicateCheck(
+            @PathVariable("nickname") String nickname
+    ) {
+        return ResponseEntity.status(200).body(GetNicknameDupleResponse.builder()
+                .isDuplicate(userService.isDuplicatedNickname(nickname))
+                .build());
+    }
+
+    @Operation(summary = "회원가입 시 프로필 생성 메소드", description = "회원가입 시 프로필을 생성하는 메소드입니다. 헤더 내 Authorization:Bearer ~ 형태의 JWT 토큰을 필요로 합니다. " +
+            "우선 회원정보 변경시에도 해당 API를 사용 가능합니다. 회원 정보 변경은 Chat 서버의 고려사항을 파악 후 완성하려 합니다.")
+    @PatchMapping("/user/profile") // swagger를 위해 변형을 줌
+    public ResponseEntity<PostProfileResponse> postUserProfile(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestBody @Validated PostProfileRequest postProfileRequest
+    ) {
+        if(principal == null)
+            return ResponseEntity.status(403).build();
+
+        PostProfileDto postProfileDto = postProfileRequest.toPostProfileDto(principal.getUserId());
+        boolean check = userService.updateProfile(postProfileDto);
+        if (!check)
+            return ResponseEntity.status(400).build();
+
+        PostProfileResponse postProfileResponse = chatServerService.postUser(postProfileDto);
+
+        return ResponseEntity.status(201).body(postProfileResponse);
+    }
+
+
+    @Operation(summary = "회원 탈퇴", description = "JWT 토큰 해당하는 계정에 탈퇴 과정을 진행합니다.")
+    @PatchMapping("/user/withdrawal") //
+    public ResponseEntity<DefaultResponse> withdrawalUser(@AuthenticationPrincipal UserPrincipal principal) {
+        if(principal == null)
+            return null;
+        Long userId = userService.withdrawal(principal.getUserId());
+        if(userId==null)
+            return ResponseEntity.status(404).build();
+
+        return ResponseEntity.status(200).body(
+                chatServerService.deleteUser(userId)
+        );
+    }
+
     @Operation(summary = "마이프로필 정보 반환 (JWT 필요)", description = "마이프로필에서 사용자 정보를 확인할 때 사용됩니다. 자신의 프로필을 받아옵니다.")
     @GetMapping("/user/profile/me") // swagger를 위해 변형을 줌
     public ResponseEntity<UserProfileGetResponse> getMyProfile(
@@ -77,33 +129,68 @@ public class UserApiController {
         );
     }
 
-    @Operation(summary = "회원가입 시 프로필 생성 메소드", description = "회원가입 시 프로필을 생성하는 메소드입니다. 헤더 내 Authorization:Bearer ~ 형태의 JWT 토큰을 필요로 합니다. " +
-            "우선 회원정보 변경시에도 해당 API를 사용 가능합니다. 회원 정보 변경은 Chat 서버의 고려사항을 파악 후 완성하려 합니다.")
-    @PatchMapping("/user/profile") // swagger를 위해 변형을 줌
-    public ResponseEntity<PostProfileResponse> postUserProfile(
-            @AuthenticationPrincipal UserPrincipal principal,
-            @RequestBody @Validated PostProfileRequest postProfileRequest
-            ) {
-        if(principal == null)
-            return ResponseEntity.status(403).build();
+    @Operation(summary = "내 찜 목록 확인",
+            description = "스터디 찜 리스트 확인")
+    @GetMapping("/user/favorite/study")
+    public ResponseEntity getFavoriteStudy(
+            @AuthenticationPrincipal UserPrincipal userPrincipal // 권한 인증
+    ) {
+        if(userPrincipal == null)
+            return ResponseEntity.status(403).body(
+                    DefaultResponse.builder()
+                            .message("로그인이 필요합니다.")
+                            .build());
 
-        PostProfileDto postProfileDto = postProfileRequest.toPostProfileDto(principal.getUserId());
-        boolean check = userService.updateProfile(postProfileDto);
-        if (!check)
-            return ResponseEntity.status(400).build();
 
-        PostProfileResponse postProfileResponse = chatServerService.postUser(postProfileDto);
+        List<StudyFilterResponse> filteredStudy =
+                favoriteStudyService.getFavoriteStudyList(userPrincipal.getUserId());
+        int totalCount = filteredStudy.size(); //전체 리스트 개수
 
-        return ResponseEntity.status(201).body(postProfileResponse);
+        return ResponseEntity.status(200).body(
+                new StudyApiController.Result(filteredStudy,totalCount)
+        );
     }
 
-    @Operation(summary = "닉네임 중복 확인", description = "path param으로 입력된 nickname의 존재 여부를 반환함.")
-    @GetMapping("/user/nickname/{nickname}") //
-    public ResponseEntity<GetNicknameDupleResponse> NicknameDuplicateCheck(
-            @PathVariable("nickname") String nickname
+
+    @Operation(summary = "내 스터디 신청 목록 확인",
+            description = "내 스터디 신청 목록 확인")
+    @GetMapping("/user/proposer/study")
+    public ResponseEntity getProposerStudy(
+            @AuthenticationPrincipal UserPrincipal userPrincipal // 권한 인증
     ) {
-        return ResponseEntity.status(200).body(GetNicknameDupleResponse.builder()
-                .isDuplicate(userService.isDuplicatedNickname(nickname))
-                .build());
+        if(userPrincipal == null)
+            return ResponseEntity.status(403).body(
+                    DefaultResponse.builder()
+                            .message("로그인이 필요합니다.")
+                            .build());
+        List<StudyFilterResponse> filteredStudy =
+                studyService.getProposerStudyList(userPrincipal.getUserId());
+        int totalCount = filteredStudy.size(); //전체 리스트 개수
+
+        return ResponseEntity.status(200).body(
+                new StudyApiController.Result(filteredStudy,totalCount)
+        );
+    }
+
+    @Operation(summary = "참가 스터디 목록 확인",
+            description = "before, progress, done")
+    @GetMapping("/user/registered/study")
+    public ResponseEntity getRegisteredStudy(
+            @AuthenticationPrincipal UserPrincipal userPrincipal, // 권한 인증
+            @RequestParam String status
+    ) {
+        if(userPrincipal == null)
+            return ResponseEntity.status(403).body(
+                    DefaultResponse.builder()
+                            .message("로그인이 필요합니다.")
+                            .build());
+
+        List<StudyFilterResponse> filteredStudy =
+                studyService.getRegisteredStudyList(userPrincipal.getUserId(), status);
+        int totalCount = filteredStudy.size(); //전체 리스트 개수
+
+        return ResponseEntity.status(200).body(
+                new StudyApiController.Result(filteredStudy,totalCount)
+        );
     }
 }

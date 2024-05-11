@@ -6,6 +6,8 @@ import com.example.swip.dto.UserMainProfileDto;
 import com.example.swip.dto.UserRelatedStudyCount;
 import com.example.swip.dto.auth.AddUserRequest;
 import com.example.swip.dto.auth.PostProfileDto;
+import com.example.swip.dto.study.StudyFilterResponse;
+import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.example.swip.repository.UserRepository;
@@ -63,6 +65,15 @@ public class UserService {
                 .user_id(user.getId())
                 .build();
     }
+
+    public List<Study> getProposerStudyList(Long userId) {
+        return userRepositoryCustom.proposerStudyList(userId);
+    }
+    public List<Study> getRegisteredStudyList(Long userId, String status) {
+        StudyProgressStatus.Element statusEnum = StudyProgressStatus.toStudyProgressStatusType(status);
+        return userRepositoryCustom.registeredStudyList(userId, statusEnum);
+    }
+
     public UserRelatedStudyCount getRelatedStudyNum(Long user_id) {
         UserRelatedStudyCount urscount = new UserRelatedStudyCount();
         urscount.setIn_progress(userRepositoryCustom.countInUserStudy(user_id, false));
