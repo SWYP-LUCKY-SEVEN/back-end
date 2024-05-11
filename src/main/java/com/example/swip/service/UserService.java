@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -89,5 +90,33 @@ public class UserService {
     public Long saveUser(AddUserRequest addUserRequest){
         User savedUser = userRepository.save(addUserRequest.toEntity());
         return savedUser.getId();
+    }
+
+    @Transactional
+    public Long withdrawal(Long id) {
+        User user = userRepository.findById(id).orElse(null);
+        if(user != null) {
+            String email = user.getEmail();
+            String validate = user.getValidate();
+            userRepository.deleteById(id);
+            User savedUser = userRepository.save(User.builder()
+                            .email(email)
+                            .validate(validate)
+                            .withdrawal_date(LocalDateTime.now().plusDays(30))
+                    .build());
+            return savedUser.getId();
+        }else
+            return null;
+    }
+
+    @Transactional
+    public void deleteExpiredUserData(LocalDateTime time) {
+        userRepositoryCustom.deleteExpiredUserData(time);
+    }
+
+    public String deleteUser(Long id) {
+        if(userRepository.existsById(id))
+            userRepository.deleteById(id);
+        return "SignUp success";
     }
 }

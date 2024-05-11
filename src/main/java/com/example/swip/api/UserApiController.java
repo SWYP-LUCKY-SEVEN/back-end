@@ -1,6 +1,7 @@
 package com.example.swip.api;
 
 import com.example.swip.config.UserPrincipal;
+import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.UserMainProfileDto;
 import com.example.swip.dto.UserProfileGetResponse;
 import com.example.swip.dto.UserRelatedStudyCount;
@@ -76,6 +77,15 @@ public class UserApiController {
                         .build()
         );
     }
+    @Operation(summary = "닉네임 중복 확인", description = "path param으로 입력된 nickname의 존재 여부를 반환함.")
+    @GetMapping("/user/nickname/{nickname}") //
+    public ResponseEntity<GetNicknameDupleResponse> NicknameDuplicateCheck(
+            @PathVariable("nickname") String nickname
+    ) {
+        return ResponseEntity.status(200).body(GetNicknameDupleResponse.builder()
+                .isDuplicate(userService.isDuplicatedNickname(nickname))
+                .build());
+    }
 
     @Operation(summary = "회원가입 시 프로필 생성 메소드", description = "회원가입 시 프로필을 생성하는 메소드입니다. 헤더 내 Authorization:Bearer ~ 형태의 JWT 토큰을 필요로 합니다. " +
             "우선 회원정보 변경시에도 해당 API를 사용 가능합니다. 회원 정보 변경은 Chat 서버의 고려사항을 파악 후 완성하려 합니다.")
@@ -83,7 +93,7 @@ public class UserApiController {
     public ResponseEntity<PostProfileResponse> postUserProfile(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestBody @Validated PostProfileRequest postProfileRequest
-            ) {
+    ) {
         if(principal == null)
             return ResponseEntity.status(403).build();
 
@@ -97,13 +107,18 @@ public class UserApiController {
         return ResponseEntity.status(201).body(postProfileResponse);
     }
 
-    @Operation(summary = "닉네임 중복 확인", description = "path param으로 입력된 nickname의 존재 여부를 반환함.")
-    @GetMapping("/user/nickname/{nickname}") //
-    public ResponseEntity<GetNicknameDupleResponse> NicknameDuplicateCheck(
-            @PathVariable("nickname") String nickname
-    ) {
-        return ResponseEntity.status(200).body(GetNicknameDupleResponse.builder()
-                .isDuplicate(userService.isDuplicatedNickname(nickname))
-                .build());
+
+    @Operation(summary = "회원 탈퇴", description = "JWT 토큰 해당하는 계정에 탈퇴 과정을 진행합니다.")
+    @PatchMapping("/user/withdrawal") //
+    public ResponseEntity<DefaultResponse> withdrawalUser(@AuthenticationPrincipal UserPrincipal principal) {
+        if(principal == null)
+            return null;
+        Long userId = userService.withdrawal(principal.getUserId());
+        if(userId==null)
+            return ResponseEntity.status(404).build();
+
+        return ResponseEntity.status(200).body(
+                chatServerService.deleteUser(userId)
+        );
     }
 }
