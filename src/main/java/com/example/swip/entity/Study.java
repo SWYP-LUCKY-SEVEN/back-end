@@ -66,8 +66,11 @@ public class Study {
     @Builder.Default
     private List<UserStudy> userStudies = new ArrayList<>();
 
+    @OneToMany(mappedBy = "study")
+    @Builder.Default
+    private List<FavoriteStudy> favoriteStudies = new ArrayList<>();
+
     public void updateCurParticipants(){
         this.cur_participants_num = this.cur_participants_num + 1;
     }
-
 }

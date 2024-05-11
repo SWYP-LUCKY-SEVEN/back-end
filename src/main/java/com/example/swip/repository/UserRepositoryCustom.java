@@ -10,6 +10,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import static com.example.swip.entity.QUserStudy.userStudy;
 import static com.example.swip.entity.QFavoriteStudy.favoriteStudy;
@@ -73,5 +74,10 @@ public class UserRepositoryCustom {
                 .fetchOne();
         System.out.println(test);
         return test;
+    }
+
+    public void deleteExpiredUserData(LocalDateTime time) {
+        QUser user = QUser.user;
+        queryFactory.delete(user).where(user.withdrawal_date.before(time));
     }
 }
