@@ -89,20 +89,6 @@ public class UserApiController {
     }
 
 
-    @Operation(summary = "회원 탈퇴", description = "JWT 토큰 해당하는 계정에 탈퇴 과정을 진행합니다.")
-    @PatchMapping("/user/withdrawal") //
-    public ResponseEntity<DefaultResponse> withdrawalUser(@AuthenticationPrincipal UserPrincipal principal) {
-        if(principal == null)
-            return null;
-        Long userId = userService.withdrawal(principal.getUserId());
-        if(userId==null)
-            return ResponseEntity.status(404).build();
-
-        return ResponseEntity.status(200).body(
-                chatServerService.deleteUser(userId)
-        );
-    }
-
     @Operation(summary = "마이프로필 정보 반환 (JWT 필요)", description = "마이프로필에서 사용자 정보를 확인할 때 사용됩니다. 자신의 프로필을 받아옵니다.")
     @GetMapping("/user/profile/me") // swagger를 위해 변형을 줌
     public ResponseEntity<UserProfileGetResponse> getMyProfile(
@@ -127,15 +113,6 @@ public class UserApiController {
                         .massage("Success!")
                         .build()
         );
-    }
-    @Operation(summary = "닉네임 중복 확인", description = "path param으로 입력된 nickname의 존재 여부를 반환함.")
-    @GetMapping("/user/nickname/{nickname}") //
-    public ResponseEntity<GetNicknameDupleResponse> NicknameDuplicateCheck(
-            @PathVariable("nickname") String nickname
-    ) {
-        return ResponseEntity.status(200).body(GetNicknameDupleResponse.builder()
-                .isDuplicate(userService.isDuplicatedNickname(nickname))
-                .build());
     }
 
     @Operation(summary = "내 찜 목록 확인",
