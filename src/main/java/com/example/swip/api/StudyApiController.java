@@ -139,6 +139,7 @@ public class StudyApiController {
             return null;
         Long user_id = principal.getUserId();
         QuickMatchFilter quickMatchFilter = studyQuickService.getQuickMatchFilter(user_id);
+
         return quickMatchFilter;
     }
     @Operation(summary = "빠른 매칭 - 상위 리스트 3개씩 반환 (JWT 필요)",

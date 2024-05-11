@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -55,5 +56,17 @@ public class TesterApiController {
             @PathVariable("user_id") Long userId
     ) {
         return studyService.joinStudy(studyId, userId);
+    }
+
+
+    @Operation(summary = "특정 유저 스터디 참가 (테스트용 API)",
+            description = "현재 즉시 참가 기능만 지원.\n" +
+                    "존재하는 user id는 auth/")
+    @PostMapping("/study/{study_id}/status/update")
+    public ResponseEntity testUpdateStudystatus(
+            @PathVariable("study_id") Long studyId
+    ) {
+        studyService.progressStartStudy(LocalDate.now());
+        return null;
     }
 }
