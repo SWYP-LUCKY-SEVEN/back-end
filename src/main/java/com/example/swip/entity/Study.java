@@ -58,7 +58,7 @@ public class Study {
     @Builder.Default
     private List<Todo> todos = new ArrayList<>();
 
-    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<AdditionalInfo> additionalInfos = new ArrayList<>();
 
@@ -79,5 +79,24 @@ public class Study {
     }
     public void updateStatus(StudyProgressStatus.Element status){
         this.status = status;
+    }
+
+    public void updateStudy(Study study, String title, String description, List<String> tags) {
+        this.title = title;
+        this.description = description;
+
+        // 기존의 추가 정보를 모두 삭제하고 새로운 추가 정보를 생성하여 연결
+        this.additionalInfos.clear();
+
+        List<AdditionalInfo> additionalInfoList = tags.stream().map(
+                tag -> {
+                    return AdditionalInfo.builder()
+                            .name(tag)
+                            .study(study)
+                            .build();
+                }
+        ).collect(Collectors.toList());
+
+        this.additionalInfos.addAll(additionalInfoList);
     }
 }

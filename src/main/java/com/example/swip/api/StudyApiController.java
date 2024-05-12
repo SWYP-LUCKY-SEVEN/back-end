@@ -260,6 +260,7 @@ public class StudyApiController {
 
     //수정
 
+    @Operation(summary = "스터디 조회 API (수정용) - 수정 시에 스터디 내용 불러오기")
     @GetMapping("/study/{study_id}/edit")
     public ResponseEntity<Result2> getStudyEditPage(
         @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -268,14 +269,14 @@ public class StudyApiController {
         Long ownerId = userPrincipal.getUserId();
         Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
         if(!ownerId.equals(findStudyOwner)) {
-            return ResponseEntity.status(401).body(new Result2<>("스터디를 수정할 권한이 없습니다.", null));
+            return ResponseEntity.status(401).body(new Result2<>(null, "스터디를 수정할 권한이 없습니다."));
         }
 
         StudyUpdateResponse response = studyService.findStudyEditDetailById(studyId);
         return ResponseEntity.status(200).body(new Result2<>(response, "성공"));
-
     }
 
+    @Operation(summary = "스터디 수정 API")
     @PatchMapping("/study/{study_id}")
     public ResponseEntity<String> updateStudyDetail(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -287,13 +288,15 @@ public class StudyApiController {
         if(!ownerId.equals(findStudyOwner)) {
             return ResponseEntity.status(401).body("스터디를 수정할 권한이 없습니다.");
         }
-
-//        Long updatedBoardId = studyService.updateStudy(studyId, studyUpdateRequest);
-//        return updatedBoardId;
-        return null;
+        Boolean updateStatus = studyService.updateStudy(studyId, studyUpdateRequest);
+        if(updateStatus){
+            return ResponseEntity.status(200).body("스터디 수정 완료!");
+        }
+        return ResponseEntity.status(200).body("스터디 수정이 불가능합니다");
     }
 
     //삭제
+    @Operation(summary = "스터디 삭제 API")
     @DeleteMapping("/study/{study_id}")
     public ResponseEntity<String> deleteStudy(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
