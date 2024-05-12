@@ -1,6 +1,7 @@
 package com.example.swip.api;
 
 import com.example.swip.config.UserPrincipal;
+import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.auth.GetNicknameDupleResponse;
 import com.example.swip.dto.auth.GetUserIDResponse;
 import com.example.swip.dto.auth.ValidateTokenResponse;
@@ -32,13 +33,6 @@ public class AuthApiController {
         return ResponseEntity.status(403).build();
     }
 
-    @Operation(summary = "회원 탈퇴", description = "JWT 토큰 해당하는 계정을 지웁니다.")
-    @DeleteMapping("/auth/user_id") // user id 반환
-    public String deleteUserById(@AuthenticationPrincipal UserPrincipal principal){  // Authorization 내 principal 없으면 null 값
-        if(principal != null)
-            return authService.deleteUser(principal.getUserId());
-        return "need JWT in Authorization";
-    }
 
     @Operation(summary = "JWT 검증 with HTTP header", description = "JWT가 userID와 일치하는지 확인합니다. JWT는 헤더 내 Authorization:Bearer ~ 형태의 입력이 필요로 합니다.")
     @GetMapping("/auth/validate/token")

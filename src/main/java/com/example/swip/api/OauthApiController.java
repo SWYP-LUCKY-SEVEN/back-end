@@ -28,8 +28,14 @@ public class OauthApiController {
             KakaoRegisterDto kakaoRegisterDto = kakaoOauthService.getKakaoProfile(accessToken);
             //회원가입 후, user 정보를 반환함. 회원가입이 되어있다면 바로 user정보를 반환함
             User user = authService.kakaoRegisterUser(kakaoRegisterDto);
-            return ResponseEntity.status(201).body(authService.oauthLogin(user));
+
+            if(user == null)
+                return ResponseEntity.status(403).build();
+
+            OauthKakaoResponse response = authService.oauthLogin(user);
+
+            return ResponseEntity.status(201).body(response);
         }
-        return  ResponseEntity.status(400).build();
+        return  ResponseEntity.status(404).build();
     }
 }

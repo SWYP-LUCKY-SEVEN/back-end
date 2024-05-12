@@ -1,7 +1,20 @@
 package com.example.swip.entity.enumtype;
 
-public enum StudyProgressStatus {
-    //진행중, 종료 -> 시작 전은? 아직 기획에 안나옴.
+import java.util.HashMap;
+import java.util.Map;
 
-    BeforeStart, InProgress, Done
+public class StudyProgressStatus {
+    public enum Element {
+        BeforeStart, InProgress, Done
+    }
+    private static final Map<String, Element> map;
+    static {
+        map = new HashMap<>();
+        map.put("before", Element.BeforeStart);
+        map.put("progress", Element.InProgress);
+        map.put("done", Element.Done);
+    }
+    public static Element toStudyProgressStatusType(String status){
+        return map.get(status);
+    }
 }

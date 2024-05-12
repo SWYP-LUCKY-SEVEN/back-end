@@ -1,5 +1,6 @@
 package com.example.swip.service;
 
+import com.example.swip.dto.study.StudyFilterResponse;
 import com.example.swip.entity.FavoriteStudy;
 import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
@@ -20,8 +21,9 @@ public class FavoriteStudyService {
     private final StudyService studyService;
     private final FavoriteStudyRepository favoriteStudyRepository;
     private final UserRepositoryCustom userRepositoryCustom;
-    public List<Study> getFavoriteStudyList(Long userId) {
-        return userRepositoryCustom.favoriteStudyList(userId);
+    public List<StudyFilterResponse> getFavoriteStudyList(Long userId) {
+        List<Study> list = userRepositoryCustom.favoriteStudyList(userId);
+        return studyService.studyListToStudyFilterResponse(list);
     }
 
     @Transactional

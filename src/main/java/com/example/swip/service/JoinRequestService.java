@@ -1,5 +1,6 @@
 package com.example.swip.service;
 
+import com.example.swip.dto.study.StudyFilterResponse;
 import com.example.swip.entity.JoinRequest;
 import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
@@ -25,7 +26,6 @@ public class JoinRequestService {
     private final UserStudyService userStudyService;
     private final UserRepository userRepository;
     private final StudyRepository studyRepository;
-
 
     public boolean getAlreadyRequest(Long userId, Long studyId) {
         return joinRequestRepository.existsById(new JoinRequestId(userId, studyId));
