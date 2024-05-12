@@ -1,5 +1,6 @@
 package com.example.swip.repository;
-import com.querydsl.core.Tuple;
+import com.example.swip.entity.UserStudy;
+import com.example.swip.entity.enumtype.ExitStatus;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 
@@ -17,9 +18,9 @@ public class UserStudyRepositoryImpl implements UserStudyRepositoryCustom {
 
 
     @Override
-    public List<Tuple> findAllUsersByStudyId(Long studyId) {
-        List<Tuple> findAllUsers = queryFactory
-                .select(userStudy, user)
+    public List<UserStudy> findAllUsersByStudyId(Long studyId) {
+        List<UserStudy> findAllUsers = queryFactory
+                .select(userStudy)
                 .from(userStudy)
                 .leftJoin(userStudy.user, user).fetchJoin()
                 .where(userStudy.id.studyId.eq(studyId))
@@ -38,5 +39,22 @@ public class UserStudyRepositoryImpl implements UserStudyRepositoryCustom {
                         userStudy.is_owner.eq(true)
                 )
                 .fetchOne();
+    }
+
+    @Override
+    public List<UserStudy> findAllNotExitedUsersBySyudyId(Long studyId) {
+        List<UserStudy> findAllUsers = queryFactory
+                .select(userStudy)
+                .from(userStudy)
+                .leftJoin(userStudy.user, user).fetchJoin()
+                .where(
+                        userStudy.id.studyId.eq(studyId),
+                        userStudy.exit_status.eq(ExitStatus.None),
+                        userStudy.is_owner.eq(false) //방장 제외하고 출력
+                )
+                .orderBy(userStudy.join_date.desc())
+                .fetch();
+
+        return findAllUsers;
     }
 }

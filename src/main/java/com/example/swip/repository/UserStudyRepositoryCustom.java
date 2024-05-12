@@ -1,12 +1,13 @@
 package com.example.swip.repository;
 
-import com.example.swip.entity.User;
-import com.querydsl.core.Tuple;
+import com.example.swip.entity.UserStudy;
 
 import java.util.List;
 
 public interface UserStudyRepositoryCustom {
-    List<Tuple> findAllUsersByStudyId(Long studyId);
+    List<UserStudy> findAllUsersByStudyId(Long studyId);
 
     Long findOwnerByStudyId(Long studyId);
+
+    List<UserStudy> findAllNotExitedUsersBySyudyId(Long studyId);
 }
