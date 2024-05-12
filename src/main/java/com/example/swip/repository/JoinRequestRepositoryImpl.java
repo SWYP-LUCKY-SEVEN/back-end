@@ -24,6 +24,7 @@ public class JoinRequestRepositoryImpl implements JoinRequestRepositoryCustom{
                 .leftJoin(joinRequest.user, user)
                 .fetchJoin()
                 .where(joinRequest.id.studyId.eq(studyId))
+                .orderBy(joinRequest.request_date.desc())
                 .fetch();
         return fetch;
     }

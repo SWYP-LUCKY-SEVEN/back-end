@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -75,6 +76,22 @@ public class JoinRequestService {
         JoinRequest findRequest = joinRequestRepository.findById(new JoinRequestId(userId, studyId)).orElse(null);
         if (findRequest != null) {
             findRequest.updateJoinStatus(JoinStatus.Rejected);
+        }
+    }
+
+    @Transactional
+    public boolean cancelJoinRequest(Long userId, Long studyId) {
+        JoinRequestId id = new JoinRequestId(userId, studyId);
+        JoinRequest findRequest = joinRequestRepository.findById(id).orElse(null);
+        if (findRequest == null) {
+            return false;
+        }
+        else if(findRequest.getJoin_status() != JoinStatus.Waiting) {
+            return false;
+        }
+        else{
+            joinRequestRepository.deleteById(id);
+            return true;
         }
     }
 }

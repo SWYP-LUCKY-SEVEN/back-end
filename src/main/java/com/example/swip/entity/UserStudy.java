@@ -6,6 +6,10 @@ import com.example.swip.entity.enumtype.ExitStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @AllArgsConstructor
@@ -13,6 +17,7 @@ import lombok.*;
 @Builder
 public class UserStudy {
     @EmbeddedId
+    @Column(name = "user_study_id")
     private UserStudyId id;
 
     @MapsId("userId")
@@ -27,5 +32,12 @@ public class UserStudy {
 
     private boolean is_owner;
     private ExitStatus exit_status;
-    private ExitReason exit_reason;
+    private LocalDateTime join_date; //참여 날짜
+
+    @OneToMany(mappedBy = "userStudy", cascade = CascadeType.ALL)
+    private List<UserStudyExit> userStudyExits = new ArrayList<>();
+
+    public void updateExitStatus(ExitStatus exit_status){
+        this.exit_status = exit_status;
+    }
 }

@@ -167,7 +167,7 @@ public class StudyService {
         //study 상세 정보
         List<Study> studyDetailById = studyRepository.findStudyDetailById(StudyId);
         //study 멤버 정보
-        List<Tuple> allUsersByStudyId = userStudyService.getAllUsersByStudyId(StudyId);
+        List<UserStudy> allUsersByStudyId = userStudyService.getAllUsersByStudyId(StudyId);
 
         List<StudyDetailResponse> collect = studyDetailById.stream()
                 .map(study -> {
@@ -193,11 +193,9 @@ public class StudyService {
                             .membersList(
                                     allUsersByStudyId.stream()
                                             .map(member -> {
-                                                User user = member.get(1, User.class);
-                                                UserStudy userStudy = member.get(0, UserStudy.class);
                                                 return StudyDetailMembers.builder()
-                                                        .nickname(user.getNickname())
-                                                        .is_owner(userStudy.is_owner())
+                                                        .nickname(member.getUser().getNickname())
+                                                        .is_owner(member.is_owner())
                                                         .build();
                                             })
                                             .collect(Collectors.toList())

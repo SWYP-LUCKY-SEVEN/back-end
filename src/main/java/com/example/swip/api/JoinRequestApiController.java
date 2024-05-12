@@ -121,6 +121,24 @@ public class JoinRequestApiController {
         }
     }
 
+    @Operation(summary = "나의 스터디 - 신청 취소 API")
+    @PostMapping("/joinRequest/cancel")
+    private ResponseEntity<String> cancelWaitingStudy(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @RequestParam Long studyId
+    ) {
+        if (userPrincipal != null) {
+            Long userId = userPrincipal.getUserId();
+            boolean cancleStatus = joinRequestService.cancelJoinRequest(userId, studyId);
+            if (cancleStatus) {
+                return ResponseEntity.status(200).body("스터디 취소 성공!");
+            } else {
+                return ResponseEntity.status(403).body("해당 스터디 신청 내역이 없습니다.");
+            }
+        }
+        return ResponseEntity.status(403).body("인증되지 않은 사용자입니다.");
+    }
+
     // List 값을 Result로 한 번 감싸서 return하기 위한 class
     @Data
     @AllArgsConstructor

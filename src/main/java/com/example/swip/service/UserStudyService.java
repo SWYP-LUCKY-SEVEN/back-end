@@ -1,18 +1,21 @@
 package com.example.swip.service;
 
-import com.example.swip.entity.Study;
-import com.example.swip.entity.User;
-import com.example.swip.entity.UserStudy;
+import com.example.swip.entity.*;
+import com.example.swip.entity.compositeKey.UserStudyExitId;
 import com.example.swip.entity.compositeKey.UserStudyId;
+import com.example.swip.entity.enumtype.ExitReason;
 import com.example.swip.entity.enumtype.ExitStatus;
-import com.example.swip.repository.UserStudyRepository;
+import com.example.swip.repository.*;
 import com.querydsl.core.Tuple;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -20,6 +23,10 @@ import java.util.List;
 public class UserStudyService {
 
     private final UserStudyRepository userStudyRepository;
+    private final ExitReasonsRepository exitReasonsRepository;
+    private final UserStudyExitRepository userStudyExitRepository;
+    private final UserRepository userRepository;
+    private final StudyRepository studyRepository;
 
     //저장
     @Transactional
@@ -31,6 +38,7 @@ public class UserStudyService {
                 .study(savedStudy)
                 .is_owner(is_owner)
                 .exit_status(ExitStatus.None)
+                .join_date(LocalDateTime.now())
                 .build();
 
         userStudyRepository.save(userStudy);
@@ -39,12 +47,54 @@ public class UserStudyService {
         return userStudyRepository.existsById(new UserStudyId(userId, studyId));
     }
 
-    public List<Tuple> getAllUsersByStudyId(Long studyId){
-        List<Tuple> allUsersByStudyId = userStudyRepository.findAllUsersByStudyId(studyId);
+    public List<UserStudy> getAllUsersByStudyId(Long studyId){
+        List<UserStudy> allUsersByStudyId = userStudyRepository.findAllUsersByStudyId(studyId);
         return allUsersByStudyId;
     }
 
     public Long getOwnerbyStudyId(Long studyId) {
         return userStudyRepository.findOwnerByStudyId(studyId);
+    }
+
+    public List<UserStudy> getAllNotExitedUsersByStudyId(Long studyId){
+        List<UserStudy> findUsers = userStudyRepository.findAllNotExitedUsersBySyudyId(studyId);
+        return findUsers;
+    }
+
+    @Transactional
+    public void getMemberOutOfStudy(Long studyId, Long userId, List<String> exitReason) {
+        //user_study update
+        UserStudy findUserStudy = userStudyRepository.findById(new UserStudyId(userId, studyId)).orElse(null);
+        if(findUserStudy!=null && findUserStudy.getExit_status()==ExitStatus.None) {
+            findUserStudy.updateExitStatus(ExitStatus.Forced_leave); //강퇴
+            System.out.println("findUserStudy = " + findUserStudy);
+
+
+            //exit_reasons 저장
+            exitReason.forEach(reason -> {
+                        ExitReason.Element er = ExitReason.toExitResaon(reason);
+                        ExitReasons findExitReason = exitReasonsRepository.findByReason(er);
+
+                        ExitReasons build = ExitReasons.builder()
+                                .reason(er)
+                                .build();
+
+                        if (findExitReason == null) { //아직 없는 이유이면, 이유 저장
+                            exitReasonsRepository.save(build);
+                            findExitReason = exitReasonsRepository.findByReason(er);
+                        }
+                        System.out.println("build.getId() = " + build.getId());
+
+                        if (findUserStudy != null && findExitReason!=null) { //탈퇴 이유 리스트에 저장
+                            UserStudyExit userStudyExit = UserStudyExit.builder()
+                                    .id(new UserStudyExitId(new UserStudyId(userId, studyId), findExitReason.getId()))
+                                    .userStudy(findUserStudy)
+                                    .exitReasons(findExitReason)
+                                    .exit_date(LocalDateTime.now())
+                                    .build();
+                            userStudyExitRepository.save(userStudyExit);
+                        }
+                    });
+        }
     }
 }
