@@ -7,9 +7,11 @@ import com.example.swip.dto.UserRelatedStudyCount;
 import com.example.swip.dto.auth.AddUserRequest;
 import com.example.swip.dto.auth.PostProfileDto;
 import com.example.swip.dto.study.StudyFilterResponse;
+import com.example.swip.entity.Evaluation;
 import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
+import com.example.swip.repository.EvaluationRepository;
 import com.example.swip.repository.UserRepository;
 import com.example.swip.repository.UserRepositoryCustom;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserRepositoryCustom userRepositoryCustom;
+    private final EvaluationRepository evaluationRepository;
 
     public User findByEmail(String email) {
         User user = userRepository.findByEmail(email);
@@ -53,17 +56,56 @@ public class UserService {
     public UserMainProfileDto getMainProfileByNickname(String nickname) {
         User user = userRepository.findByNickname(nickname);
         return getMainProfile(user);
+
     }
+    @Transactional
+    public boolean evaluationUser(Long toId, Long fromId, Integer score) {
+        if(100 < score || score < 0)
+            return false;
+        User toUser = userRepository.findById(toId).orElse(null);
+        User fromUser = userRepository.findById(fromId).orElse(null);
+        evaluationRepository.save(Evaluation.builder()
+                .rating(score)
+                .to_user(toUser)
+                .from_user(fromUser)
+                .build());
+        return true;
+    }
+    @Transactional
+    public boolean evaluationUser(Long toId, User fromUser, Integer score) {
+        if(100 < score || score < 0)
+            return false;
+        User toUser = userRepository.findById(toId).orElse(null);
+        evaluationRepository.save(Evaluation.builder()
+                        .rating(score)
+                        .to_user(toUser)
+                        .from_user(fromUser)
+                        .build());
+        return true;
+    }
+
+    public int getUserRating(Long userId) {
+        List<Integer> evalList =userRepositoryCustom.getUserEvalList(userId);
+        int sum = 0;
+        for(int eval : evalList) {
+            sum += eval;
+            System.out.println(eval);
+        }
+        return sum/evalList.size();
+    }
+
     public UserMainProfileDto getMainProfileById(Long user_id) {
         User user = userRepository.findById(user_id).orElse(null);
         return getMainProfile(user);
     }
     public UserMainProfileDto getMainProfile(User user) {
+        int rating = getUserRating(user.getId());
         return UserMainProfileDto.builder()
                 .nickname(user.getNickname())
                 .profile_img(user.getProfile_image())
                 .email(user.getEmail())
                 .user_id(user.getId())
+                .rating(rating)
                 .build();
     }
 
