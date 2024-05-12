@@ -1,13 +1,11 @@
 package com.example.swip.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Evaluation {
@@ -15,14 +13,13 @@ public class Evaluation {
     @Column(name = "evaluation_id")
     private Long id;
 
-    private int rating;
+    private Integer rating;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "to_id")
+    private User to_user;
 
-    /* -> 수정 필요
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;*/
+    @JoinColumn(name = "from_id")
+    private User from_user;
 }

@@ -2,10 +2,7 @@ package com.example.swip.repository;
 
 import com.example.swip.entity.*;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
-import com.querydsl.core.Tuple;
-import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -105,6 +102,13 @@ public class UserRepositoryCustom {
                 .fetchOne();
         System.out.println(test);
         return test;
+    }
+    public List<Integer> getUserEvalList(Long userId) {
+        QEvaluation evaluation = QEvaluation.evaluation;
+        return queryFactory.select(evaluation.rating)
+                .from(evaluation)
+                .where(evaluation.to_user.id.eq(userId))
+                .fetch();
     }
 
     public void deleteExpiredUserData(LocalDateTime time) {

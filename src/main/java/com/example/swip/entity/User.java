@@ -40,9 +40,13 @@ public class User {
         this.join_date = LocalDateTime.now();
     }
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "to_user")
     @Builder.Default
-    private List<Evaluation> evaluations = new ArrayList<>();
+    private List<Evaluation> receivedEvaluations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "from_user")
+    @Builder.Default
+    private List<Evaluation> givenEvaluations = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     @Builder.Default

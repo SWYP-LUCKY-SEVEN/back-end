@@ -12,5 +12,5 @@ public class UserMainProfileDto {
     private String profile_img;
     private String email;
     private Long user_id;
-    private String grade;
+    private int rating;
 }

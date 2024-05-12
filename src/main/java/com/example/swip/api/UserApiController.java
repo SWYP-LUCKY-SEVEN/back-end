@@ -1,15 +1,14 @@
 package com.example.swip.api;
 
 import com.example.swip.config.UserPrincipal;
-import com.example.swip.dto.DefaultResponse;
-import com.example.swip.dto.UserMainProfileDto;
-import com.example.swip.dto.UserProfileGetResponse;
-import com.example.swip.dto.UserRelatedStudyCount;
+import com.example.swip.dto.*;
 import com.example.swip.dto.auth.GetNicknameDupleResponse;
 import com.example.swip.dto.auth.PostProfileDto;
 import com.example.swip.dto.auth.PostProfileRequest;
 import com.example.swip.dto.auth.PostProfileResponse;
 import com.example.swip.dto.study.StudyFilterResponse;
+import com.example.swip.entity.Evaluation;
+import com.example.swip.entity.User;
 import com.example.swip.service.ChatServerService;
 import com.example.swip.service.FavoriteStudyService;
 import com.example.swip.service.StudyService;
@@ -178,6 +177,70 @@ public class UserApiController {
         return ResponseEntity.status(200).body(
                 new StudyApiController.Result(filteredStudy,totalCount)
         );
+    }
+    @Operation(summary = "회원 평점 확인")
+    @GetMapping("/user/{user_id}/rating") //
+    public int getRatingUser(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable("user_id") Long userId
+    ) {
+        return userService.getUserRating(userId);
+    }
+    @Operation(summary = "회원 평가 진행", description = "score 값은 0~100까지 입니다.")
+    @PostMapping("/user/evaluation") //
+    public ResponseEntity<DefaultResponse> postEvaluationUser(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @RequestBody EvaluationRequest evaluationRequest
+    ) {
+        if(userPrincipal == null)
+            return ResponseEntity.status(403).body(
+                    DefaultResponse.builder()
+                            .message("로그인이 필요합니다.")
+                            .build());
+        boolean check = userService.evaluationUser(evaluationRequest.getTo_id(),
+                userPrincipal.getUserId(),
+                evaluationRequest.getScore().intValue());
+
+        if(!check)
+            return ResponseEntity.status(200).body(
+                    DefaultResponse.builder()
+                            .message("score 값이 범위를 벗어났습니다.")
+                            .build());
+
+        return ResponseEntity.status(201).body(
+                DefaultResponse.builder()
+                        .message("평가가 성공적으로 저장되었습니다.")
+                        .build());
+    }
+    @Operation(summary = "회원 평가 진행 (단체)", description = "score 값은 0~100까지 입니다.")
+    @PostMapping("/user/evaluation/list") //
+    public ResponseEntity<DefaultResponse> postEvaluationUserList(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @RequestBody UserEvaluationRequest evaluationRequest
+    ) {
+        if(userPrincipal == null)
+            return ResponseEntity.status(403).body(
+                    DefaultResponse.builder()
+                            .message("로그인이 필요합니다.")
+                            .build());
+        User user = userService.findUserById(userPrincipal.getUserId());
+        List<EvaluationRequest> evaluationList = evaluationRequest.getEval_list();
+        boolean check = true;
+        for(EvaluationRequest evaluation : evaluationList) {
+            check = userService.evaluationUser(evaluation.getTo_id(),
+                    user,
+                    evaluation.getScore().intValue());
+        }
+        if(!check)
+            return ResponseEntity.status(200).body(
+                    DefaultResponse.builder()
+                            .message("score 값이 범위를 벗어났습니다.")
+                            .build());
+
+        return ResponseEntity.status(201).body(
+                DefaultResponse.builder()
+                        .message("평가 리스트가 성공적으로 저장되었습니다.")
+                        .build());
     }
   
     @Operation(summary = "회원 탈퇴", description = "JWT 토큰 해당하는 계정에 탈퇴 과정을 진행합니다.")
