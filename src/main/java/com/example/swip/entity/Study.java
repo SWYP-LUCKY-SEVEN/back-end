@@ -54,19 +54,23 @@ public class Study {
     @CreationTimestamp
     private LocalDateTime created_time;
 
-    @OneToMany(mappedBy = "study")
+    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL)
     @Builder.Default
     private List<Todo> todos = new ArrayList<>();
 
-    @OneToMany(mappedBy = "study")
+    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL)
     @Builder.Default
     private List<AdditionalInfo> additionalInfos = new ArrayList<>();
 
-    @OneToMany(mappedBy = "study")
+    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL)
     @Builder.Default
     private List<UserStudy> userStudies = new ArrayList<>();
 
-    @OneToMany(mappedBy = "study")
+    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<JoinRequest> joinRequests = new ArrayList<>();
+
+    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL)
     @Builder.Default
     private List<FavoriteStudy> favoriteStudies = new ArrayList<>();
 

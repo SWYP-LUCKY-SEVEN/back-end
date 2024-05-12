@@ -6,6 +6,7 @@ import com.example.swip.dto.quick_match.QuickMatchFilter;
 import com.example.swip.dto.quick_match.QuickMatchResponse;
 import com.example.swip.dto.study.*;
 import com.example.swip.entity.Study;
+import com.example.swip.service.ChatServerService;
 import com.example.swip.service.FavoriteStudyService;
 import com.example.swip.service.StudyQuickService;
 import com.example.swip.service.StudyService;
@@ -29,6 +30,7 @@ public class StudyApiController {
     private final StudyService studyService;
     private final StudyQuickService studyQuickService;
     private final FavoriteStudyService favoriteStudyService;
+    private final ChatServerService chatServerService;
 
     //저장
     @Operation(summary = "스터디 생성 메소드",
@@ -47,6 +49,19 @@ public class StudyApiController {
         Long writerId = principal.getUserId();
         System.out.println("writerId = " + writerId);
         Long saveStudy = studyService.saveStudy(dto, writerId);
+
+        Study findStudy = studyService.findStudyById(saveStudy);
+        if (findStudy!=null){ //채팅 서버에 저장
+            PostStudyResponse postStudyResponse = chatServerService.postStudy(
+                    PostStudyRequest.builder()
+                            .studyId(findStudy.getId().toString())
+                            .pk(writerId.toString())
+                            .name(findStudy.getTitle())
+                            .build()
+            );
+            System.out.println("postStudyResponse = " + postStudyResponse);
+            //TODO: 채팅 서버에 저장되었는지 여부 확인 후 조치
+        }
         return saveStudy;
     }
 

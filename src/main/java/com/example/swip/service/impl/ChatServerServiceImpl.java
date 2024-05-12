@@ -3,6 +3,8 @@ package com.example.swip.service.impl;
 import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.auth.PostProfileDto;
 import com.example.swip.dto.auth.PostProfileResponse;
+import com.example.swip.dto.study.PostStudyRequest;
+import com.example.swip.dto.study.PostStudyResponse;
 import com.example.swip.service.ChatServerService;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -44,6 +46,24 @@ public class ChatServerServiceImpl implements ChatServerService {
                 .message(responseDelete)
                 .build();
     }
+
+    /**
+     * 스터디 생성/수정/삭제 -> 채팅 생성/수정/삭제
+     */
+    @Value("${swyp.chat.server.study.uri}")
+    private String studyReqURL;
+    @Override
+    public PostStudyResponse postStudy(PostStudyRequest postStudyRequest) {
+        String jsonInputString = "{\"studyId\":\""+postStudyRequest.getStudyId().toString()
+                +"\",\"pk\":\""+postStudyRequest.getPk()
+                +"\",\"name\":\""+postStudyRequest.getName()+"\"}";
+        String result = sendHttpRequest(studyReqURL, "POST", jsonInputString);
+
+        return PostStudyResponse.builder()
+                .message(result)
+                .build();
+    }
+
     public static String sendHttpRequest(String reqURL, String method, String jsonInputString) {
         StringBuilder response = new StringBuilder();
         try {
