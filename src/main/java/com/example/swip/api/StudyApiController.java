@@ -6,10 +6,7 @@ import com.example.swip.dto.quick_match.QuickMatchFilter;
 import com.example.swip.dto.quick_match.QuickMatchResponse;
 import com.example.swip.dto.study.*;
 import com.example.swip.entity.Study;
-import com.example.swip.service.ChatServerService;
-import com.example.swip.service.FavoriteStudyService;
-import com.example.swip.service.StudyQuickService;
-import com.example.swip.service.StudyService;
+import com.example.swip.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,6 +28,7 @@ public class StudyApiController {
     private final StudyQuickService studyQuickService;
     private final FavoriteStudyService favoriteStudyService;
     private final ChatServerService chatServerService;
+    private final UserStudyService userStudyService;
 
     //저장
     @Operation(summary = "스터디 생성 메소드",
@@ -259,23 +257,35 @@ public class StudyApiController {
         return studyDetail;
     }
 
-    /*
+
     //수정
-    @PutMapping("/study/{id}/edit")
-    public Long updateBoardDetail(
-            @PathVariable("id") Long boardId,
-            @RequestBody StudyUpdateRequest studyUpdateRequest
-    ){
-        Long updatedBoardId = studyService.updateStudy(boardId, studyUpdateRequest);
-        return updatedBoardId;
-    }
+//    @PutMapping("/study/{id}/edit")
+//    public Long updateBoardDetail(
+//            @PathVariable("id") Long boardId,
+//            @RequestBody StudyUpdateRequest studyUpdateRequest
+//    ){
+//        Long updatedBoardId = studyService.updateStudy(boardId, studyUpdateRequest);
+//        return updatedBoardId;
+//    }
 
     //삭제
-    @DeleteMapping("/study/{id}")
-    public Long deleteBoardDetail(@PathVariable("id") Long boardId){
-        Long deletedBoardId = studyService.deleteStudy(boardId);
-        return deletedBoardId;
-    }*/
+    @DeleteMapping("/study/{studyId}")
+    public ResponseEntity<String> deleteStudy(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable("studyId") Long studyId
+    ){
+        Long ownerId = userPrincipal.getUserId();
+        Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
+        if(!ownerId.equals(findStudyOwner)) {
+            return ResponseEntity.status(401).body("스터디를 삭제할 권한이 없습니다.");
+        }
+
+        boolean deletedStatus = studyService.deleteStudy(studyId);
+        if(deletedStatus){
+            return ResponseEntity.status(200).body("삭제 성공!");
+        }
+        return ResponseEntity.status(403).body("존재하지 않는 스터디");
+    }
 
     // List 값을 Result로 한 번 감싸서 return하기 위한 class
     @Data
