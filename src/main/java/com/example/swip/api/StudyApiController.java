@@ -259,20 +259,45 @@ public class StudyApiController {
 
 
     //수정
-//    @PutMapping("/study/{id}/edit")
-//    public Long updateBoardDetail(
-//            @PathVariable("id") Long boardId,
-//            @RequestBody StudyUpdateRequest studyUpdateRequest
-//    ){
-//        Long updatedBoardId = studyService.updateStudy(boardId, studyUpdateRequest);
+
+    @GetMapping("/study/{study_id}/edit")
+    public ResponseEntity<Result2> getStudyEditPage(
+        @AuthenticationPrincipal UserPrincipal userPrincipal,
+        @PathVariable("study_id") Long studyId
+    ){
+        Long ownerId = userPrincipal.getUserId();
+        Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
+        if(!ownerId.equals(findStudyOwner)) {
+            return ResponseEntity.status(401).body(new Result2<>("스터디를 수정할 권한이 없습니다.", null));
+        }
+
+        StudyUpdateResponse response = studyService.findStudyEditDetailById(studyId);
+        return ResponseEntity.status(200).body(new Result2<>(response, "성공"));
+
+    }
+
+    @PatchMapping("/study/{study_id}")
+    public ResponseEntity<String> updateStudyDetail(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable("study_id") Long studyId,
+            @RequestBody StudyUpdateRequest studyUpdateRequest
+    ){
+        Long ownerId = userPrincipal.getUserId();
+        Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
+        if(!ownerId.equals(findStudyOwner)) {
+            return ResponseEntity.status(401).body("스터디를 수정할 권한이 없습니다.");
+        }
+
+//        Long updatedBoardId = studyService.updateStudy(studyId, studyUpdateRequest);
 //        return updatedBoardId;
-//    }
+        return null;
+    }
 
     //삭제
-    @DeleteMapping("/study/{studyId}")
+    @DeleteMapping("/study/{study_id}")
     public ResponseEntity<String> deleteStudy(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @PathVariable("studyId") Long studyId
+            @PathVariable("study_id") Long studyId
     ){
         Long ownerId = userPrincipal.getUserId();
         Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
@@ -292,7 +317,13 @@ public class StudyApiController {
     @AllArgsConstructor
     public static class Result<T>{
         private T data;
-        private int totalCount;
+        private Integer totalCount;
+    }
+    @Data
+    @AllArgsConstructor
+    public static class Result2<T>{
+        private T data;
+        private String message;
     }
 
 }

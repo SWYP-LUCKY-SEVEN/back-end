@@ -281,6 +281,19 @@ public class StudyService {
         return false;
     }
 
+    public StudyUpdateResponse findStudyEditDetailById(Long studyId) {
+        Study study = studyRepository.findStudyEditDetailById(studyId);
+        if(study!=null){
+            return StudyUpdateResponse.builder()
+                    .title(study.getTitle())
+                    .description(study.getDescription())
+                    .tags(study.getAdditionalInfos().stream()
+                            .map(info -> info.getName())
+                            .collect(Collectors.toList()))
+                    .build();
+        }
+        return null;
+    }
 }
 
 
