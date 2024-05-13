@@ -269,7 +269,7 @@ public class StudyApiController {
         Long ownerId = userPrincipal.getUserId();
         Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
         if(!ownerId.equals(findStudyOwner)) {
-            return ResponseEntity.status(401).body(new Result2<>(null, "스터디를 수정할 권한이 없습니다."));
+            return ResponseEntity.status(403).body(new Result2<>(null, "스터디를 수정할 권한이 없습니다."));
         }
 
         StudyUpdateResponse response = studyService.findStudyEditDetailById(studyId);
@@ -286,13 +286,13 @@ public class StudyApiController {
         Long ownerId = userPrincipal.getUserId();
         Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
         if(!ownerId.equals(findStudyOwner)) {
-            return ResponseEntity.status(401).body("스터디를 수정할 권한이 없습니다.");
+            return ResponseEntity.status(403).body("스터디를 수정할 권한이 없습니다.");
         }
         Boolean updateStatus = studyService.updateStudy(studyId, studyUpdateRequest);
         if(updateStatus){
             return ResponseEntity.status(200).body("스터디 수정 완료!");
         }
-        return ResponseEntity.status(200).body("스터디 수정이 불가능합니다");
+        return ResponseEntity.status(404).body("스터디 수정이 불가능합니다");
     }
 
     //삭제
@@ -305,14 +305,14 @@ public class StudyApiController {
         Long ownerId = userPrincipal.getUserId();
         Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
         if(!ownerId.equals(findStudyOwner)) {
-            return ResponseEntity.status(401).body("스터디를 삭제할 권한이 없습니다.");
+            return ResponseEntity.status(403).body("스터디를 삭제할 권한이 없습니다.");
         }
 
         boolean deletedStatus = studyService.deleteStudy(studyId);
         if(deletedStatus){
             return ResponseEntity.status(200).body("삭제 성공!");
         }
-        return ResponseEntity.status(403).body("존재하지 않는 스터디");
+        return ResponseEntity.status(404).body("존재하지 않는 스터디");
     }
 
     // List 값을 Result로 한 번 감싸서 return하기 위한 class

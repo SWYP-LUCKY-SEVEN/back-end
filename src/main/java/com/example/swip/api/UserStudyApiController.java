@@ -31,7 +31,7 @@ public class UserStudyApiController {
         Long ownerId = userPrincipal.getUserId();
         Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
         if(!ownerId.equals(findStudyOwner)) {
-            return ResponseEntity.status(401).body(new Result(null, "방장이 아닙니다."));
+            return ResponseEntity.status(403).body(new Result(null, "방장이 아닙니다."));
         }
         List<UserStudy> allUsersByStudyId = userStudyService.getAllNotExitedUsersByStudyId(studyId);
         List<UserStudyResponse> responses = allUsersByStudyId.stream()
@@ -60,10 +60,11 @@ public class UserStudyApiController {
         Long ownerId = userPrincipal.getUserId();
         Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
         if(!ownerId.equals(findStudyOwner)) {
-            return ResponseEntity.status(401).body("방장이 아닙니다.");
+            return ResponseEntity.status(403).body("방장이 아닙니다.");
         }
         //TODO: 방장은 내보낼 수 없도록하는 로직 추가.
         else {
+            // TODO: 이미 내보낸 멤버는 내보내지 못하도록 하는 로직 추가.
             userStudyService.getMemberOutOfStudy(studyId, userId, exitReasons);
             return ResponseEntity.status(200).body("스터디 멤버 내보내기 성공");
         }
