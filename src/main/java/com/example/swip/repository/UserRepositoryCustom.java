@@ -45,9 +45,9 @@ public class UserRepositoryCustom {
 
     public List<Study> registeredStudyList(Long userId, StudyProgressStatus.Element status) {   //InProgress 상태의 스터디 개수
         QStudy study = QStudy.study;
-        BooleanExpression be = null;
-        if(status == StudyProgressStatus.Element.Done)
-            be = userStudy.study.status.eq(StudyProgressStatus.Element.Done);
+        BooleanExpression be;
+        if(status != null)
+            be = userStudy.study.status.eq(status);
         else
             be = userStudy.study.status.ne(StudyProgressStatus.Element.Done);
 

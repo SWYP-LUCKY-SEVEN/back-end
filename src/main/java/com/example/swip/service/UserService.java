@@ -60,7 +60,7 @@ public class UserService {
     }
     @Transactional
     public boolean evaluationUser(Long toId, Long fromId, Integer score) {
-        if(100 < score || score < 0)
+        if(100 < score || score < 0 )
             return false;
         User toUser = userRepository.findById(toId).orElse(null);
         User fromUser = userRepository.findById(fromId).orElse(null);
@@ -73,7 +73,7 @@ public class UserService {
     }
     @Transactional
     public boolean evaluationUser(Long toId, User fromUser, Integer score) {
-        if(100 < score || score < 0)
+        if(100 < score || score < 0 || toId == fromUser.getId())
             return false;
         User toUser = userRepository.findById(toId).orElse(null);
         evaluationRepository.save(Evaluation.builder()
@@ -113,7 +113,7 @@ public class UserService {
         return userRepositoryCustom.proposerStudyList(userId);
     }
     public List<Study> getRegisteredStudyList(Long userId, String status) {
-        StudyProgressStatus.Element statusEnum = StudyProgressStatus.toStudyProgressStatusType(status);
+        StudyProgressStatus.Element statusEnum = status != null? StudyProgressStatus.toStudyProgressStatusType(status):null;
         return userRepositoryCustom.registeredStudyList(userId, statusEnum);
     }
 

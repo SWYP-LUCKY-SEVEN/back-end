@@ -2,6 +2,7 @@ package com.example.swip.api;
 
 import com.example.swip.config.UserPrincipal;
 import com.example.swip.dto.DefaultResponse;
+import com.example.swip.dto.EvaluationRequest;
 import com.example.swip.service.AuthService;
 import com.example.swip.service.StudyService;
 import com.example.swip.service.UserService;
@@ -68,5 +69,37 @@ public class TesterApiController {
     ) {
         studyService.progressStartStudy(LocalDate.now());
         return null;
+    }
+
+
+    @Operation(summary = "회원 평가 진행 (셀프 평가 허용)", description = "score 값은 0~100까지 입니다." +
+            "- fromId: 평가하는 ID\n" +
+            "- toId : 평가 당하는 ID")
+    @PostMapping("/user/evaluation/test") //
+    public ResponseEntity<DefaultResponse> postEvaluationUserTest(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @RequestParam Long fromId,
+            @RequestBody EvaluationRequest evaluationRequest
+    ) {
+        if(userPrincipal == null)
+            return ResponseEntity.status(403).body(
+                    DefaultResponse.builder()
+                            .message("로그인이 필요합니다.")
+                            .build());
+
+        boolean check = userService.evaluationUser(evaluationRequest.getTo_id(),
+                userService.findUserById(fromId),
+                evaluationRequest.getScore().intValue());
+
+        if(!check)
+            return ResponseEntity.status(400).body(
+                    DefaultResponse.builder()
+                            .message("score 값이 범위를 벗어났습니다. 0 부터 100 까지")
+                            .build());
+
+        return ResponseEntity.status(201).body(
+                DefaultResponse.builder()
+                        .message("평가가 성공적으로 저장되었습니다.")
+                        .build());
     }
 }

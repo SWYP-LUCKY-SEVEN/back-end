@@ -158,11 +158,15 @@ public class UserApiController {
     }
 
     @Operation(summary = "참가 스터디 목록 확인",
-            description = "before, progress, done")
+            description = "status (null 허용): before, progress, done.\n" +
+                    "- null일 경우: 완료 되지 않은 참여 중인 스터디 출력. (before + progress 와 동일)\n" +
+                    "- before : 시작 전인 스터디 출력\n" +
+                    "- progress : 진행 중인 스터디 출력\n" +
+                    "- done : 완료한 스터디 출력")
     @GetMapping("/user/registered/study")
     public ResponseEntity getRegisteredStudy(
             @AuthenticationPrincipal UserPrincipal userPrincipal, // 권한 인증
-            @RequestParam String status
+            @RequestParam(required = false) String status
     ) {
         if(userPrincipal == null)
             return ResponseEntity.status(403).body(
@@ -170,8 +174,8 @@ public class UserApiController {
                             .message("로그인이 필요합니다.")
                             .build());
 
-        List<StudyFilterResponse> filteredStudy =
-                studyService.getRegisteredStudyList(userPrincipal.getUserId(), status);
+        List<StudyFilterResponse> filteredStudy = null;
+        filteredStudy = studyService.getRegisteredStudyList(userPrincipal.getUserId(), status);
         int totalCount = filteredStudy.size(); //전체 리스트 개수
 
         return ResponseEntity.status(200).body(
@@ -197,14 +201,19 @@ public class UserApiController {
                     DefaultResponse.builder()
                             .message("로그인이 필요합니다.")
                             .build());
+        if(userPrincipal.getUserId() == evaluationRequest.getTo_id())
+            return ResponseEntity.status(403).body(
+                    DefaultResponse.builder()
+                            .message("본인 평가는 불가능합니다.")
+                            .build());
         boolean check = userService.evaluationUser(evaluationRequest.getTo_id(),
                 userPrincipal.getUserId(),
                 evaluationRequest.getScore().intValue());
 
         if(!check)
-            return ResponseEntity.status(200).body(
+            return ResponseEntity.status(400).body(
                     DefaultResponse.builder()
-                            .message("score 값이 범위를 벗어났습니다.")
+                            .message("score 값이 범위를 벗어났습니다. 0 부터 100 까지")
                             .build());
 
         return ResponseEntity.status(201).body(
@@ -234,7 +243,7 @@ public class UserApiController {
         if(!check)
             return ResponseEntity.status(200).body(
                     DefaultResponse.builder()
-                            .message("score 값이 범위를 벗어났습니다.")
+                            .message("범위를 벗어난 score 값, 혹은 본인을 평가한 요청을 제외하고 적용되었습니다.")
                             .build());
 
         return ResponseEntity.status(201).body(
