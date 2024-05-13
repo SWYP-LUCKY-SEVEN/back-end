@@ -33,7 +33,7 @@ public class JoinRequestApiController {
             )
     {
         if(userPrincipal == null){
-            return ResponseEntity.status(403).body(new Result<>(null, "로그인이 필요합니다."));
+            return ResponseEntity.status(401).body(new Result<>(null, "로그인이 필요합니다."));
         }
         Long ownerId = userPrincipal.getUserId();
         Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
@@ -55,7 +55,7 @@ public class JoinRequestApiController {
                     }).collect(Collectors.toList());
             return ResponseEntity.status(200).body(new Result(responses, "성공"));
         }
-        return ResponseEntity.status(401).body(new Result(null, "방장이 아닙니다."));
+        return ResponseEntity.status(403).body(new Result(null, "방장이 아닙니다."));
     }
 
     @Operation(summary = "스터디 승인 대기중 인원수 조회(방장용)")
@@ -68,13 +68,13 @@ public class JoinRequestApiController {
         Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
         //방장이면 확인 가능하도록
         if(userPrincipal == null){
-            return ResponseEntity.status(403).body(new Result(null,"로그인이 필요합니다."));
+            return ResponseEntity.status(401).body(new Result(null,"로그인이 필요합니다."));
         }
         if(ownerId.equals(findStudyOwner)){
             Integer size = joinRequestService.getAllWaitingCountByStudyId(studyId);
             return ResponseEntity.status(200).body(new Result(size, "성공"));
         }
-        return ResponseEntity.status(401).body(new Result(null, "방장이 아닙니다."));
+        return ResponseEntity.status(403).body(new Result(null, "방장이 아닙니다."));
     }
 
     @Operation(summary = "신청 수락 (방장용)")
@@ -86,16 +86,16 @@ public class JoinRequestApiController {
     )
     {
         if(userPrincipal == null){
-            return ResponseEntity.status(403).body("로그인이 필요합니다.");
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
         }
         Long ownerId = userPrincipal.getUserId();
         Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
         if(!ownerId.equals(findStudyOwner)) {
-            return ResponseEntity.status(401).body("방장이 아닙니다.");
+            return ResponseEntity.status(403).body("방장이 아닙니다.");
         }
         else {
-            joinRequestService.acceptJoinRequest(studyId, userId);
-            return ResponseEntity.status(200).body("신청 수락 성공");
+                joinRequestService.acceptJoinRequest(studyId, userId);
+                return ResponseEntity.status(200).body("신청 수락 성공");
         }
     }
 
@@ -108,16 +108,16 @@ public class JoinRequestApiController {
     )
     {
         if(userPrincipal == null){
-            return ResponseEntity.status(403).body("로그인이 필요합니다.");
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
         }
         Long ownerId = userPrincipal.getUserId();
         Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
         if(!ownerId.equals(findStudyOwner)) {
-            return ResponseEntity.status(401).body("방장이 아닙니다.");
+            return ResponseEntity.status(403).body("방장이 아닙니다.");
         }
         else {
-            joinRequestService.rejectJoinRequest(studyId, userId);
-            return ResponseEntity.status(200).body("신청 거부 성공");
+                joinRequestService.rejectJoinRequest(studyId, userId);
+                return ResponseEntity.status(200).body("신청 거부 성공");
         }
     }
 
