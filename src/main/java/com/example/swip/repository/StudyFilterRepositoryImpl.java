@@ -144,7 +144,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                 .leftJoin(study.category, category).fetchJoin();
 
         List<Study> findStudy = query
-                .where(builder) //필터링
+                .where(builder.and(study.start_date.after(LocalDate.now().minusDays(1)))) //필터링
                 .orderBy(orderSpecifiers) //정렬
                 .distinct() //중복 제거
                 .fetch();

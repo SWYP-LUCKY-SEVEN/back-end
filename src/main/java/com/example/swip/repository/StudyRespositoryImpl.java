@@ -19,17 +19,17 @@ public class StudyRespositoryImpl implements StudyRepositoryCustom{
 
 
     @Override
-    public List<Study> findStudyDetailById(Long studyId) {
+    public Study findStudyDetailById(Long studyId) {
         //study
-        List<Study> studyDetails = queryFactory
+        Study studyDetail = queryFactory
                 .select(study)
                 .from(study)
                 .leftJoin(study.category, category)
                 .leftJoin(study.additionalInfos, additionalInfo)
                 .where(study.id.eq(studyId))
-                .fetch();
+                .fetchOne();
 
-        return studyDetails;
+        return studyDetail;
     }
 
     @Override

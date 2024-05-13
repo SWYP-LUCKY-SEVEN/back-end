@@ -11,6 +11,6 @@ public interface SearchRepository extends JpaRepository<Search, Long> {
 
     Search findByKeyword(String queryString);
 
-    @Query("SELECT s FROM Search s ORDER BY s.count DESC LIMIT 20") // default: 최근 검색순 정렬.
-    List<Search> findTop20ByCount();
+    @Query("SELECT s FROM Search s WHERE s.count > 4 ORDER BY s.count DESC LIMIT 6") // default: 최근 검색순 정렬.
+    List<Search> findTop6ByCount();
 }
