@@ -19,7 +19,5 @@ public class Evaluation {
     @JoinColumn(name = "to_id")
     private User to_user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "from_id")
-    private User from_user;
+    private Long from_id;
 }

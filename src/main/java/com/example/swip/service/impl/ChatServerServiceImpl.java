@@ -1,13 +1,11 @@
 package com.example.swip.service.impl;
 
 import com.example.swip.dto.DefaultResponse;
-import com.example.swip.dto.auth.PostProfileDto;
-import com.example.swip.dto.auth.PostProfileResponse;
+import com.example.swip.dto.user.PostProfileDto;
+import com.example.swip.dto.user.PostProfileResponse;
 import com.example.swip.dto.study.PostStudyRequest;
 import com.example.swip.dto.study.PostStudyResponse;
 import com.example.swip.service.ChatServerService;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

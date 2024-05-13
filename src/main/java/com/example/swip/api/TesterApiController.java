@@ -3,6 +3,7 @@ package com.example.swip.api;
 import com.example.swip.config.UserPrincipal;
 import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.EvaluationRequest;
+import com.example.swip.entity.User;
 import com.example.swip.service.AuthService;
 import com.example.swip.service.StudyService;
 import com.example.swip.service.UserService;
@@ -77,21 +78,19 @@ public class TesterApiController {
             "- toId : 평가 당하는 ID")
     @PostMapping("/user/evaluation/test") //
     public ResponseEntity<DefaultResponse> postEvaluationUserTest(
-            @AuthenticationPrincipal UserPrincipal userPrincipal,
             @RequestParam Long fromId,
             @RequestBody EvaluationRequest evaluationRequest
     ) {
-        if(userPrincipal == null)
-            return ResponseEntity.status(403).body(
+        User test = userService.findUserById(fromId);
+        if(test == null)
+            return ResponseEntity.status(400).body(
                     DefaultResponse.builder()
-                            .message("로그인이 필요합니다.")
+                            .message("올바르지 않은 fromId 입니다.")
                             .build());
 
-        boolean check = userService.evaluationUser(evaluationRequest.getTo_id(),
-                userService.findUserById(fromId),
-                evaluationRequest.getScore().intValue());
-
-        if(!check)
+        if(!userService.evaluationUser(evaluationRequest.getTo_id(),
+                fromId,
+                evaluationRequest.getScore().intValue()))
             return ResponseEntity.status(400).body(
                     DefaultResponse.builder()
                             .message("score 값이 범위를 벗어났습니다. 0 부터 100 까지")
