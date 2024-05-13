@@ -8,4 +8,5 @@ import java.util.List;
 public interface StudyRepositoryCustom {
 
     List<Study> findStudyDetailById(Long id);
+    Study findStudyEditDetailById(Long id);
 }

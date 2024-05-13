@@ -255,30 +255,41 @@ public class StudyService {
         });
     }
 
-    /*
-    //수정
-    @Transactional
-    public Long updateStudy(Long id, StudyUpdateRequest studyUpdateRequest) {
-        Study findStudy = studyRepository.findById(id).orElse(null);
-
-        // JPA의 영속성 컨텍스트에 의해 entity 객체의 값만 변경하면 자동으로 변경 사항 반영하여 update 진행.
-        // reoisitory.update 필요 없음.
-        if(findStudy != null){
-            findStudy.updateBoard(studyUpdateRequest.getTitle(), studyUpdateRequest.getContent());
-        }
-        // TODO: null 예외 처리
-
-        return id;
-    }
     //삭제
     @Transactional
-    public Long deleteStudy(Long id){
-        Study findStudy = studyRepository.findById(id).orElse(null);
-        studyRepository.delete(findStudy);
-
-        return id;
+    public boolean deleteStudy(Long studyId){
+        Optional<Study> findStudy = studyRepository.findById(studyId);
+        if(findStudy.isPresent()) {
+            studyRepository.deleteById(studyId);
+            return true;
+        }
+        return false;
     }
-    */
+
+    public StudyUpdateResponse findStudyEditDetailById(Long studyId) {
+        Study study = studyRepository.findStudyEditDetailById(studyId);
+        if(study!=null){
+            return StudyUpdateResponse.builder()
+                    .title(study.getTitle())
+                    .description(study.getDescription())
+                    .tags(study.getAdditionalInfos().stream()
+                            .map(info -> info.getName())
+                            .collect(Collectors.toList()))
+                    .build();
+        }
+        return null;
+    }
+
+    @Transactional
+    public Boolean updateStudy(Long studyId, StudyUpdateRequest studyUpdateRequest) {
+        Study findStudy = studyRepository.findById(studyId).orElse(null);
+
+        if(findStudy != null){
+            findStudy.updateStudy(findStudy, studyUpdateRequest.getTitle(), studyUpdateRequest.getDescription(), studyUpdateRequest.getTags());
+            return true;
+        }
+        return false;
+    }
 }
 
 

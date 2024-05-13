@@ -31,4 +31,13 @@ public class StudyRespositoryImpl implements StudyRepositoryCustom{
 
         return studyDetails;
     }
+
+    @Override
+    public Study findStudyEditDetailById(Long studyId) {
+        return queryFactory
+                .selectFrom(study)
+                .leftJoin(study.additionalInfos, additionalInfo)
+                .where(study.id.eq(studyId))
+                .fetchOne();
+    }
 }

@@ -6,9 +6,7 @@ import com.example.swip.dto.quick_match.QuickMatchFilter;
 import com.example.swip.dto.quick_match.QuickMatchResponse;
 import com.example.swip.dto.study.*;
 import com.example.swip.entity.Study;
-import com.example.swip.service.FavoriteStudyService;
-import com.example.swip.service.StudyQuickService;
-import com.example.swip.service.StudyService;
+import com.example.swip.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,6 +27,8 @@ public class StudyApiController {
     private final StudyService studyService;
     private final StudyQuickService studyQuickService;
     private final FavoriteStudyService favoriteStudyService;
+    private final ChatServerService chatServerService;
+    private final UserStudyService userStudyService;
 
     //저장
     @Operation(summary = "스터디 생성 메소드",
@@ -47,6 +47,19 @@ public class StudyApiController {
         Long writerId = principal.getUserId();
         System.out.println("writerId = " + writerId);
         Long saveStudy = studyService.saveStudy(dto, writerId);
+
+        Study findStudy = studyService.findStudyById(saveStudy);
+        if (findStudy!=null){ //채팅 서버에 저장
+            PostStudyResponse postStudyResponse = chatServerService.postStudy(
+                    PostStudyRequest.builder()
+                            .studyId(findStudy.getId().toString())
+                            .pk(writerId.toString())
+                            .name(findStudy.getTitle())
+                            .build()
+            );
+            System.out.println("postStudyResponse = " + postStudyResponse);
+            //TODO: 채팅 서버에 저장되었는지 여부 확인 후 조치
+        }
         return saveStudy;
     }
 
@@ -244,30 +257,76 @@ public class StudyApiController {
         return studyDetail;
     }
 
-    /*
+
     //수정
-    @PutMapping("/study/{id}/edit")
-    public Long updateBoardDetail(
-            @PathVariable("id") Long boardId,
+
+    @Operation(summary = "스터디 조회 API (수정용) - 수정 시에 스터디 내용 불러오기")
+    @GetMapping("/study/{study_id}/edit")
+    public ResponseEntity<Result2> getStudyEditPage(
+        @AuthenticationPrincipal UserPrincipal userPrincipal,
+        @PathVariable("study_id") Long studyId
+    ){
+        Long ownerId = userPrincipal.getUserId();
+        Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
+        if(!ownerId.equals(findStudyOwner)) {
+            return ResponseEntity.status(401).body(new Result2<>(null, "스터디를 수정할 권한이 없습니다."));
+        }
+
+        StudyUpdateResponse response = studyService.findStudyEditDetailById(studyId);
+        return ResponseEntity.status(200).body(new Result2<>(response, "성공"));
+    }
+
+    @Operation(summary = "스터디 수정 API")
+    @PatchMapping("/study/{study_id}")
+    public ResponseEntity<String> updateStudyDetail(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable("study_id") Long studyId,
             @RequestBody StudyUpdateRequest studyUpdateRequest
     ){
-        Long updatedBoardId = studyService.updateStudy(boardId, studyUpdateRequest);
-        return updatedBoardId;
+        Long ownerId = userPrincipal.getUserId();
+        Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
+        if(!ownerId.equals(findStudyOwner)) {
+            return ResponseEntity.status(401).body("스터디를 수정할 권한이 없습니다.");
+        }
+        Boolean updateStatus = studyService.updateStudy(studyId, studyUpdateRequest);
+        if(updateStatus){
+            return ResponseEntity.status(200).body("스터디 수정 완료!");
+        }
+        return ResponseEntity.status(200).body("스터디 수정이 불가능합니다");
     }
 
     //삭제
-    @DeleteMapping("/study/{id}")
-    public Long deleteBoardDetail(@PathVariable("id") Long boardId){
-        Long deletedBoardId = studyService.deleteStudy(boardId);
-        return deletedBoardId;
-    }*/
+    @Operation(summary = "스터디 삭제 API")
+    @DeleteMapping("/study/{study_id}")
+    public ResponseEntity<String> deleteStudy(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable("study_id") Long studyId
+    ){
+        Long ownerId = userPrincipal.getUserId();
+        Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
+        if(!ownerId.equals(findStudyOwner)) {
+            return ResponseEntity.status(401).body("스터디를 삭제할 권한이 없습니다.");
+        }
+
+        boolean deletedStatus = studyService.deleteStudy(studyId);
+        if(deletedStatus){
+            return ResponseEntity.status(200).body("삭제 성공!");
+        }
+        return ResponseEntity.status(403).body("존재하지 않는 스터디");
+    }
 
     // List 값을 Result로 한 번 감싸서 return하기 위한 class
     @Data
     @AllArgsConstructor
     public static class Result<T>{
         private T data;
-        private int totalCount;
+        private Integer totalCount;
+    }
+    @Data
+    @AllArgsConstructor
+    public static class Result2<T>{
+        private T data;
+        private String message;
     }
 
 }
