@@ -57,7 +57,7 @@ public class StudyApiController {
                             .name(findStudy.getTitle())
                             .build()
             );
-            System.out.println("postStudyResponse = " + postStudyResponse);
+            System.out.println("postStudyResponse = " + postStudyResponse.toString());
             //TODO: 채팅 서버에 저장되었는지 여부 확인 후 조치
         }
         return saveStudy;
@@ -251,8 +251,8 @@ public class StudyApiController {
 
     @Operation(summary = "스터디 상세 정보 조회 API")
     @GetMapping("/study/{study_id}")
-    public List<StudyDetailResponse> showBoardDetail(@PathVariable("study_id") Long studyId){
-        List<StudyDetailResponse> studyDetail = studyService.findStudyDetail(studyId);
+    public StudyDetailResponse showBoardDetail(@PathVariable("study_id") Long studyId){
+        StudyDetailResponse studyDetail = studyService.findStudyDetailAndUpdateViewCount(studyId);
 
         return studyDetail;
     }

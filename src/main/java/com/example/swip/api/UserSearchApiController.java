@@ -46,8 +46,8 @@ public class UserSearchApiController {
     @Operation(summary = "인기 검색어 조회 API")
     @GetMapping("/userSearch/popular")
     public Result getPopularSearch() {
-        List<Search> top2ByCount = searchService.findTop2ByCount();
-        List<popularSearchReponse> reponses = top2ByCount.stream()
+        List<Search> top6ByCount = searchService.findTop6ByCount();
+        List<popularSearchReponse> reponses = top6ByCount.stream()
                 .map(search -> new popularSearchReponse(
                         search.getId(),
                         search.getKeyword(),

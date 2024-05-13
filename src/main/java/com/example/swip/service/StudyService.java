@@ -162,49 +162,46 @@ public class StudyService {
     }
 
 
-    public List<StudyDetailResponse> findStudyDetail(Long StudyId){
+    @Transactional
+    public StudyDetailResponse findStudyDetailAndUpdateViewCount(Long StudyId){
         //study 상세 page에 나오는 모든 것들을 반환
         //study 상세 정보
-        List<Study> studyDetailById = studyRepository.findStudyDetailById(StudyId);
+        Study study = studyRepository.findStudyDetailById(StudyId);
         //study 멤버 정보
         List<UserStudy> allUsersByStudyId = userStudyService.getAllUsersByStudyId(StudyId);
 
-        List<StudyDetailResponse> collect = studyDetailById.stream()
-                .map(study -> {
+        //view_count + 1
+        study.updateViewcount();
 
-                    String category = study.getCategory().getName();
-                    List<String> tags = study.getAdditionalInfos().stream()
-                            .map(tag -> {
-                                return tag.getName();
-                            }).collect(Collectors.toList());
+        String category = study.getCategory().getName();
+        List<String> tags = study.getAdditionalInfos().stream()
+                .map(tag -> {
+                    return tag.getName();
+                }).collect(Collectors.toList());
 
-                    return StudyDetailResponse.builder()
-                            .title(study.getTitle())
-                            .description(study.getDescription())
-                            .tags(tags)
-                            .category(category)
-                            .matching_type(study.getMatching_type().toString())
-                            .start_date(study.getStart_date())
-                            .end_date(study.getEnd_date())
-                            .duration(study.getDuration())
-                            .max_participants_num(study.getMax_participants_num())
-                            .cur_participants_num(study.getCur_participants_num())
-                            .tendency(study.getTendency().toString())
-                            .membersList(
-                                    allUsersByStudyId.stream()
-                                            .map(member -> {
-                                                return StudyDetailMembers.builder()
-                                                        .nickname(member.getUser().getNickname())
-                                                        .is_owner(member.is_owner())
-                                                        .build();
-                                            })
-                                            .collect(Collectors.toList())
-                            )
-                            .build();
-                })
-                .collect(Collectors.toList());
-
-        return collect;
+        return StudyDetailResponse.builder()
+                .title(study.getTitle())
+                .description(study.getDescription())
+                .tags(tags)
+                .category(category)
+                .matching_type(study.getMatching_type().toString())
+                .start_date(study.getStart_date())
+                .end_date(study.getEnd_date())
+                .duration(study.getDuration())
+                .max_participants_num(study.getMax_participants_num())
+                .cur_participants_num(study.getCur_participants_num())
+                .tendency(study.getTendency().toString())
+                .membersList(
+                        allUsersByStudyId.stream()
+                                .map(member -> {
+                                    return StudyDetailMembers.builder()
+                                            .nickname(member.getUser().getNickname())
+                                            .is_owner(member.is_owner())
+                                            .build();
+                                })
+                                .collect(Collectors.toList())
+                )
+                .build();
     }
 
     public Study findStudyById(Long id){

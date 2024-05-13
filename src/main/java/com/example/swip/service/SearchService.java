@@ -30,9 +30,9 @@ public class SearchService {
         return searchRepository.findByKeyword(queryString);
     }
 
-    public List<Search> findTop2ByCount(){
-        List<Search> top20ByCount = searchRepository.findTop20ByCount();
-        return top20ByCount;
+    public List<Search> findTop6ByCount(){
+        List<Search> top6ByCount = searchRepository.findTop6ByCount();
+        return top6ByCount;
     }
 
 

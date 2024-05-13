@@ -24,6 +24,7 @@ public class UserStudyRepositoryImpl implements UserStudyRepositoryCustom {
                 .from(userStudy)
                 .leftJoin(userStudy.user, user).fetchJoin()
                 .where(userStudy.id.studyId.eq(studyId))
+                .orderBy(userStudy.join_date.asc()) //가입한 순서대로
                 .fetch();
 
         return findAllUsers;
