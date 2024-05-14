@@ -35,6 +35,7 @@ public class UserStudy {
     private LocalDateTime join_date; //참여 날짜
 
     @OneToMany(mappedBy = "userStudy", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<UserStudyExit> userStudyExits = new ArrayList<>();
 
     public void updateExitStatus(ExitStatus exit_status){

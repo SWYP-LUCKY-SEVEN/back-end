@@ -2,11 +2,10 @@ package com.example.swip.service;
 
 
 
-import com.example.swip.dto.UserMainProfileDto;
-import com.example.swip.dto.UserRelatedStudyCount;
+import com.example.swip.dto.user.UserMainProfileDto;
+import com.example.swip.dto.user.UserRelatedStudyCount;
 import com.example.swip.dto.auth.AddUserRequest;
-import com.example.swip.dto.auth.PostProfileDto;
-import com.example.swip.dto.study.StudyFilterResponse;
+import com.example.swip.dto.user.PostProfileDto;
 import com.example.swip.entity.Evaluation;
 import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
@@ -60,27 +59,14 @@ public class UserService {
     }
     @Transactional
     public boolean evaluationUser(Long toId, Long fromId, Integer score) {
-        if(100 < score || score < 0 )
-            return false;
         User toUser = userRepository.findById(toId).orElse(null);
-        User fromUser = userRepository.findById(fromId).orElse(null);
+        if(100 < score || score < 0 || toUser == null )
+            return false;
         evaluationRepository.save(Evaluation.builder()
                 .rating(score)
                 .to_user(toUser)
-                .from_user(fromUser)
+                .from_id(fromId)
                 .build());
-        return true;
-    }
-    @Transactional
-    public boolean evaluationUser(Long toId, User fromUser, Integer score) {
-        if(100 < score || score < 0 || toId == fromUser.getId())
-            return false;
-        User toUser = userRepository.findById(toId).orElse(null);
-        evaluationRepository.save(Evaluation.builder()
-                        .rating(score)
-                        .to_user(toUser)
-                        .from_user(fromUser)
-                        .build());
         return true;
     }
 

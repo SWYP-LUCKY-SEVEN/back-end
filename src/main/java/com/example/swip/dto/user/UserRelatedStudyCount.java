@@ -1,4 +1,4 @@
-package com.example.swip.dto;
+package com.example.swip.dto.user;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
