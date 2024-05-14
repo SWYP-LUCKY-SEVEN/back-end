@@ -11,5 +11,5 @@ public interface ChatServerService {
     PostProfileResponse updateUser(PostProfileDto postProfileDto);
     DefaultResponse deleteUser(Long userId);
 
-    PostStudyResponse postStudy(PostStudyRequest postStudyRequest);
+    DefaultResponse postStudy(PostStudyRequest postStudyRequest);
 }
