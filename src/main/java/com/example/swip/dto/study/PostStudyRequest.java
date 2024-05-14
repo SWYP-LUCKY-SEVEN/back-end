@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class PostStudyRequest {
-    private String studyId;
-    private String pk;
+    private Long studyId;
+    private Long pk;
     private String name;
 }

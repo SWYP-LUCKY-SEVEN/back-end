@@ -54,7 +54,7 @@ public class ChatServerServiceImpl implements ChatServerService {
     private String studyReqURL;
     @Override
     public DefaultResponse postStudy(PostStudyRequest postStudyRequest) {
-        String jsonInputString = "{\"studyId\":\""+postStudyRequest.getStudyId()
+        String jsonInputString = "{\"studyId\":\""+ postStudyRequest.getStudyId()
                 +"\",\"pk\":\""+postStudyRequest.getPk()
                 +"\",\"name\":\""+postStudyRequest.getName()+"\"}";
         String result = sendHttpRequest(studyReqURL, "POST", jsonInputString);
