@@ -48,6 +48,11 @@ public class UserSearchService {
         return deletedCount;
     }
 
+    @Transactional
+    public void deleteRecentSearch(Long userId, Long searchId) {
+        userSearchRepository.deleteById(new UserSearchId(userId, searchId));
+    }
+
     public Optional<UserSearch> findById(Long writerId, Long searchId) {
         Optional<UserSearch> findUserSearch = userSearchRepository.findById(new UserSearchId(writerId, searchId));
         return findUserSearch;

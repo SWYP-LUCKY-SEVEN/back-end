@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -35,6 +36,7 @@ public class UserSearchApiController {
         List<UserSearch> recentSearchByUserId = userSearchService.findRecentSearchByUserId(principal.getUserId());
         List<recentSearchResponse> response = recentSearchByUserId.stream()
                 .map(userSearch -> new recentSearchResponse(
+                        userSearch.getSearch().getId(),
                         userSearch.getSearch().getKeyword()
                 ))
                 .collect(Collectors.toList());
@@ -70,6 +72,15 @@ public class UserSearchApiController {
         else {
             return new deletedSearchResponse(false, deletedCount);
         }
+    }
+    @Operation(summary = "최근 검색어 단일 삭제 API")
+    @DeleteMapping("/userSearch/recent/{keyword_id}")
+    public deletedSearchResponse deleteRecentSearch(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable("keyword_id") Long keywordId
+    ){
+        userSearchService.deleteRecentSearch(principal.getUserId(), keywordId);
+        return new deletedSearchResponse(true, 1);
     }
 
     // List 값을 Result로 한 번 감싸서 return하기 위한 class
