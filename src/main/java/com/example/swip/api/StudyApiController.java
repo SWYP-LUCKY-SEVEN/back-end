@@ -50,16 +50,17 @@ public class StudyApiController {
 
         Study findStudy = studyService.findStudyById(saveStudy);
         if (findStudy!=null){ //채팅 서버에 저장
-            PostStudyResponse postStudyResponse = chatServerService.postStudy(
+            DefaultResponse defaultResponse = chatServerService.postStudy(
                     PostStudyRequest.builder()
-                            .studyId(findStudy.getId().toString())
-                            .pk(writerId.toString())
+                            .studyId(findStudy.getId())
+                            .pk(writerId)
                             .name(findStudy.getTitle())
                             .build()
             );
-            System.out.println("postStudyResponse = " + postStudyResponse.toString());
+            System.out.println("postStudyResponse = " + defaultResponse.getMessage());
             //TODO: 채팅 서버에 저장되었는지 여부 확인 후 조치
         }
+
         return saveStudy;
     }
 
