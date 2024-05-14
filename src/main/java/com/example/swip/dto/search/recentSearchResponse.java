@@ -8,5 +8,6 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class recentSearchResponse {
+    private Long id;
     private String keyword;
 }
