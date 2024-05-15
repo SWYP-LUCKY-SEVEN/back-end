@@ -19,6 +19,11 @@ import java.util.List;
 public class AuthApiController {
     private final AuthService authService;
 
+    @Operation(summary = "로드밸런스 상태 체크용", description = "")
+    @GetMapping("/") // user id 반환
+    public ResponseEntity<DefaultResponse> healthcheck(){
+        return ResponseEntity.status(200).build();
+    }
     @Operation(summary = "USER ID 확인", description = "JWT 토큰 계정과 알맞은 userID를 반환합니다. 헤더 내 Authorization:Bearer ~ 형태의 JWT 토큰을 필요로 합니다.")
     @GetMapping("/auth/user_id") // user id 반환
     public ResponseEntity<GetUserIDResponse> getUserId(@AuthenticationPrincipal UserPrincipal principal){  // Authorization 내 principal 없으면 null 값

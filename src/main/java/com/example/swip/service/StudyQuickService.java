@@ -35,8 +35,7 @@ public class StudyQuickService {
                 .category(savedFilter.getCategory().getName())
                 .start_date(savedFilter.getStart_date())
                 .duration(savedFilter.getDuration())
-                .min_member(savedFilter.getMin_member())
-                .max_member(savedFilter.getMax_member())
+                .mem_scope(savedFilter.getMem_scope())
                 .tendency(Tendency.longToString(savedFilter.getTendency()))
                 .build();
     }

@@ -23,15 +23,13 @@ public class QuickMatchFilter {
     private LocalDate start_date;
     private String duration;
     private List<String> tendency;
-    private Long min_member;
-    private Long max_member;
+    private List<Long> mem_scope;
     //DTO 들어온 뒤, Study, StudyCategory, Category, AddicionalInfo, UserStudy 에 정보 저장해야함.
     public SavedQuickMatchFilter toQuickFilterEntity(User user, Category findCategory) {
         return SavedQuickMatchFilter.builder()
                 .start_date(this.start_date)
                 .duration(this.duration)
-                .min_member(this.min_member)
-                .max_member(this.max_member)
+                .mem_scope(this.mem_scope)
                 .tendency(Tendency.stringToLong(tendency))
                 .category(findCategory)
                 .user(user)
