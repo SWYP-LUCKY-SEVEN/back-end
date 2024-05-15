@@ -14,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -100,5 +101,10 @@ public class TesterApiController {
                 DefaultResponse.builder()
                         .message("평가가 성공적으로 저장되었습니다.")
                         .build());
+    }
+
+    @GetMapping("/localDataTime")
+    private LocalDateTime printServerTime(){
+        return LocalDateTime.now();
     }
 }
