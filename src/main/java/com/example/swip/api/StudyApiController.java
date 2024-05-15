@@ -145,27 +145,28 @@ public class StudyApiController {
     }
     @Operation(summary = "저장된 빠른 매칭 가져오기")
     @GetMapping("/study/quick/filter")
-    public QuickMatchFilter getQuickFilter(
+    public ResponseEntity<QuickMatchFilter> getQuickFilter(
             @AuthenticationPrincipal UserPrincipal principal // 권한 인증
     )
     {
         if (principal == null)
-            return null;
+            return ResponseEntity.status(403).build();
         Long user_id = principal.getUserId();
         QuickMatchFilter quickMatchFilter = studyQuickService.getQuickMatchFilter(user_id);
+        if (quickMatchFilter == null)
+            return ResponseEntity.status(201).build();
 
-        return quickMatchFilter;
+        return ResponseEntity.status(200).body(quickMatchFilter);
     }
-    @Operation(summary = "빠른 매칭 - 상위 리스트 3개씩 반환 (JWT 필요)",
+    @Operation(summary = "빠른 매칭 - 상위 리스트 9개 반환 (JWT 필요)",
             description = "page : 다시 매칭한 횟수\n" +
                     "1. Save 옵션 True시 조건 저장. false시 조건 삭제\n" +
                     "2. 일치하는 조건은 (분야 > 시작일 > 진행기간 > 성향 > 인원) 순으로 정렬된다.\n" +
                     "3. mem_scope : 0 : 2명, 1 : 3~5명, 2 : 6~10명, 3: 11~20명")
     @PostMapping("/study/quick/match")
-    public Result quickMatchStudy(
+    public Result postQuickMatchStudy(
             @AuthenticationPrincipal UserPrincipal principal, // 권한 인증
             @RequestParam boolean save,
-            @RequestParam(required = false) Long page,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) String duration,
@@ -196,8 +197,8 @@ public class StudyApiController {
         List<QuickMatchResponse> filteredStudy =
                 studyQuickService.quickFilteredStudy(
                         quickMatchFilter,
-                        page!=null?page:0L,
-                        3L);
+                        0L,
+                        9L);
         int totalCount = filteredStudy.size(); //전체 리스트 개수
 
         return new Result(filteredStudy,totalCount);
