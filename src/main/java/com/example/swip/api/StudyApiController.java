@@ -221,7 +221,32 @@ public class StudyApiController {
         if(status)
             return ResponseEntity.status(200).body(
                     DefaultResponse.builder()
-                            .message("일단은 성공적")
+                            .message("success")
+                            .build());
+
+        return ResponseEntity.status(404).body(
+                DefaultResponse.builder()
+                        .message("올바르지 않은 ID")
+                        .build());
+    }
+    @Operation(summary = "찜 삭제",
+            description = "스터디 찜 제거")
+    @DeleteMapping("/study/{study_id}/favorite")
+    public ResponseEntity deleteFavoriteStudy(
+            @AuthenticationPrincipal UserPrincipal userPrincipal, // 권한 인증
+            @PathVariable("study_id") Long studyId
+    ) {
+        if(userPrincipal == null)
+            return ResponseEntity.status(403).body(
+                    DefaultResponse.builder()
+                            .message("로그인이 필요합니다.")
+                            .build());
+
+        boolean status = favoriteStudyService.deleteFavoriteStudy(userPrincipal.getUserId(), studyId);
+        if(status)
+            return ResponseEntity.status(200).body(
+                    DefaultResponse.builder()
+                            .message("success")
                             .build());
 
         return ResponseEntity.status(404).body(

@@ -306,12 +306,11 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         beList.add(eqCategory(quickMatchFilter.getCategory()));
         beList.add(inTendency(quickMatchFilter.getTendency()));
 
-        builder.and(matchingSelect(MatchingType.Element.Quick));
+        builder.and(study.matching_type.eq(MatchingType.Element.Quick));
         for (BooleanExpression be : beList) {
             if(be != null) {
                 builder.or(be);
             }
-            System.out.println(builder);
         }
     }
     private BooleanExpression matchingSelect(MatchingType.Element element) {
