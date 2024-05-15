@@ -3,6 +3,7 @@ package com.example.swip.entity;
 import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.example.swip.entity.enumtype.Tendency;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -53,8 +54,7 @@ public class Study {
 
 
     @CreationTimestamp
-    @Column(updatable = false)
-    @Convert(converter = Jsr310JpaConverters.LocalDateTimeConverter.class)
+    @JsonFormat(timezone = "Asia/Seoul")
     private LocalDateTime created_time;
 
     @OneToMany(mappedBy = "study", cascade = CascadeType.ALL)
