@@ -19,7 +19,7 @@ public class StudyFilterCondition {
 
     private String query_string;
 
-    private String quick_match; //빠른매칭: true, 승인제:false
+    private String quick_match; //빠른매칭: quick, 승인제:approval
 
     private String category;
     private LocalDate start_date;

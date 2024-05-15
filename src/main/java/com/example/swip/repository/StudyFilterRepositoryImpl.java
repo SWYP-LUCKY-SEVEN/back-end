@@ -37,6 +37,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
 
     private final JPAQueryFactory queryFactory;
 
+    public static int[][] scope = {{2, 2}, {3, 5}, {6, 10}, {11, 20}};
     public StudyFilterRepositoryImpl(EntityManager em){
         this.queryFactory = new JPAQueryFactory(em);
     }
@@ -93,13 +94,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         // 빠른 매칭
         if(filterCondition.getQuick_match() != null){
             String quickMatch = filterCondition.getQuick_match();
-            switch (quickMatch){
-                case "quick":
-                    builder.and(study.matching_type.eq(MatchingType.Element.Quick));
-                    break;
-                default:
-                    break;
-            }
+            builder.and(matchingSelect(MatchingType.toMatchingType(quickMatch)));
         }
         // 카테고리 선택
         if(filterCondition.getCategory() != null){
@@ -210,6 +205,8 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
     @Override
     public List<QuickMatchResponse> quickFilterStudy(QuickMatchFilter quickMatchFilter, Long page, Long size) {
         QCategory category = QCategory.category;
+
+        BooleanBuilder scope_builder = includeMemberNumber(quickMatchFilter.getMem_scope());
         // 카테고리 정렬
         NumberExpression<Integer> categoryRank = quickMatchFilter.getStart_date() != null ?
                 new CaseBuilder()
@@ -235,30 +232,34 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                         .otherwise(2)
                 :null;
 
-        // 인원 정렬
-        Long min = quickMatchFilter.getMin_member() != null ? quickMatchFilter.getMin_member() : 0L;
-        Long max = quickMatchFilter.getMax_member() != null ? quickMatchFilter.getMax_member() : 20L;
-        NumberExpression<Integer> memberRank = new CaseBuilder()
-                .when(study.max_participants_num.between(min, max)).then(1)
-                .otherwise(2);
-
+        NumberExpression<Integer> memberRank = scope_builder != null ?
+                new CaseBuilder()
+                        .when(scope_builder).then(1)
+                        .otherwise(2)
+                :null;
 
         // 분야 > 시작일 > 진행기간 > 성향 > 인원
         List<OrderSpecifier> orderSpecifiers = new ArrayList<>();
         //우선순위는 어떻게 이뤄질까?
-        orderSpecifiers.add(memberRank.asc());    //인원
-        if(tendencyRank != null) orderSpecifiers.add(tendencyRank.asc());    //성향
-        if(durationRank != null) orderSpecifiers.add(durationRank.asc());    //진행기간
-        if(startDateRank != null) orderSpecifiers.add(startDateRank.asc());   //시작일
         if(categoryRank != null) orderSpecifiers.add(categoryRank.asc());    //분야
+        if(startDateRank != null) orderSpecifiers.add(startDateRank.asc());   //시작일
+        if(durationRank != null) orderSpecifiers.add(durationRank.asc());    //진행기간
+        if(tendencyRank != null) orderSpecifiers.add(tendencyRank.asc());    //성향
+        if(memberRank != null) orderSpecifiers.add(memberRank.asc());    //인원
 
         JPAQuery<Study> query = queryFactory
                 .selectFrom(study)
                 .leftJoin(study.category, category)
                 .fetchJoin();
 
+
+        BooleanBuilder builder = new BooleanBuilder();
+        quickFilter(builder, quickMatchFilter);
+        if(scope_builder != null)
+            builder.or(scope_builder);
+
         List<Study> findStudy = query
-                .where(quickFilter(quickMatchFilter))   //첫 BooleanExpression는 무조건 AND 연산이 적용된다.
+                .where(builder)   //첫 BooleanExpression는 무조건 AND 연산이 적용된다.
                 .orderBy(orderSpecifiers.toArray(new OrderSpecifier[orderSpecifiers.size()]))
                 .distinct()
                 .offset(page*size)  //반환 시작 index 0, 3, 6
@@ -281,24 +282,35 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
 
         return responses;
     }
-    private BooleanExpression quickFilter(QuickMatchFilter quickMatchFilter) {
+
+    private BooleanBuilder includeMemberNumber(List<Long> mem_scope) {
+        if (mem_scope == null)
+            return null;
+        BooleanBuilder builder = new BooleanBuilder();
+        for(Long index : mem_scope) {
+            int i = index.intValue();
+            builder.or(study.max_participants_num.between(scope[i][0], scope[i][1]));
+        };
+        return builder;
+    }
+    private void quickFilter(BooleanBuilder builder, QuickMatchFilter quickMatchFilter) {
         List<BooleanExpression> beList = new ArrayList<>();
         beList.add(eqStart_date(quickMatchFilter.getStart_date()));
         beList.add(eqDuration(quickMatchFilter.getDuration()));
         beList.add(eqCategory(quickMatchFilter.getCategory()));
         beList.add(inTendency(quickMatchFilter.getTendency()));
 
-        MatchingType.Element element = MatchingType.toMatchingType(quickMatchFilter.getQuick_match());
-        BooleanExpression temp = matchingSelect(element);
+        //MatchingType.Element element = MatchingType.toMatchingType(quickMatchFilter.getQuick_match());
+        builder.and(matchingSelect(MatchingType.Element.Quick));
         for (BooleanExpression be : beList) {
             if(be != null) {
-                temp.or(be);
+                builder.or(be);
             }
+            System.out.println(builder);
         }
-        return temp;
     }
     private BooleanExpression matchingSelect(MatchingType.Element element) {
-        return element != null?study.matching_type.eq(MatchingType.Element.Quick) : Expressions.asBoolean(true);
+        return element != null?study.matching_type.eq(element) : Expressions.asBoolean(true);
     }
     private BooleanExpression eqStart_date(LocalDate startDate) {
         return startDate != null ? study.start_date.eq(startDate) : null;

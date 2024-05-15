@@ -159,7 +159,8 @@ public class StudyApiController {
     @Operation(summary = "빠른 매칭 - 상위 리스트 3개씩 반환 (JWT 필요)",
             description = "page : 다시 매칭한 횟수\n" +
                     "1. Save 옵션 True시 조건 저장. false시 조건 삭제\n" +
-                    "2. 일치하는 조건은 (분야 > 시작일 > 진행기간 > 성향 > 인원) 순으로 정렬된다.")
+                    "2. 일치하는 조건은 (분야 > 시작일 > 진행기간 > 성향 > 인원) 순으로 정렬된다.\n" +
+                    "3. mem_scope : 0 : 2명, 1 : 3~5명, 2 : 6~10명, 3: 11~20명")
     @PostMapping("/study/quick/match")
     public Result quickMatchStudy(
             @AuthenticationPrincipal UserPrincipal principal, // 권한 인증
@@ -168,8 +169,7 @@ public class StudyApiController {
             @RequestParam(required = false) String category,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) String duration,
-            @RequestParam(required = false) Long minMember,
-            @RequestParam(required = false) Long maxMember,
+            @RequestParam(required = false) List<Long> mem_scope,
             @RequestParam(required = false) List<String> tendency
     )
     {
@@ -184,8 +184,7 @@ public class StudyApiController {
                 .start_date(startDate)
                 .duration(duration)
                 .tendency(tendency)
-                .min_member(minMember)
-                .max_member(maxMember)
+                .mem_scope(mem_scope)
                 .build();
 
         if(save == true)
