@@ -6,6 +6,7 @@ import com.example.swip.entity.enumtype.Tendency;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -52,6 +53,8 @@ public class Study {
 
 
     @CreationTimestamp
+    @Column(updatable = false)
+    @Convert(converter = Jsr310JpaConverters.LocalDateTimeConverter.class)
     private LocalDateTime created_time;
 
     @OneToMany(mappedBy = "study", cascade = CascadeType.ALL)
