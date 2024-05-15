@@ -103,8 +103,10 @@ public class TesterApiController {
                         .build());
     }
 
-    @GetMapping("/localDataTime")
+    @GetMapping("/study/localDataTime")
     private LocalDateTime printServerTime(){
-        return LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
+
+        return now;
     }
 }
