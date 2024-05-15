@@ -94,7 +94,13 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         // 빠른 매칭
         if(filterCondition.getQuick_match() != null){
             String quickMatch = filterCondition.getQuick_match();
-            builder.and(matchingSelect(MatchingType.toMatchingType(quickMatch)));
+            switch (quickMatch){
+                case "quick":
+                    builder.and(study.matching_type.eq(MatchingType.Element.Quick));
+                    break;
+                default:
+                    break;
+            }
         }
         // 카테고리 선택
         if(filterCondition.getCategory() != null){
@@ -259,7 +265,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
             builder.or(scope_builder);
 
         List<Study> findStudy = query
-                .where(builder)   //첫 BooleanExpression는 무조건 AND 연산이 적용된다.
+                .where(builder.and(study.start_date.after(LocalDate.now().minusDays(1))))  //첫 BooleanExpression는 무조건 AND 연산이 적용된다.
                 .orderBy(orderSpecifiers.toArray(new OrderSpecifier[orderSpecifiers.size()]))
                 .distinct()
                 .offset(page*size)  //반환 시작 index 0, 3, 6
@@ -300,7 +306,6 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         beList.add(eqCategory(quickMatchFilter.getCategory()));
         beList.add(inTendency(quickMatchFilter.getTendency()));
 
-        //MatchingType.Element element = MatchingType.toMatchingType(quickMatchFilter.getQuick_match());
         builder.and(matchingSelect(MatchingType.Element.Quick));
         for (BooleanExpression be : beList) {
             if(be != null) {
