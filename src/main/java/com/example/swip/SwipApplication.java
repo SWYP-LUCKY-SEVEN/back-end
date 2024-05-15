@@ -19,7 +19,6 @@ public class SwipApplication {
 	}
 	public static void main(String[] args) {
 		SpringApplication.run(SwipApplication.class, args);
-		System.out.println(LocalDateTime.now());
 	}
 
 }
