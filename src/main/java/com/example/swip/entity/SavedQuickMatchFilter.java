@@ -33,4 +33,11 @@ public class SavedQuickMatchFilter {
     @JoinColumn(name = "category_id")
     private Category category;
 
+    public void updateFilter(Category category, LocalDate start_date, String duration, Long tendency, Long mem_scope) {
+        this.category = category;
+        this.start_date = start_date;
+        this.duration = duration;
+        this.tendency = tendency;
+        this.mem_scope = mem_scope;
+    }
 }

@@ -56,10 +56,22 @@ public class StudyQuickService {
         //category id 조회
         Category findCategory = categoryService.findCategoryIdByName(quickMatchFilter.getCategory());
 
-        //filter 저장
-        SavedQuickMatchFilter savedFilter = quickFilterRepository.save(
-                quickMatchFilter.toQuickFilterEntity(user, findCategory)
-        );
+        SavedQuickMatchFilter savedFilter = null;
+        if(quickFilterRepository.existsById(userId)) {
+            savedFilter = quickFilterRepository.findById(userId).orElse(null);
+            if (savedFilter != null)
+                savedFilter.updateFilter(
+                        findCategory,
+                        quickMatchFilter.getStart_date(),
+                        quickMatchFilter.getDuration(),
+                        Tendency.stringToLong(quickMatchFilter.getTendency()),
+                        QuickMatchFilter.memScopeToLong(quickMatchFilter.getMem_scope())
+                );
+        }else {
+            savedFilter = quickFilterRepository.save(
+                    quickMatchFilter.toQuickFilterEntity(user, findCategory)
+            );
+        }
 
         //return
         return savedFilter.getId();
