@@ -22,7 +22,7 @@ public class SavedQuickMatchFilter {
   
     private String duration;    //진행 기간
     private Long tendency; //스터디 성향
-    private List<Long> mem_scope;
+    private Long mem_scope;
 
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
