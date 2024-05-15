@@ -196,6 +196,7 @@ public class StudyService {
                                 .map(member -> {
                                     return StudyDetailMembers.builder()
                                             .nickname(member.getUser().getNickname())
+                                            .profileImage(member.getUser().getProfile_image())
                                             .is_owner(member.is_owner())
                                             .build();
                                 })
