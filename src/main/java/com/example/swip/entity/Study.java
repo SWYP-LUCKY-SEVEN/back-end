@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SourceType;
 import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 
 import java.time.LocalDate;
@@ -53,8 +54,7 @@ public class Study {
     private Category category;
 
 
-    @CreationTimestamp
-    @JsonFormat(timezone = "Asia/Seoul")
+    @CreationTimestamp(source = SourceType.DB)
     private LocalDateTime created_time;
 
     @OneToMany(mappedBy = "study", cascade = CascadeType.ALL)
