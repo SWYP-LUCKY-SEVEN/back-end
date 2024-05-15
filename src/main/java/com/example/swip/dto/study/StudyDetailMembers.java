@@ -9,5 +9,6 @@ import lombok.Getter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class StudyDetailMembers {
     private String nickname;
+    private String profileImage;
     private boolean is_owner;
 }
