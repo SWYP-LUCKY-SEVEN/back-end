@@ -3,6 +3,7 @@ package com.example.swip.entity;
 import com.example.swip.entity.compositeKey.UserSearchId;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SourceType;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
@@ -28,7 +29,7 @@ public class UserSearch {
 
     private int count; //검색 횟수
 
-    @UpdateTimestamp
+    @UpdateTimestamp(source = SourceType.DB)
     private LocalDateTime update_time; //수정 시간
 
     public void updateLog() {
