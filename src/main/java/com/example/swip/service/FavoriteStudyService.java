@@ -32,14 +32,25 @@ public class FavoriteStudyService {
         Study study = studyService.findStudyById(studyId);
         if(user == null || study == null)
             return false;
-        System.out.println(user.getId());
-        System.out.println(study.getId());
         FavoriteStudy favoriteStudy = FavoriteStudy.builder()
                 .id(new UserStudyId(userId, studyId))
                 .user(user)
                 .study(study)
                 .build();
         favoriteStudyRepository.save(favoriteStudy);
+        return true;
+    }
+
+    @Transactional
+    public boolean deleteFavoriteStudy(Long userId, Long studyId) {
+        User user = userService.findUserById(userId);
+        Study study = studyService.findStudyById(studyId);
+        if(user == null || study == null)
+            return false;
+        FavoriteStudy favoriteStudy = favoriteStudyRepository.findByUserIdAndStudyId(userId, studyId);
+        if(favoriteStudy == null)
+            return false;
+        favoriteStudyRepository.delete(favoriteStudy);
         return true;
     }
 }
