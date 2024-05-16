@@ -28,9 +28,10 @@ public class UserStudyService {
     private final UserRepository userRepository;
     private final StudyRepository studyRepository;
 
+
     //저장
     @Transactional
-    public void saveUserStudy(User user, Study savedStudy, boolean is_owner){
+    public UserStudy saveUserStudy(User user, Study savedStudy, boolean is_owner){
 
         UserStudy userStudy = UserStudy.builder()
                 .id(new UserStudyId(user.getId(), savedStudy.getId()))
@@ -41,7 +42,7 @@ public class UserStudyService {
                 .join_date(LocalDateTime.now())
                 .build();
 
-        userStudyRepository.save(userStudy);
+        return userStudyRepository.save(userStudy);
     }
     public boolean getAlreadyJoin(Long userId, Long studyId) {
         return userStudyRepository.existsById(new UserStudyId(userId, studyId));

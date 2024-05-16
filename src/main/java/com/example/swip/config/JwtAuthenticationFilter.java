@@ -26,7 +26,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .map(jwtDecoder::decode) // .map() => optional 반환값을 함수에 매핑해줌. 즉 jwtDecoder.decode(request)와 동일
                 .map(jwtToPrincipalConverter::convert) //DecodedJWT입력, UserPrincipal 반환
                 .map(UserPrincipalAuthenticationToken::new) //UserPrincipal 사용하여 생성자 호출. authentication
-                .ifPresent(authentication -> SecurityContextHolder.getContext().setAuthentication(authentication)); //현재 인증된 주체를 변경한다. 때로는 인증 정보를 제거(null일경우)한다.
+                .ifPresent(authentication -> {
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                        //String token = ((UserPrincipalAuthenticationToken) authentication).getPrincipal().getToken();
+                }); //현재 인증된 주체를 변경한다. 때로는 인증 정보를 제거(null일경우)한다.
         //authentication엔 principal(사용자 ID 혹은 객체), credentials(비밀번호), authorities(권한 목록), details(인증 부가 정보), Authenticated(인증여부) 등의 정보가 저장되어있다.
         //UserPrincipalAuthenticationToken이 SecurityContextHolder의 Context에 인증을 저장한다.
         //SecurityContext 는 전역으로 어디서든 꺼낼 수 있다.

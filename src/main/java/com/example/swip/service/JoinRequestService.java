@@ -1,9 +1,12 @@
 package com.example.swip.service;
 
+import com.example.swip.dto.DefaultResponse;
+import com.example.swip.dto.study.PostStudyAddmemberRequest;
 import com.example.swip.dto.study.StudyFilterResponse;
 import com.example.swip.entity.JoinRequest;
 import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
+import com.example.swip.entity.UserStudy;
 import com.example.swip.entity.compositeKey.JoinRequestId;
 import com.example.swip.entity.enumtype.JoinStatus;
 import com.example.swip.repository.JoinRequestRepository;
@@ -26,6 +29,7 @@ public class JoinRequestService {
     private final UserStudyService userStudyService;
     private final UserRepository userRepository;
     private final StudyRepository studyRepository;
+    private final ChatServerService chatServerService;
 
     public boolean getAlreadyRequest(Long userId, Long studyId) {
         return joinRequestRepository.existsById(new JoinRequestId(userId, studyId));
@@ -54,7 +58,7 @@ public class JoinRequestService {
     }
 
     @Transactional
-    public void acceptJoinRequest(Long studyId, Long userId) {
+    public void acceptJoinRequest(Long studyId, Long userId, String bearerToken) {
         //join_status update
         JoinRequest findRequest = joinRequestRepository.findById(new JoinRequestId(userId, studyId)).orElse(null);
         if (findRequest != null) {
@@ -66,7 +70,19 @@ public class JoinRequestService {
         Study findStudy = studyRepository.findById(studyId).orElse(null);
 
         if(findUser != null && findStudy != null) {
-            userStudyService.saveUserStudy(findUser, findStudy, false);
+            UserStudy userStudy = userStudyService.saveUserStudy(findUser, findStudy, false);
+            //채팅방 멤버 추가 (chat server 연동)
+            if(userStudy != null) {
+                DefaultResponse defaultResponse = chatServerService.addStudyMember(
+                        PostStudyAddmemberRequest.builder()
+                                .token(bearerToken)
+                                .studyId(findStudy.getId())
+                                .userId(findUser.getId())
+                                .type(0) //본인이 참가 => 토큰에 있는 유저 초대
+                                .build()
+                );
+                System.out.println("postStudyResponse = " + defaultResponse.getMessage());
+            }
         }
     }
 

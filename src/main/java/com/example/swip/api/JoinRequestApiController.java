@@ -1,9 +1,12 @@
 package com.example.swip.api;
 
 import com.example.swip.config.UserPrincipal;
+import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.JoinRequest.JoinRequestResponse;
+import com.example.swip.dto.study.PostStudyAddmemberRequest;
 import com.example.swip.entity.JoinRequest;
 import com.example.swip.entity.enumtype.JoinStatus;
+import com.example.swip.service.ChatServerService;
 import com.example.swip.service.JoinRequestService;
 import com.example.swip.service.UserStudyService;
 import com.querydsl.core.Tuple;
@@ -24,6 +27,7 @@ import java.util.stream.Collectors;
 public class JoinRequestApiController {
     private final JoinRequestService joinRequestService;
     private final UserStudyService userStudyService;
+
 
     @Operation(summary = "스터디 신청 내역 조회 (방장용)")
     @GetMapping("/joinRequest/{study_id}")
@@ -94,7 +98,7 @@ public class JoinRequestApiController {
             return ResponseEntity.status(403).body("방장이 아닙니다.");
         }
         else {
-                joinRequestService.acceptJoinRequest(studyId, userId);
+                joinRequestService.acceptJoinRequest(studyId, userId, userPrincipal.getToken());
                 return ResponseEntity.status(200).body("신청 수락 성공");
         }
     }

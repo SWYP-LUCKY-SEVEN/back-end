@@ -56,9 +56,10 @@ public class TesterApiController {
     @PostMapping("/study/join/{study_id}/{user_id}")
     public ResponseEntity testMatchStudy(
             @PathVariable("study_id") Long studyId,
-            @PathVariable("user_id") Long userId
+            @PathVariable("user_id") Long userId,
+            @AuthenticationPrincipal UserPrincipal userPrincipal
     ) {
-        return studyService.joinStudy(studyId, userId);
+        return studyService.joinStudy(studyId, userId, userPrincipal.getToken());
     }
 
 
@@ -108,5 +109,18 @@ public class TesterApiController {
         LocalDateTime now = LocalDateTime.now();
 
         return now;
+    }
+
+    @PostMapping("/study/token")
+    public String getTokenString(
+            @AuthenticationPrincipal UserPrincipal userPrincipal // 권한 인증
+    ) {
+        System.out.println("userPrincipal.getUserId() = " + userPrincipal.getUserId());
+        System.out.println("userPrincipal.getValidate() = " + userPrincipal.getValidate());
+        System.out.println("userPrincipal.getEmail() = " + userPrincipal.getEmail());
+        System.out.println("userPrincipal.getToken() = " + userPrincipal.getToken());
+        if(userPrincipal == null)
+            return null;
+        return userPrincipal.getToken();
     }
 }
