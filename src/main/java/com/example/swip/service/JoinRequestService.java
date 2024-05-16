@@ -78,7 +78,7 @@ public class JoinRequestService {
                                 .token(bearerToken)
                                 .studyId(findStudy.getId())
                                 .userId(findUser.getId())
-                                .type(0) //본인이 참가 => 토큰에 있는 유저 초대
+                                .type(1) //본인이 참가 => 토큰에 있는 유저 초대
                                 .build()
                 );
                 System.out.println("postStudyResponse = " + defaultResponse.getMessage());
