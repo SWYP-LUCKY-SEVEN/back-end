@@ -40,6 +40,7 @@ public class StudyService {
     private final SearchService searchService;
     private final UserSearchService userSearchService;
     private final JoinRequestService joinRequestService;
+    private final ChatServerService chatServerService;
 
     //저장
     @Transactional
@@ -122,7 +123,7 @@ public class StudyService {
     }
 
     @Transactional
-    public ResponseEntity joinStudy(Long studyId, Long userId) {
+    public ResponseEntity joinStudy(Long studyId, Long userId, String bearerToken) {
         Study study = studyRepository.findById(studyId).orElse(null);
         User user = userService.findUserById(userId);
         if(study==null || user==null)
@@ -139,12 +140,25 @@ public class StudyService {
                     .build());
 
         else if(study.getMatching_type().equals(MatchingType.Element.Quick)) {
-            userStudyService.saveUserStudy(user, study, false);
+            UserStudy findUserStudy = userStudyService.saveUserStudy(user, study, false);
             //study entity의 cur_participants_num update
             study.updateCurParticipants();
+            //채팅방 멤버 추가 (chat server 연동)
+            if (findUserStudy!=null) { //채팅 서버에 저장
+                DefaultResponse defaultResponse = chatServerService.addStudyMember(
+                        PostStudyAddmemberRequest.builder()
+                                .token(bearerToken)
+                                .studyId(study.getId())
+                                .userId(user.getId())
+                                .type(1) //본인이 참가 => 토큰에 있는 유저 초대
+                                .build()
+                );
+                System.out.println("postStudyResponse = " + defaultResponse.getMessage());
+            }
             return ResponseEntity.status(200).body(DefaultResponse.builder()
                     .message("스터디에 참가되었습니다.")
                     .build());
+
         } else { //approval
             //이미 스터디 참가 신청한 경우
             if(joinRequestService.getAlreadyRequest(userId, studyId)){

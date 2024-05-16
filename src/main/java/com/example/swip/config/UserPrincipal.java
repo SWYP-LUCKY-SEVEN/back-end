@@ -17,6 +17,7 @@ public class UserPrincipal implements UserDetails {
     private final String validate;
     @JsonIgnore
     private final String password;
+    private String token;
     private final Collection<? extends GrantedAuthority> authorities;
 
     // 사용자에게 부여된 권한 목록을 반환한다.

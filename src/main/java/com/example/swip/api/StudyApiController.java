@@ -268,7 +268,10 @@ public class StudyApiController {
                     DefaultResponse.builder()
                             .message("로그인이 필요합니다.")
                             .build());
-        return studyService.joinStudy(studyId, userPrincipal.getUserId());
+
+        return studyService.joinStudy(studyId, userPrincipal.getUserId(), userPrincipal.getToken());
+        
+        
     }
 
     /**
@@ -297,7 +300,6 @@ public class StudyApiController {
         if(!ownerId.equals(findStudyOwner)) {
             return ResponseEntity.status(403).body(new Result2<>(null, "스터디를 수정할 권한이 없습니다."));
         }
-
         StudyUpdateResponse response = studyService.findStudyEditDetailById(studyId);
         return ResponseEntity.status(200).body(new Result2<>(response, "성공"));
     }

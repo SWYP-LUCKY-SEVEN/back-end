@@ -14,6 +14,7 @@ public class JwtToPrincipalConverter {
                 .email(jwt.getClaim("e").asString())
                 .validate(jwt.getClaim("v").asString())
                 .authorities(extractAuthoritiesFromClaim(jwt))
+                .token(jwt.getToken()) //토큰 설정
                 .build();
     }
 
