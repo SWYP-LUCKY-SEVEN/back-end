@@ -52,8 +52,8 @@ public class ChatServerServiceImpl implements ChatServerService {
     private String studyReqURL;
     @Override
     public DefaultResponse postStudy(PostStudyRequest postStudyRequest) {
-        String jsonInputString = "{\"studyId\":\""+ postStudyRequest.getStudyId()
-                +"\",\"pk\":\""+postStudyRequest.getPk()
+        String jsonInputString = "{\"studyId\":\""+ postStudyRequest.getStudyId().toString()
+                +"\",\"pk\":\""+postStudyRequest.getPk().toString()
                 +"\",\"name\":\""+postStudyRequest.getName()+"\"}";
         String result = sendHttpRequest(studyReqURL, "POST", jsonInputString, null);
 
@@ -68,10 +68,10 @@ public class ChatServerServiceImpl implements ChatServerService {
     public DefaultResponse addStudyMember(PostStudyAddmemberRequest postStudyAddmemberRequest) {
         String bearerToken = postStudyAddmemberRequest.getToken();
 
-        String jsonInputString = "{\"studyId\":\""+ postStudyAddmemberRequest.getStudyId()
-                +"\",\"userId\":\""+postStudyAddmemberRequest.getUserId()
+        String jsonInputString = "{\"studyId\":\""+ postStudyAddmemberRequest.getStudyId().toString()
+                +"\",\"userId\":\""+postStudyAddmemberRequest.getUserId().toString()
                 +"\",\"type\":\""+postStudyAddmemberRequest.getType()+"\"}";
-        String result = sendHttpRequest(studyAddMemberReqURL, "POST", jsonInputString, bearerToken);
+        String result = sendHttpRequest(studyAddMemberReqURL, "PUT", jsonInputString, bearerToken);
 
         return DefaultResponse.builder()
                 .message(result)
@@ -88,7 +88,7 @@ public class ChatServerServiceImpl implements ChatServerService {
             conn.setRequestMethod(method);
             conn.setRequestProperty("Content-Type", "application/json");
             if(bearerToken != null) {
-                conn.setRequestProperty("Authorization", "Bearer" + bearerToken); //Bearer Token 추가
+                conn.setRequestProperty("Authorization", "Bearer " + bearerToken); //Bearer Token 추가
             }
             conn.setDoOutput(true);
             conn.setConnectTimeout(1000); // 1초
