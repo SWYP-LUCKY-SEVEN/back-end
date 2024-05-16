@@ -277,12 +277,16 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                         study.getId(),
                         study.getTitle(),
                         study.getCategory().getName(),
+                        study.getDescription(),
                         study.getStart_date(),
                         study.getDuration(),
                         study.getMax_participants_num(),
                         study.getCur_participants_num(),
                         study.getCreated_time(),
-                        study.getTendency()
+                        study.getTendency(),
+                        study.getAdditionalInfos().stream()
+                                .map(info -> info.getName())
+                                .collect(Collectors.toList())
                 ))
                 .collect(Collectors.toList());
 

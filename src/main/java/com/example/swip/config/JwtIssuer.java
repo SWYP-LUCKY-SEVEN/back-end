@@ -1,6 +1,7 @@
 package com.example.swip.config;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -18,7 +19,7 @@ public class JwtIssuer {
     public String issue(long userId, String email, String validate, List<String> roles) {
         return JWT.create()
                 .withSubject(String.valueOf(userId))
-                .withExpiresAt(Instant.now().plus(Duration.of(1, ChronoUnit.DAYS))) // 보통 duration 짧게 하는데 튜토리얼이니까 1day
+                .withExpiresAt(Instant.now().plus(Duration.of(7, ChronoUnit.DAYS))) // 보통 duration 짧게 하는데 튜토리얼이니까 1day
                 .withClaim("e", email)
                 .withClaim("v", validate)
                 .withClaim("a", roles)
