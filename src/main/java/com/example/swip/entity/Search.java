@@ -19,4 +19,12 @@ public class Search {
     public void updateCount() {
         this.count = this.count + 1;
     }
+    public void reduceCount(int count){
+        if(count >=this.count){
+            this.count = 0L;
+        }
+        else {
+            this.count -= count;
+        }
+    }
 }

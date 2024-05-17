@@ -49,7 +49,7 @@ public class JoinRequestRepositoryImpl implements JoinRequestRepositoryCustom{
     public void deleteExpiredJoinRequest(LocalDateTime time) {
         queryFactory
                 .delete(joinRequest)
-                .where(joinRequest.request_date.before(time.minusDays(3)))
+                .where(joinRequest.request_date.before(time.minusDays(2)))
                 .execute();
     }
 
