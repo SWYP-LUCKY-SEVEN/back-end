@@ -3,9 +3,11 @@ package com.example.swip.api;
 import com.example.swip.config.UserPrincipal;
 import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.EvaluationRequest;
+import com.example.swip.dto.todo.StudyMBOResponse;
 import com.example.swip.entity.User;
 import com.example.swip.service.AuthService;
 import com.example.swip.service.StudyService;
+import com.example.swip.service.StudyTodoService;
 import com.example.swip.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -23,12 +25,11 @@ public class TesterApiController {
     private final AuthService authService;
     private final UserService userService;
     private final StudyService studyService;
-
+    private final StudyTodoService studyTodoService;
     @Operation(summary = "모든 USER ID 확인 (테스트용 API)", description = "가입된 모든 user의 Id를 반환합니다.")
     @GetMapping("/auth/user_id/all") // user id 반환
-    public ResponseEntity<List<Long>> getAllUserId(@AuthenticationPrincipal UserPrincipal principal){  // Authorization 내 principal 없으면 null 값
-        if(principal != null) {
-
+    public ResponseEntity<List<Long>> getAllUserId(@AuthenticationPrincipal UserPrincipal userPrincipal){  // Authorization 내 principal 없으면 null 값
+        if(userPrincipal != null) {
             return ResponseEntity.status(200).body(authService.getAllUserId());
         }
         return ResponseEntity.status(403).build();

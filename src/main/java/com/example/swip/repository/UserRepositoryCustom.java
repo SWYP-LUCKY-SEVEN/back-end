@@ -1,5 +1,6 @@
 package com.example.swip.repository;
 
+import com.example.swip.dto.user.SimpleUserProfileDto;
 import com.example.swip.entity.*;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.querydsl.core.types.dsl.BooleanExpression;

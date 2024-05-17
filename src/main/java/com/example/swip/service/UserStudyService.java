@@ -56,6 +56,9 @@ public class UserStudyService {
     public Long getOwnerbyStudyId(Long studyId) {
         return userStudyRepository.findOwnerByStudyId(studyId);
     }
+    public boolean isStudyOwner(Long studyId, User user) {
+        return user.getId().equals(getOwnerbyStudyId(studyId));
+    }
 
     public List<UserStudy> getAllNotExitedUsersByStudyId(Long studyId){
         List<UserStudy> findUsers = userStudyRepository.findAllNotExitedUsersBySyudyId(studyId);

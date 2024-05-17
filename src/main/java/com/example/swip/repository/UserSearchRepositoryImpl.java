@@ -4,6 +4,7 @@ import com.example.swip.entity.UserSearch;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.example.swip.entity.QSearch.search;
@@ -36,4 +37,23 @@ public class UserSearchRepositoryImpl implements UserSearchRepositoryCustom{
                 .fetch();
         return response;
     }
+
+    @Override
+    public List<UserSearch> findExpiredSearch(LocalDateTime time) {
+        List<UserSearch> userSearchList = queryFactory
+                .selectFrom(userSearch)
+                .where(userSearch.update_time.before(time.minusDays(7)))
+                .fetch();
+        return userSearchList;
+    }
+
+    @Override
+    public void deleteExpiredSearch(LocalDateTime time) {
+        queryFactory
+                .delete(userSearch)
+                .where(userSearch.update_time.before(time.minusDays(7)))
+                .execute();
+    }
+
+
 }

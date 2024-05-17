@@ -112,4 +112,9 @@ public class JoinRequestService {
             return true;
         }
     }
+
+    @Transactional
+    public void deleteExpiredJoinRequest(LocalDateTime time){
+        joinRequestRepository.deleteExpiredJoinRequest(time);
+    }
 }
