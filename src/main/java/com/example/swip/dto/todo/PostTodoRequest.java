@@ -7,6 +7,7 @@ import com.example.swip.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.cglib.core.Local;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
@@ -26,9 +27,12 @@ public class PostTodoRequest {
                 .build();
     }
     public StudyTodo toStudyTodoPublic(Study study, User user, StudyTodoPublic studyTodoPublic) {
+        LocalDate temp = this.date;
+        if(temp == null)
+            temp = LocalDate.now();
         return StudyTodo.builder()
                 .content(this.content)
-                .date(this.date)
+                .date(temp)
                 .study_todo_public(studyTodoPublic)
                 .user(user)
                 .study(study)

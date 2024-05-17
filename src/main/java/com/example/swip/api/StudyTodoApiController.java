@@ -67,7 +67,7 @@ public class StudyTodoApiController {
                 .build());
     }
 
-    @Operation(summary = "개인 목표 생성", description = "")
+    @Operation(summary = "개인 목표 생성", description = "개인 목표 생성. content에 목표를 입력하고, date에 생성할 날짜를 선택 (기본값 : 오늘)")
     @PostMapping("/study/{study_id}/todo") // user id 반환
     public ResponseEntity<DefaultResponse> postPersonalTodo(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -78,12 +78,13 @@ public class StudyTodoApiController {
             return ResponseEntity.status(403).build();
 
         int status = studyTodoService.postPersonalTodo(studyId, userPrincipal.getUserId(), request_todo);
+        String message = getResponseMessage(status);
         return ResponseEntity.status(status).body(DefaultResponse.builder()
-                .message("테스트 문구입니다.")
+                .message(message)
                 .build());
     }
 
-    @Operation(summary = "개인 목표 삭제", description = "")
+    @Operation(summary = "개인 목표 삭제", description = "개인 목표를 삭제하는 API 입니다. 수정할 목표의 ID 값이 필요합니다.")
     @DeleteMapping("/study/{study_id}/todo") // user id 반환
     public ResponseEntity<DefaultResponse> deletePersonalTodo(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -94,12 +95,13 @@ public class StudyTodoApiController {
             return ResponseEntity.status(403).build();
 
         int status = studyTodoService.deletePersonalTodo(studyId, userPrincipal.getUserId(), todo_id);
+        String message = getResponseMessage(status);
         return ResponseEntity.status(status).body(DefaultResponse.builder()
-                .message("테스트 문구입니다.")
+                .message(message)
                 .build());
     }
 
-    @Operation(summary = "개인 목표 상태 변경", description = "")
+    @Operation(summary = "목표 상태 변경", description = "목표 완료 상태를 수정하는 API 입니다. 수정할 목표의 ID 값이 필요합니다.")
     @PatchMapping("/study/{study_id}/todo") // user id 반환
     public ResponseEntity<DefaultResponse> patchPersonalTodo(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
@@ -115,8 +117,30 @@ public class StudyTodoApiController {
         }else {
             status = studyTodoService.inCompleteTodo(studyId, userPrincipal.getUserId(), todoRequest.getTodo_id());
         }
+        String message = getResponseMessage(status);
         return ResponseEntity.status(status).body(DefaultResponse.builder()
-                .message("테스트 문구입니다.")
+                .message(message)
                 .build());
+    }
+
+    private String getResponseMessage(int status) {
+        String message = "";
+        switch(status) {
+            case 403:
+                message = "해당 스터디의 멤버가 아닙니다";
+                break;
+            case 404:
+                message = "값이 유효하지 않습니다.";
+                break;
+            case 200:
+                message = "success";
+                break;
+            case 201:
+                message = "성공적으로 생성되었습니다.";
+                break;
+            default:
+                message = "예외처리되지 못한 오류";
+        }
+        return message;
     }
 }
