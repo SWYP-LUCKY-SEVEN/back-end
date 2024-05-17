@@ -75,6 +75,6 @@ public class UserSearchService {
                 }
         );
         //7일 넘은 기록 삭제
-        userSearchRepository.deleteExpiredSearch(time);ㅁ색
+        userSearchRepository.deleteExpiredSearch(time);
     }
 }
