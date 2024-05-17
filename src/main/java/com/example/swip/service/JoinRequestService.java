@@ -77,11 +77,12 @@ public class JoinRequestService {
                 DefaultResponse defaultResponse = chatServerService.addStudyMember(
                         PostStudyAddmemberRequest.builder()
                                 .token(bearerToken)
-                                .studyId(findStudy.getId())
-                                .userId(findUser.getId())
-                                .type(1) //본인이 참가 => 토큰에 있는 유저 초대
+                                .studyId(studyId)
+                                .userId(userId)
+                                .type(0) //참여자 받아주기
                                 .build()
                 );
+                System.out.println("userId = " + userId);
                 System.out.println("postStudyResponse = " + defaultResponse.getMessage());
             }
         }

@@ -73,6 +73,9 @@ public class ChatServerServiceImpl implements ChatServerService {
                 +"\",\"type\":\""+postStudyAddmemberRequest.getType()+"\"}";
         String result = sendHttpRequest(studyAddMemberReqURL, "PUT", jsonInputString, bearerToken);
 
+        System.out.println("postStudyAddmemberRequest = " + postStudyAddmemberRequest.getType());
+        System.out.println("jsonInputString = " + jsonInputString);
+        System.out.println("bearerToken = " + bearerToken);
         return DefaultResponse.builder()
                 .message(result)
                 .build();
