@@ -5,6 +5,7 @@ import com.example.swip.entity.enumtype.JoinStatus;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.example.swip.entity.QJoinRequest.joinRequest;
@@ -42,6 +43,14 @@ public class JoinRequestRepositoryImpl implements JoinRequestRepositoryCustom{
                 )
                 .fetch();
         return fetch;
+    }
+
+    @Override
+    public void deleteExpiredJoinRequest(LocalDateTime time) {
+        queryFactory
+                .delete(joinRequest)
+                .where(joinRequest.request_date.before(time.minusDays(2)))
+                .execute();
     }
 
 }

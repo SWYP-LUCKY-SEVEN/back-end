@@ -4,11 +4,13 @@ import com.example.swip.entity.Search;
 import com.example.swip.entity.User;
 import com.example.swip.entity.UserSearch;
 import com.example.swip.entity.compositeKey.UserSearchId;
+import com.example.swip.repository.SearchRepository;
 import com.example.swip.repository.UserSearchRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +19,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserSearchService {
     private final UserSearchRepository userSearchRepository;
+    private final SearchRepository searchRepository;
     @Transactional
     public UserSearchId saveSearchLog(Search findKeyword, User user) {
         UserSearch userSearch = UserSearch.builder()
@@ -56,5 +59,22 @@ public class UserSearchService {
     public Optional<UserSearch> findById(Long writerId, Long searchId) {
         Optional<UserSearch> findUserSearch = userSearchRepository.findById(new UserSearchId(writerId, searchId));
         return findUserSearch;
+    }
+
+    @Transactional
+    public void deleteExpiredSearch(LocalDateTime time){
+        //7일 넘은 기록 찾기
+        List<UserSearch> expiredSearch = userSearchRepository.findExpiredSearch(time);
+        //해당 갯수만큼 search table에서 count 줄이기 -> count가 0 이하이면 그냥 0으로
+        expiredSearch.forEach(
+                userSearch -> {
+                    Optional<Search> findSearch = searchRepository.findById(userSearch.getId().getSearchId());
+                    if(findSearch.isPresent()){
+                        findSearch.get().reduceCount(userSearch.getCount());
+                    }
+                }
+        );
+        //7일 넘은 기록 삭제
+        userSearchRepository.deleteExpiredSearch(time);
     }
 }
