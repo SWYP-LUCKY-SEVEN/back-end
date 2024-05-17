@@ -44,31 +44,6 @@ public class StudyTodoService {
             return new Pair<>(null, 403); //해당 목표에 권한이 없음
         return new Pair<>(todo, 200);
     }
-    //개인 목표 생성.
-    @Transactional
-    public int postPersonalTodo(Long study_id, Long user_id, PostTodoRequest request_todo) {
-        //해당 스터디, 해당 멤버, 해당 날짜의 StudyTodo를 생성
-        Study study = studyService.findStudyById(study_id);
-        User user = userRepository.findById(user_id).orElse(null);
-        if(study == null || user == null)
-            return 404;
-        if(!userStudyService.isStudyMember(study_id, user_id))
-            return 403; //해당 스터디의 멤버가 아닙니다
-
-        studyTodoRepository.save(request_todo.toStudyTodo(study, user));
-        return 201;
-    }
-
-    //개인 todo 삭제
-    @Transactional
-    public int deletePersonalTodo(Long study_id, Long user_id, Long todo_id) {
-        int status = isPermitted(study_id, user_id, todo_id).getSecond();
-        if (status != 200)
-            return status;
-        //해당 studytodo id의 목표 제거
-        studyTodoRepository.deleteById(todo_id);
-        return 200;
-    }
 
 
     //////////////////
@@ -235,4 +210,29 @@ public class StudyTodoService {
     ///////////////////////
     // 그룹 개인 목표 관련  //
     ///////////////////////
+    //개인 목표 생성.
+    @Transactional
+    public int postPersonalTodo(Long study_id, Long user_id, PostTodoRequest request_todo) {
+        //해당 스터디, 해당 멤버, 해당 날짜의 StudyTodo를 생성
+        Study study = studyService.findStudyById(study_id);
+        User user = userRepository.findById(user_id).orElse(null);
+        if(study == null || user == null)
+            return 404;
+        if(!userStudyService.getAlreadyJoin(user_id, study_id))
+            return 403; //해당 스터디의 멤버가 아닙니다
+
+        studyTodoRepository.save(request_todo.toStudyTodo(study, user));
+        return 201;
+    }
+
+    //개인 목표 삭제
+    @Transactional
+    public int deletePersonalTodo(Long study_id, Long user_id, Long todo_id) {
+        int status = isPermitted(study_id, user_id, todo_id).getSecond();
+        if (status != 200)
+            return status;
+        //해당 studytodo id의 목표 제거
+        studyTodoRepository.deleteById(todo_id);
+        return 200;
+    }
 }

@@ -56,8 +56,7 @@ public class StudyTodoApiController {
     public ResponseEntity<DefaultResponse> deleteGroupTodo(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable("study_id") Long studyId,
-            @RequestParam Long parent_todo_id,
-            @RequestParam(required = false) LocalDate date
+            @RequestParam Long parent_todo_id
     ){
         if(userPrincipal == null)
             return ResponseEntity.status(403).build();
