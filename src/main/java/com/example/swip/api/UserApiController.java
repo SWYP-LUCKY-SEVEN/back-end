@@ -205,12 +205,12 @@ public class UserApiController {
         );
     }
     @Operation(summary = "회원 평점 확인")
-    @GetMapping("/user/{user_id}/rating") //
-    public int getRatingUser(
+    @GetMapping("/user/{nickname}/rating") //
+    public Integer getRatingUser(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @PathVariable("user_id") Long userId
+            @PathVariable("nickname") String nickname
     ) {
-        return userService.getUserRating(userId);
+        return userService.getUserRatingByNickname(nickname);
     }
     @Operation(summary = "회원 평가 진행", description = "score 값은 0~100까지 입니다.")
     @PostMapping("/user/evaluation") //

@@ -70,12 +70,19 @@ public class UserService {
         return true;
     }
 
-    public int getUserRating(Long userId) {
+    public Integer getUserRatingByNickname(String nickname) {
+        User user = userRepository.findByNickname(nickname);
+        if(user == null)
+            return null;
+        return getUserRating(user.getId());
+    }
+    public Integer getUserRating(Long userId) {
         List<Integer> evalList =userRepositoryCustom.getUserEvalList(userId);
+        if (evalList == null || evalList.isEmpty())
+            return null;
         int sum = 0;
         for(int eval : evalList) {
             sum += eval;
-            System.out.println(eval);
         }
         return sum/evalList.size();
     }
@@ -85,7 +92,7 @@ public class UserService {
         return getMainProfile(user);
     }
     public UserMainProfileDto getMainProfile(User user) {
-        int rating = getUserRating(user.getId());
+        Integer rating = getUserRating(user.getId());
         return UserMainProfileDto.builder()
                 .nickname(user.getNickname())
                 .profile_img(user.getProfile_image())
