@@ -3,17 +3,14 @@ package com.example.swip.entity;
 import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.example.swip.entity.enumtype.Tendency;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SourceType;
-import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,7 +20,6 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 public class Study {
-
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "study_id")
     private Long id;
@@ -53,13 +49,12 @@ public class Study {
     @JoinColumn(name = "category_id")
     private Category category;
 
-
     @CreationTimestamp(source = SourceType.DB)
     private LocalDateTime created_time;
 
     @OneToMany(mappedBy = "study", cascade = CascadeType.ALL)
     @Builder.Default
-    private List<Todo> todos = new ArrayList<>();
+    private List<StudyTodoPublic> todos = new ArrayList<>();
 
     @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -76,6 +71,14 @@ public class Study {
     @OneToMany(mappedBy = "study", cascade = CascadeType.ALL)
     @Builder.Default
     private List<FavoriteStudy> favoriteStudies = new ArrayList<>();
+
+    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<StudyTodoPublic> studyTodoPublics = new ArrayList<>();
+
+    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<StudyTodo> studyTodos = new ArrayList<>();
 
     public void updateCurParticipants(){
         this.cur_participants_num = this.cur_participants_num + 1;
