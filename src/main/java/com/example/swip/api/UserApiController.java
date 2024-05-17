@@ -33,33 +33,6 @@ public class UserApiController {
     private final UserService userService;
     private final StudyService studyService;
 
-    @Operation(summary = "공유 프로필 정보 반환", description = "마이프로필 외 위치에서 사용자 프로필을 조회할 때, 사용됩니다.")
-    @GetMapping("/user/profile") // swagger를 위해 변형을 줌
-    public ResponseEntity<UserProfileGetResponse> getUserProfile(
-            @AuthenticationPrincipal UserPrincipal principal,
-            @RequestParam String nickname
-    ){
-        if(principal == null)
-            return ResponseEntity.status(403).build();
-
-        UserMainProfileDto profile = userService.getMainProfileByNickname(nickname);
-        if(profile == null)
-            return ResponseEntity.status(404).body(
-                    UserProfileGetResponse.builder()
-                            .massage("사용자를 찾을 수 없습니다.")
-                            .build());
-
-        UserRelatedStudyCount ursCount = userService.getPublicRelatedStudyNum(profile.getUser_id());
-
-        return ResponseEntity.status(200).body(
-                UserProfileGetResponse.builder()
-                        .profile(profile)
-                        .study_count(ursCount)
-                        .massage("Success!")
-                        .build()
-        );
-    }
-
     @Operation(summary = "닉네임 중복 확인", description = "path param으로 입력된 nickname의 존재 여부를 반환함.")
     @GetMapping("/user/nickname/{nickname}") //
     public ResponseEntity<GetNicknameDupleResponse> NicknameDuplicateCheck(
@@ -108,6 +81,33 @@ public class UserApiController {
         PostProfileResponse postProfileResponse = chatServerService.postUser(postProfileDto);
 
         return ResponseEntity.status(201).body(postProfileResponse);
+    }
+
+    @Operation(summary = "공유 프로필 정보 반환", description = "마이프로필 외 위치에서 사용자 프로필을 조회할 때, 사용됩니다.")
+    @GetMapping("/user/profile") // swagger를 위해 변형을 줌
+    public ResponseEntity<UserProfileGetResponse> getUserProfile(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam String nickname
+    ){
+        if(principal == null)
+            return ResponseEntity.status(403).build();
+
+        UserMainProfileDto profile = userService.getMainProfileByNickname(nickname);
+        if(profile == null)
+            return ResponseEntity.status(404).body(
+                    UserProfileGetResponse.builder()
+                            .massage("사용자를 찾을 수 없습니다.")
+                            .build());
+
+        UserRelatedStudyCount ursCount = userService.getPublicRelatedStudyNum(profile.getUser_id());
+
+        return ResponseEntity.status(200).body(
+                UserProfileGetResponse.builder()
+                        .profile(profile)
+                        .study_count(ursCount)
+                        .massage("Success!")
+                        .build()
+        );
     }
 
     @Operation(summary = "마이프로필 정보 반환 (JWT 필요)", description = "마이프로필에서 사용자 정보를 확인할 때 사용됩니다. 자신의 프로필을 받아옵니다.")

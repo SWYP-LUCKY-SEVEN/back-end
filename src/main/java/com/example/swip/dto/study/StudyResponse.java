@@ -18,5 +18,4 @@ public class StudyResponse {
     private int cur_participants_num;
     private String category;
     private List<String> additionalInfos = new ArrayList<>(); //태그
-
 }
