@@ -39,8 +39,7 @@ public class StudyTodoService {
         if(study == null || user == null || todo == null)
             return new Pair<>(null, 404);
         if(todo.getUser().getId() != user_id ||
-                todo.getStudy().getId() != study_id ||
-                todo.getStudy_todo_public() != null)
+                todo.getStudy().getId() != study_id)
             return new Pair<>(null, 403); //해당 목표에 권한이 없음
         return new Pair<>(todo, 200);
     }
@@ -228,9 +227,11 @@ public class StudyTodoService {
     //개인 목표 삭제
     @Transactional
     public int deletePersonalTodo(Long study_id, Long user_id, Long todo_id) {
-        int status = isPermitted(study_id, user_id, todo_id).getSecond();
-        if (status != 200)
-            return status;
+        Pair<StudyTodo, Integer> pair = isPermitted(study_id, user_id, todo_id);
+        if (pair.getSecond() != 200)
+            return pair.getSecond();
+        if(pair.getFirst().getStudy_todo_public() != null)
+            return 403;
         //해당 studytodo id의 목표 제거
         studyTodoRepository.deleteById(todo_id);
         return 200;
