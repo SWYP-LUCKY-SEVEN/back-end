@@ -267,8 +267,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
 
         List<Study> findStudy = query
                 .where(builder.and(study.start_date.after(LocalDate.now().minusDays(1))),
-                        study.status.eq(StudyProgressStatus.Element.BeforeStart),
-                        study.cur_participants_num.eq(study.max_participants_num))  //첫 BooleanExpression는 무조건 AND 연산이 적용된다.
+                        study.matching_type.eq(MatchingType.Element.Quick))  //첫 BooleanExpression는 무조건 AND 연산이 적용된다.
                 .orderBy(orderSpecifiers.toArray(new OrderSpecifier[orderSpecifiers.size()]))
                 .distinct()
                 .offset(page*size)  //반환 시작 index 0, 3, 6
@@ -278,6 +277,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         List<QuickMatchResponse> responses = findStudy.stream()
                 .map(study -> new QuickMatchResponse(
                         study.getId(),
+                        MatchingType.toString(study.getMatching_type()),
                         study.getTitle(),
                         study.getCategory().getName(),
                         study.getDescription(),
@@ -313,7 +313,6 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         beList.add(eqCategory(quickMatchFilter.getCategory()));
         beList.add(inTendency(quickMatchFilter.getTendency()));
 
-        builder.and(study.matching_type.eq(MatchingType.Element.Quick));
         for (BooleanExpression be : beList) {
             if(be != null) {
                 builder.or(be);
