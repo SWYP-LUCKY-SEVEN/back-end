@@ -266,7 +266,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
             builder.or(scope_builder);
 
         List<Study> findStudy = query
-                .where(builder.and(study.start_date.after(LocalDate.now().minusDays(1))))  //첫 BooleanExpression는 무조건 AND 연산이 적용된다.
+                .where(builder.and(study.start_date.after(LocalDate.now())))  //첫 BooleanExpression는 무조건 AND 연산이 적용된다.
                 .orderBy(orderSpecifiers.toArray(new OrderSpecifier[orderSpecifiers.size()]))
                 .distinct()
                 .offset(page*size)  //반환 시작 index 0, 3, 6

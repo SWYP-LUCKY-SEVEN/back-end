@@ -22,11 +22,11 @@ public class StudyJoinService {
         Study study = studyService.findStudyById(studyId);
         User user = userService.findUserById(userId);
         if(study==null || user==null)
-            return ResponseEntity.status(400).body(DefaultResponse.builder()
+            return ResponseEntity.status(404).body(DefaultResponse.builder()
                     .message("존재하지 않는 식별자입니다.")
                     .build());
         if(userStudyService.getAlreadyJoin(userId, studyId))
-            return ResponseEntity.status(200).body(DefaultResponse.builder()
+            return ResponseEntity.status(202).body(DefaultResponse.builder()
                     .message("이미 참가중인 사용자입니다.")
                     .build());
 
@@ -36,10 +36,8 @@ public class StudyJoinService {
                     .message("스터디에 참가되었습니다.")
                     .build());
         }else {
-            //스터디 참가 신청 (Study, User) =>  return ResponseEntity
-
             return ResponseEntity.status(204).body(DefaultResponse.builder()
-                    .message("즉시 가입을 허용하는 스터디가 아닙니다. 현재는 즉시 가입 기능만 존재합니다.")
+                    .message("즉시 가입을 허용하는 스터디가 아닙니다.")
                     .build());
         }
     }
