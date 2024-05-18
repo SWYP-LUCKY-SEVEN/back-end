@@ -30,6 +30,9 @@ public class OauthApiController {
             User user = authService.kakaoRegisterUser(kakaoRegisterDto);
 
             if(user == null)
+                return ResponseEntity.status(404).build();
+
+            if(user.getWithdrawal_date() != null)
                 return ResponseEntity.status(403).build();
 
             OauthKakaoResponse response = authService.oauthLogin(user);

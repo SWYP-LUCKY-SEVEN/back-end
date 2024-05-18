@@ -11,6 +11,7 @@ import com.example.swip.dto.user.UserEvaluationRequest;
 import com.example.swip.dto.user.UserMainProfileDto;
 import com.example.swip.dto.user.UserProfileGetResponse;
 import com.example.swip.dto.user.UserRelatedStudyCount;
+import com.example.swip.dto.userStudy.UserProgressStudyResponse;
 import com.example.swip.entity.User;
 import com.example.swip.service.ChatServerService;
 import com.example.swip.service.FavoriteStudyService;
@@ -176,6 +177,26 @@ public class UserApiController {
 
         return ResponseEntity.status(200).body(
                 new StudyApiController.Result(filteredStudy,totalCount)
+        );
+    }
+    @Operation(summary = "진행중인 스터디 목록 확인",
+            description = "")
+    @GetMapping("/user/progress/study")
+    public ResponseEntity getProgressStudy(
+            @AuthenticationPrincipal UserPrincipal userPrincipal // 권한 인증
+    ) {
+        if(userPrincipal == null)
+            return ResponseEntity.status(403).body(
+                    DefaultResponse.builder()
+                            .message("로그인이 필요합니다.")
+                            .build());
+
+        List<UserProgressStudyResponse> userProgressStudy = null;
+        userProgressStudy = studyService.getProgressStudyList(userPrincipal.getUserId());
+        int totalCount = userProgressStudy.size(); //전체 리스트 개수
+
+        return ResponseEntity.status(200).body(
+                new StudyApiController.Result(userProgressStudy,totalCount)
         );
     }
 

@@ -143,6 +143,25 @@ public class StudyApiController {
         int totalCount = filteredStudy.size(); //전체 리스트 개수
         return new Result(filteredStudy, totalCount); // TODO: Result 타입으로 한번 감싸기
     }
+    @Operation(summary = "스터디 진행 상태 변경",
+            description = "status = before, progress, done")
+    @PatchMapping("/study/{study_id}/status")
+    public ResponseEntity<DefaultResponse> patchStudyStatus(
+            @AuthenticationPrincipal UserPrincipal principal, // 권한 인증
+            @PathVariable("study_id") Long study_id,
+            @RequestParam String status
+    )
+    {
+        if (principal == null)
+            return ResponseEntity.status(403).build();
+        Long user_id = principal.getUserId();
+
+        int respone_status = studyService.updateStudyStatus(study_id, user_id, status);
+
+        return ResponseEntity.status(respone_status).body(DefaultResponse.builder()
+                        .message("성공적입니다.")
+                .build());
+    }
     @Operation(summary = "저장된 빠른 매칭 가져오기")
     @GetMapping("/study/quick/filter")
     public ResponseEntity<QuickMatchFilter> getQuickFilter(

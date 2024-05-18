@@ -1,5 +1,6 @@
 package com.example.swip.dto.study;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.Getter;
 
@@ -9,10 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class StudyFilterResponse {
 
     private Long id;
     private String title;
+    private String status;
     private LocalDate start_date; //시작 날짜
     private LocalDate end_date; //종료 날짜
     private int max_participants_num;
@@ -23,9 +26,10 @@ public class StudyFilterResponse {
 
 
     @QueryProjection
-    public StudyFilterResponse(Long id, String title, LocalDate start_date, LocalDate end_date, int max_participants_num, int cur_participants_num, LocalDateTime created_time, String category, List<String> additionalInfos) {
+    public StudyFilterResponse(Long id, String title, String status, LocalDate start_date, LocalDate end_date, int max_participants_num, int cur_participants_num, LocalDateTime created_time, String category, List<String> additionalInfos) {
         this.id = id;
         this.title = title;
+        this.status = status;
         this.start_date = start_date;
         this.end_date = end_date;
         this.max_participants_num = max_participants_num;

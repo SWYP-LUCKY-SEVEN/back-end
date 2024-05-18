@@ -6,10 +6,12 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.Arrays;
+import java.util.List;
 
 @OpenAPIDefinition(
     info = @Info(
@@ -19,9 +21,12 @@ import java.util.Arrays;
     ))
 @Configuration
 public class SwaggerConfig {
-    
     @Bean
-    public OpenAPI api() {    //Authorization 처리 
+    public OpenAPI api() {    //Authorization 처리
+
+//        Server server = new Server();
+//        server.setUrl("https://api.dori.r-e.kr");
+
         SecurityScheme apiKey = new SecurityScheme()
                 .type(SecurityScheme.Type.APIKEY)
                 .in(SecurityScheme.In.HEADER)
@@ -31,6 +36,7 @@ public class SwaggerConfig {
                 .addList("Bearer Token");
 
         return new OpenAPI()
+                //.servers(List.of(server))
                 .components(new Components().addSecuritySchemes("Bearer Token", apiKey))
                 .addSecurityItem(securityRequirement);
     }

@@ -17,4 +17,12 @@ public class StudyProgressStatus {
     public static Element toStudyProgressStatusType(String status){
         return map.get(status);
     }
+    public static String toString(StudyProgressStatus.Element status){
+        String result = null;
+        for (String key : map.keySet()) {
+            if(status.equals(map.get(key)))
+                result = key;
+        }
+        return result;
+    }
 }
