@@ -154,6 +154,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                 .map(r -> new StudyFilterResponse(
                         r.getId(),
                         r.getTitle(),
+                        null,
                         r.getStart_date(),
                         r.getEnd_date(),
                         r.getMax_participants_num(),
