@@ -14,6 +14,7 @@ import java.util.List;
 public class QuickMatchResponse {
     private Long study_id;
     private Boolean is_member;
+    private String match_type;
     private String title;
     private String category;
     private String description;
@@ -26,12 +27,13 @@ public class QuickMatchResponse {
     List<String> additional_infos = new ArrayList<>();
 
     @QueryProjection
-    public QuickMatchResponse(Long study_id, String title, String category,
+    public QuickMatchResponse(Long study_id, String match_type, String title, String category,
                               String description, LocalDate start_date,
                               String duration, int max_participants_num,
                               int cur_participants_num, LocalDateTime created_time,
                               Tendency.Element tendency, List<String> additional_infos) {
         this.study_id = study_id;
+        this.match_type = match_type;
         this.title = title;
         this.category = category;
         this.description = description;
