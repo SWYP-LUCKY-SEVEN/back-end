@@ -14,10 +14,10 @@ import java.util.List;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MemberTodoResponse {
-    private int total_num;
-    private int incomple_num;
-    private int complete_num;
-    private int percent;
+    private Integer total_num;
+    private Integer incomple_num;
+    private Integer complete_num;
+    private Integer percent;
     private List<TodoDto> public_todos;
     private List<TodoDto> personal_todos;
 }
