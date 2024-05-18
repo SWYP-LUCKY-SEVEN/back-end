@@ -16,8 +16,8 @@ import java.util.List;
 @AllArgsConstructor
 public class StudyMBOResponse { //스터디 목표관리 페이지
     private LocalDate date;
-    private int percent;
-    private int group_percent;
+    private Integer percent;
+    private Integer group_percent;
     private List<StudyDetailMembers> membersList;
     private MemberTodoResponse member_todo;
 }

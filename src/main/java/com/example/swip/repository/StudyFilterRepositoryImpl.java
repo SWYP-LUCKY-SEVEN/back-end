@@ -215,9 +215,9 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
 
         BooleanBuilder scope_builder = includeMemberNumber(quickMatchFilter.getMem_scope());
         // 카테고리 정렬
-        NumberExpression<Integer> categoryRank = quickMatchFilter.getStart_date() != null ?
+        NumberExpression<Integer> categoryRank = quickMatchFilter.getCategory() != null ?
                 new CaseBuilder()
-                        .when(study.start_date.eq(quickMatchFilter.getStart_date())).then(1)
+                        .when(study.category.name.eq(quickMatchFilter.getCategory())).then(1)
                         .otherwise(2)
                 : null ;  //나머지는 2로 취급;
         // 시작일 정렬
@@ -227,9 +227,9 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                         .otherwise(2)
                 :null;
         // 진행 기간 정렬
-        NumberExpression<Integer> durationRank = quickMatchFilter.getCategory() != null ?
+        NumberExpression<Integer> durationRank = quickMatchFilter.getDuration() != null ?
                 new CaseBuilder()
-                        .when(study.category.name.eq(quickMatchFilter.getCategory())).then(1)
+                        .when(study.duration.eq(quickMatchFilter.getDuration())).then(1)
                         .otherwise(2)
                 :null;
         // 성향 정렬
