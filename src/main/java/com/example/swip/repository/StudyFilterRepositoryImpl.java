@@ -4,10 +4,7 @@ import com.example.swip.dto.quick_match.QuickMatchFilter;
 import com.example.swip.dto.quick_match.QuickMatchResponse;
 import com.example.swip.dto.study.StudyFilterCondition;
 import com.example.swip.dto.study.StudyFilterResponse;
-import com.example.swip.entity.QAdditionalInfo;
-import com.example.swip.entity.QCategory;
-import com.example.swip.entity.QUser;
-import com.example.swip.entity.Study;
+import com.example.swip.entity.*;
 import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.example.swip.entity.enumtype.Tendency;
@@ -19,6 +16,8 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -210,8 +209,9 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
     }
 
     @Override
-    public List<QuickMatchResponse> quickFilterStudy(QuickMatchFilter quickMatchFilter, Long page, Long size) {
+    public List<Study> quickFilterStudy(QuickMatchFilter quickMatchFilter, Long userId, Long page, Long size) {
         QCategory category = QCategory.category;
+        QUserStudy userStudy = QUserStudy.userStudy;
 
         BooleanBuilder scope_builder = includeMemberNumber(quickMatchFilter.getMem_scope());
         // 카테고리 정렬
@@ -254,12 +254,16 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         if(tendencyRank != null) orderSpecifiers.add(tendencyRank.asc());    //성향
         if(memberRank != null) orderSpecifiers.add(memberRank.asc());    //인원
 
+        JPQLQuery<Long> userStudySubQuery = JPAExpressions
+                .select(userStudy.study.id)
+                .from(userStudy)
+                .where(userStudy.user.id.eq(userId), userStudy.is_owner.eq(true));
+
         JPAQuery<Study> query = queryFactory
                 .selectFrom(study)
                 .leftJoin(study.category, category)
                 .fetchJoin();
-
-
+        
         BooleanBuilder builder = new BooleanBuilder();
         quickFilter(builder, quickMatchFilter);
         if(scope_builder != null)
@@ -267,33 +271,15 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
 
         List<Study> findStudy = query
                 .where(builder.and(study.start_date.after(LocalDate.now().minusDays(1))),
-                        study.matching_type.eq(MatchingType.Element.Quick))  //첫 BooleanExpression는 무조건 AND 연산이 적용된다.
+                        study.matching_type.eq(MatchingType.Element.Quick),
+                        study.id.notIn(userStudySubQuery))  //첫 BooleanExpression는 무조건 AND 연산이 적용된다.
                 .orderBy(orderSpecifiers.toArray(new OrderSpecifier[orderSpecifiers.size()]))
                 .distinct()
                 .offset(page*size)  //반환 시작 index 0, 3, 6
                 .limit(size)   //최대 조회 건수
                 .fetch();
 
-        List<QuickMatchResponse> responses = findStudy.stream()
-                .map(study -> new QuickMatchResponse(
-                        study.getId(),
-                        MatchingType.toString(study.getMatching_type()),
-                        study.getTitle(),
-                        study.getCategory().getName(),
-                        study.getDescription(),
-                        study.getStart_date(),
-                        study.getDuration(),
-                        study.getMax_participants_num(),
-                        study.getCur_participants_num(),
-                        study.getCreated_time(),
-                        study.getTendency(),
-                        study.getAdditionalInfos().stream()
-                                .map(info -> info.getName())
-                                .collect(Collectors.toList())
-                ))
-                .collect(Collectors.toList());
-
-        return responses;
+        return findStudy;
     }
 
     private BooleanBuilder includeMemberNumber(List<Long> mem_scope) {

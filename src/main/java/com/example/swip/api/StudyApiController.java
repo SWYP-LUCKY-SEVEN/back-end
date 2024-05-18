@@ -216,6 +216,7 @@ public class StudyApiController {
         List<QuickMatchResponse> filteredStudyList =
                 studyQuickService.quickFilteredStudy(
                         quickMatchFilter,
+                        user_id,
                         0L,
                         9L);
 

@@ -144,6 +144,7 @@ public class UserService {
         if(user != null) {
             String email = user.getEmail();
             String validate = user.getValidate();
+
             userRepository.deleteById(id);
             User savedUser = userRepository.save(User.builder()
                             .email(email)

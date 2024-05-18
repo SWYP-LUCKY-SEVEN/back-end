@@ -303,8 +303,8 @@ public class UserApiController {
         if(userId==null)
             return ResponseEntity.status(404).build();
 
-        return ResponseEntity.status(200).body(
-                chatServerService.deleteUser(userId)
-        );
+        int status = chatServerService.deleteUser(userId);
+
+        return ResponseEntity.status(status).build();
     }
 }
