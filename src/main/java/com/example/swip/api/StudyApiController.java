@@ -213,14 +213,22 @@ public class StudyApiController {
             studyQuickService.deleteQuickMatchFilter(user_id);
 
         // 필터링된 결과 리스트
-        List<QuickMatchResponse> filteredStudy =
+        List<QuickMatchResponse> filteredStudyList =
                 studyQuickService.quickFilteredStudy(
                         quickMatchFilter,
                         0L,
                         9L);
-        int totalCount = filteredStudy.size(); //전체 리스트 개수
 
-        return new Result(filteredStudy,totalCount);
+        filteredStudyList.stream().forEach(
+                filteredStudy -> {
+                    Boolean is_memeber = userStudyService.getAlreadyJoin(user_id, filteredStudy.getStudy_id());
+                    filteredStudy.setIs_member(is_memeber);
+                }
+        );
+
+        int totalCount = filteredStudyList.size(); //전체 리스트 개수
+
+        return new Result(filteredStudyList,totalCount);
     }
 
     @Operation(summary = "찜 추가",

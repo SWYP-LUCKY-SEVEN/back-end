@@ -13,19 +13,24 @@ import java.util.List;
 @Getter
 public class QuickMatchResponse {
     private Long study_id;
+    private Boolean is_member;
     private String title;
     private String category;
     private String description;
     private LocalDate start_date; //시작 날짜
-    private String duration; //종료 날짜
+    private String duration;
     private int max_participants_num;
     private int cur_participants_num;
     private LocalDateTime created_time;
-    private Tendency.Element tendency; //종료 날짜
+    private Tendency.Element tendency;
     List<String> additional_infos = new ArrayList<>();
 
     @QueryProjection
-    public QuickMatchResponse(Long study_id, String title, String category, String description, LocalDate start_date, String duration, int max_participants_num, int cur_participants_num, LocalDateTime created_time, Tendency.Element tendency, List<String> additional_infos) {
+    public QuickMatchResponse(Long study_id, String title, String category,
+                              String description, LocalDate start_date,
+                              String duration, int max_participants_num,
+                              int cur_participants_num, LocalDateTime created_time,
+                              Tendency.Element tendency, List<String> additional_infos) {
         this.study_id = study_id;
         this.title = title;
         this.category = category;
@@ -37,5 +42,9 @@ public class QuickMatchResponse {
         this.created_time = created_time;
         this.tendency = tendency;
         this.additional_infos = additional_infos;
+    }
+
+    public void setIs_member(Boolean is_member) {
+        this.is_member = is_member;
     }
 }
