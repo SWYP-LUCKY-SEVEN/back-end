@@ -24,8 +24,15 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI api() {    //Authorization 처리
 
-//        Server server = new Server();
-//        server.setUrl("https://api.dori.r-e.kr");
+        Server localServer = new Server();
+        localServer.setDescription("local");
+        localServer.setUrl("http://localhost:8080");
+        Server httpServer = new Server();
+        httpServer.setDescription("HTTP");
+        httpServer.setUrl("http://api.dori.r-e.kr:8080");
+        Server httpsServer = new Server();
+        httpsServer.setDescription("HTTPS");
+        httpsServer.setUrl("https://api.dori.r-e.kr");
 
         SecurityScheme apiKey = new SecurityScheme()
                 .type(SecurityScheme.Type.APIKEY)
@@ -36,7 +43,7 @@ public class SwaggerConfig {
                 .addList("Bearer Token");
 
         return new OpenAPI()
-                //.servers(List.of(server))
+                .servers(List.of(httpsServer, httpServer, localServer))
                 .components(new Components().addSecuritySchemes("Bearer Token", apiKey))
                 .addSecurityItem(securityRequirement);
     }
