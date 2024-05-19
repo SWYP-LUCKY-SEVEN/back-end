@@ -8,6 +8,7 @@ import com.example.swip.entity.JoinRequest;
 import com.example.swip.entity.enumtype.JoinStatus;
 import com.example.swip.service.ChatServerService;
 import com.example.swip.service.JoinRequestService;
+import com.example.swip.service.StudyService;
 import com.example.swip.service.UserStudyService;
 import com.querydsl.core.Tuple;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 public class JoinRequestApiController {
     private final JoinRequestService joinRequestService;
     private final UserStudyService userStudyService;
+    private final StudyService studyService;
 
     @Operation(summary = "스터디 신청 내역 조회 (방장용)")
     @GetMapping("/joinRequest/{study_id}")
@@ -96,10 +98,23 @@ public class JoinRequestApiController {
         if(!ownerId.equals(findStudyOwner)) {
             return ResponseEntity.status(403).body("방장이 아닙니다.");
         }
-        else {
-                joinRequestService.acceptJoinRequest(studyId, userId, userPrincipal.getToken());
-                return ResponseEntity.status(200).body("신청 수락 성공");
+        //꽉찬 스터디의 경우 수락 불가
+        boolean isFull = studyService.isAlreadyFull(studyId);
+        if(isFull){
+            return ResponseEntity.status(202).body("참여 인원이 꽉 찼습니다.");
         }
+        //이미 신청 수락/거부한 경우(더블체크)
+        JoinStatus joinStatus = joinRequestService.checkJoinStatusById(studyId, userId);
+        if(joinStatus != null) {
+            if (joinStatus.equals(JoinStatus.Approved)) {
+                return ResponseEntity.status(202).body("이미 수락된 사용자입니다.");
+            } else if (joinStatus.equals(JoinStatus.Rejected)) {
+                return ResponseEntity.status(202).body("이미 거부된 사용자입니다.");
+            }
+        }
+
+        joinRequestService.acceptJoinRequest(studyId, userId, userPrincipal.getToken());
+        return ResponseEntity.status(200).body("신청 수락 성공");
     }
 
     @Operation(summary = "신청 거부 (방장용)")
@@ -118,10 +133,18 @@ public class JoinRequestApiController {
         if(!ownerId.equals(findStudyOwner)) {
             return ResponseEntity.status(403).body("방장이 아닙니다.");
         }
-        else {
-                joinRequestService.rejectJoinRequest(studyId, userId);
-                return ResponseEntity.status(200).body("신청 거부 성공");
+        //이미 신청 수락/거부한 경우(더블체크)
+        JoinStatus joinStatus = joinRequestService.checkJoinStatusById(studyId, userId);
+        if(joinStatus != null) {
+            if (joinStatus.equals(JoinStatus.Approved)) {
+                return ResponseEntity.status(202).body("이미 수락된 사용자입니다.");
+            } else if (joinStatus.equals(JoinStatus.Rejected)) {
+                return ResponseEntity.status(202).body("이미 거부된 사용자입니다.");
+            }
         }
+
+        joinRequestService.rejectJoinRequest(studyId, userId);
+        return ResponseEntity.status(200).body("신청 거부 성공");
     }
 
     @Operation(summary = "나의 스터디 - 신청 취소 API")

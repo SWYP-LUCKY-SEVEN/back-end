@@ -116,4 +116,8 @@ public class JoinRequestService {
     public void deleteExpiredJoinRequest(LocalDateTime time){
         joinRequestRepository.deleteExpiredJoinRequest(time);
     }
+
+    public JoinStatus checkJoinStatusById(Long studyId, Long userId) {
+        return joinRequestRepository.findJoinStatusById(new JoinRequestId(userId, studyId));
+    }
 }

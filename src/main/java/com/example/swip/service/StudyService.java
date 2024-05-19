@@ -353,6 +353,17 @@ public class StudyService {
         }
         return false;
     }
+
+    public boolean isAlreadyFull(Long studyId) {
+        Study findStudy = studyRepository.findById(studyId).orElse(null);
+        int curNum = findStudy.getCur_participants_num();
+        int maxNum = findStudy.getMax_participants_num();
+        if(curNum==maxNum){
+            return true;
+        }else{
+            return false;
+        }
+    }
 }
 
 
