@@ -313,23 +313,4 @@ public class UserApiController {
 
         return ResponseEntity.status(status).build();
     }
-    @Operation(summary = "회원 탈퇴 (운영중인 스터디 삭제)", description = "JWT 토큰 해당하는 계정에 탈퇴 과정을 진행합니다. 운영중인 스터디는 모두 사라집니다.")
-    @PatchMapping("/user/withdrawal/forcing") //
-    public ResponseEntity<DefaultResponse> withdrawalUserWithDeleteStudy(@AuthenticationPrincipal UserPrincipal principal) {
-        if(principal == null)
-            return ResponseEntity.status(401).build();
-
-        Pair<Integer, Long> result = userWithdrawalService.withdrawal(principal.getUserId(), true);
-
-        if(result.getSecond() == null) {
-            return ResponseEntity.status(401).body(
-                    DefaultResponse.builder()
-                            .message("등록되지 않은 JWT")
-                            .build()
-            );
-        }
-        int status = chatServerService.deleteUser(result.getSecond());
-
-        return ResponseEntity.status(status).build();
-    }
 }
