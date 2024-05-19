@@ -1,4 +1,6 @@
 package com.example.swip.repository;
+import com.example.swip.entity.QStudy;
+import com.example.swip.entity.Study;
 import com.example.swip.entity.UserStudy;
 import com.example.swip.entity.enumtype.ExitStatus;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -43,6 +45,15 @@ public class UserStudyRepositoryImpl implements UserStudyRepositoryCustom {
                         userStudy.is_owner.eq(true)
                 )
                 .fetchOne();
+    }
+
+    @Override
+    public List<UserStudy> findStudyByUserId(Long userId) {
+        return queryFactory
+                .select(userStudy)
+                .from(userStudy)
+                .where(userStudy.id.userId.eq(userId))
+                .fetch();
     }
 
     @Override
