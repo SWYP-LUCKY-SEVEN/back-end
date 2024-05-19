@@ -6,16 +6,12 @@ import com.example.swip.entity.compositeKey.UserStudyId;
 import com.example.swip.entity.enumtype.ExitReason;
 import com.example.swip.entity.enumtype.ExitStatus;
 import com.example.swip.repository.*;
-import com.querydsl.core.Tuple;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -49,7 +45,7 @@ public class UserStudyService {
     }
 
     public List<UserStudy> getAllUsersByStudyId(Long studyId){
-        List<UserStudy> allUsersByStudyId = userStudyRepository.findAllUsersByStudyId(studyId);
+        List<UserStudy> allUsersByStudyId = userStudyRepository.findAllExistUsersByStudyId(studyId);
         return allUsersByStudyId;
     }
 
