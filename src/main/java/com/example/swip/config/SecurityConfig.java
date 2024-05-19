@@ -58,7 +58,7 @@ public class SecurityConfig {
                         .requestMatchers("/", "/test/**").permitAll() // / 경로 요청에 대한 권한을 설정. permitAll() 모든 사용자, 인증되지않은 사용자에게 허용
                         .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-resources/**").permitAll() //swagger 관련 경로 요청 모든 사용자에게 허용
                         .requestMatchers("/oauth/**", "/user/**", "/auth/**","/study/**", "/userSearch/**").permitAll()
-                        .anyRequest().hasRole("USER")// 다른 나머지 모든 요청에 대한 권한 설정, authenticated()는 인증된 사용자에게만 허용, 로그인해야만 접근 가능
+                        .anyRequest().authenticated()// 다른 나머지 모든 요청에 대한 권한 설정, authenticated()는 인증된 사용자에게만 허용, 로그인해야만 접근 가능
                 );
 
         return http.build();
