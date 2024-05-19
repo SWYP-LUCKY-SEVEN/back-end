@@ -57,6 +57,15 @@ public class UserStudyRepositoryImpl implements UserStudyRepositoryCustom {
     }
 
     @Override
+    public List<UserStudy> findStudyByStudyIdExceptOwner(Long studyId) {
+        return queryFactory
+                .select(userStudy)
+                .from(userStudy)
+                .where(userStudy.id.studyId.eq(studyId), userStudy.is_owner.eq(false))
+                .fetch();
+    }
+
+    @Override
     public List<UserStudy> findAllNotExitedUsersBySyudyId(Long studyId) {
         List<UserStudy> findAllUsers = queryFactory
                 .select(userStudy)

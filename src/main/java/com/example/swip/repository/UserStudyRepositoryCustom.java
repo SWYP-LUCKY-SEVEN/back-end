@@ -12,5 +12,7 @@ public interface UserStudyRepositoryCustom {
 
     List<UserStudy> findStudyByUserId(Long userId);
 
+    List<UserStudy> findStudyByStudyIdExceptOwner(Long studyId);
+
     List<UserStudy> findAllNotExitedUsersBySyudyId(Long studyId);
 }

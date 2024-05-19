@@ -49,7 +49,7 @@ public class TesterApiController {
     ){  // Authorization 내 principal 없으면 null 값
         return userService.deleteUser(user_id);
     }
-    
+
     @Operation(summary = "회원 탈퇴 (운영중인 스터디 삭제)", description = "JWT 토큰 해당하는 계정에 탈퇴 과정을 진행합니다. 운영중인 스터디는 모두 사라집니다.")
     @PatchMapping("/user/withdrawal/forcing") //
     public ResponseEntity<DefaultResponse> withdrawalUserWithDeleteStudy(@AuthenticationPrincipal UserPrincipal principal) {
