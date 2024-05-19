@@ -18,12 +18,15 @@ public class UserStudyRepositoryImpl implements UserStudyRepositoryCustom {
 
 
     @Override
-    public List<UserStudy> findAllUsersByStudyId(Long studyId) {
+    public List<UserStudy> findAllExistUsersByStudyId(Long studyId) {
         List<UserStudy> findAllUsers = queryFactory
                 .select(userStudy)
                 .from(userStudy)
                 .leftJoin(userStudy.user, user).fetchJoin()
-                .where(userStudy.id.studyId.eq(studyId))
+                .where(
+                        userStudy.id.studyId.eq(studyId),
+                        userStudy.exit_status.eq(ExitStatus.None)
+                )
                 .orderBy(userStudy.join_date.asc()) //가입한 순서대로
                 .fetch();
 
