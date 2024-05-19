@@ -71,7 +71,7 @@ public class JoinRequestService {
 
         if(findUser != null && findStudy != null) {
             UserStudy userStudy = userStudyService.saveUserStudy(findUser, findStudy, false);
-            findStudy.updateCurParticipants();
+            findStudy.updateCurParticipants("+", 1);
             //채팅방 멤버 추가 (chat server 연동)
             if(userStudy != null) {
                 DefaultResponse defaultResponse = chatServerService.addStudyMember(

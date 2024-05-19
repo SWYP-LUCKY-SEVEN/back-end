@@ -65,10 +65,12 @@ public class UserStudyService {
     public void getMemberOutOfStudy(Long studyId, Long userId, List<String> exitReason) {
         //user_study update
         UserStudy findUserStudy = userStudyRepository.findById(new UserStudyId(userId, studyId)).orElse(null);
+        Study findStudy = studyRepository.findById(studyId).orElse(null);
+
         if(findUserStudy!=null && findUserStudy.getExit_status()==ExitStatus.None) {
             findUserStudy.updateExitStatus(ExitStatus.Forced_leave); //강퇴
             System.out.println("findUserStudy = " + findUserStudy);
-
+            findStudy.updateCurParticipants("-", 1);
 
             //exit_reasons 저장
             exitReason.forEach(reason -> {

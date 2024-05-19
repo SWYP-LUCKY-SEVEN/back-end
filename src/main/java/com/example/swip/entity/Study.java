@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Entity
@@ -80,9 +81,15 @@ public class Study {
     @Builder.Default
     private List<StudyTodo> studyTodos = new ArrayList<>();
 
-    public void updateCurParticipants(){
-        this.cur_participants_num = this.cur_participants_num + 1;
+    public void updateCurParticipants(String sign, int num){
+        if(Objects.equals(sign, "+")){
+            this.cur_participants_num = this.cur_participants_num + num;
+        } else if (Objects.equals(sign, "-")) {
+            this.cur_participants_num = this.cur_participants_num - num;
+        }
+
     }
+
 
     public void updateViewcount(){
         this.view_count = this.view_count + 1;
