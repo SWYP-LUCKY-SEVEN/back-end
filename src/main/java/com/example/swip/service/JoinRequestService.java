@@ -1,8 +1,7 @@
 package com.example.swip.service;
 
 import com.example.swip.dto.DefaultResponse;
-import com.example.swip.dto.study.PostStudyAddmemberRequest;
-import com.example.swip.dto.study.StudyFilterResponse;
+import com.example.swip.dto.study.PostStudyAddMemberRequest;
 import com.example.swip.entity.JoinRequest;
 import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
@@ -18,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -75,7 +73,7 @@ public class JoinRequestService {
             //채팅방 멤버 추가 (chat server 연동)
             if(userStudy != null) {
                 DefaultResponse defaultResponse = chatServerService.addStudyMember(
-                        PostStudyAddmemberRequest.builder()
+                        PostStudyAddMemberRequest.builder()
                                 .token(bearerToken)
                                 .studyId(studyId)
                                 .userId(userId)

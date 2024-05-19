@@ -1,15 +1,10 @@
 package com.example.swip.api;
 
 import com.example.swip.config.UserPrincipal;
-import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.JoinRequest.JoinRequestResponse;
-import com.example.swip.dto.study.PostStudyAddmemberRequest;
 import com.example.swip.entity.JoinRequest;
-import com.example.swip.entity.enumtype.JoinStatus;
-import com.example.swip.service.ChatServerService;
 import com.example.swip.service.JoinRequestService;
 import com.example.swip.service.UserStudyService;
-import com.querydsl.core.Tuple;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 

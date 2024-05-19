@@ -1,21 +1,20 @@
 package com.example.swip.service;
 
+import com.example.swip.dto.DefaultResponse;
+import com.example.swip.dto.study.PostStudyAddMemberRequest;
+import com.example.swip.dto.study.PostStudyDeleteMemberRequest;
 import com.example.swip.entity.*;
 import com.example.swip.entity.compositeKey.UserStudyExitId;
 import com.example.swip.entity.compositeKey.UserStudyId;
 import com.example.swip.entity.enumtype.ExitReason;
 import com.example.swip.entity.enumtype.ExitStatus;
 import com.example.swip.repository.*;
-import com.querydsl.core.Tuple;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -27,6 +26,7 @@ public class UserStudyService {
     private final UserStudyExitRepository userStudyExitRepository;
     private final UserRepository userRepository;
     private final StudyRepository studyRepository;
+    private final ChatServerService chatServerService;
 
 
     //저장
@@ -66,13 +66,12 @@ public class UserStudyService {
     }
 
     @Transactional
-    public void getMemberOutOfStudy(Long studyId, Long userId, List<String> exitReason) {
+    public void getMemberOutOfStudy(Long studyId, Long userId, List<String> exitReason, String bearerToken) {
         //user_study update
         UserStudy findUserStudy = userStudyRepository.findById(new UserStudyId(userId, studyId)).orElse(null);
         if(findUserStudy!=null && findUserStudy.getExit_status()==ExitStatus.None) {
             findUserStudy.updateExitStatus(ExitStatus.Forced_leave); //강퇴
             System.out.println("findUserStudy = " + findUserStudy);
-
 
             //exit_reasons 저장
             exitReason.forEach(reason -> {
@@ -99,6 +98,15 @@ public class UserStudyService {
                             userStudyExitRepository.save(userStudyExit);
                         }
                     });
+
+            //채팅 서버에서 유저 삭제
+            DefaultResponse defaultResponse = chatServerService.deleteStudyMember(
+                    PostStudyDeleteMemberRequest.builder()
+                            .token(bearerToken)
+                            .studyId(studyId)
+                            .userId(userId)
+                            .build()
+            );
         }
     }
 }
