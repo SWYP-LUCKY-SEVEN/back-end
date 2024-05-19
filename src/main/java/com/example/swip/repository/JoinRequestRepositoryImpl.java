@@ -1,6 +1,7 @@
 package com.example.swip.repository;
 
 import com.example.swip.entity.JoinRequest;
+import com.example.swip.entity.compositeKey.JoinRequestId;
 import com.example.swip.entity.enumtype.JoinStatus;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -51,6 +52,15 @@ public class JoinRequestRepositoryImpl implements JoinRequestRepositoryCustom{
                 .delete(joinRequest)
                 .where(joinRequest.request_date.before(time.minusDays(2)))
                 .execute();
+    }
+
+    @Override
+    public JoinStatus findJoinStatusById(JoinRequestId joinRequestId) {
+        return queryFactory
+                .select(joinRequest.join_status)
+                .from(joinRequest)
+                .where(joinRequest.id.eq(joinRequestId))
+                .fetchOne();
     }
 
 }

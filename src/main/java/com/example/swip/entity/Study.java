@@ -82,9 +82,9 @@ public class Study {
     private List<StudyTodo> studyTodos = new ArrayList<>();
 
     public void updateCurParticipants(String sign, int num){
-        if(Objects.equals(sign, "+")){
+        if(Objects.equals(sign, "+") && this.cur_participants_num < this.max_participants_num){
             this.cur_participants_num = this.cur_participants_num + num;
-        } else if (Objects.equals(sign, "-")) {
+        } else if (Objects.equals(sign, "-") && this.cur_participants_num > 0) {
             this.cur_participants_num = this.cur_participants_num - num;
         }
 
