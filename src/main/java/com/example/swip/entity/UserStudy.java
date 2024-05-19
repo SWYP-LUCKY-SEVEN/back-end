@@ -41,4 +41,7 @@ public class UserStudy {
     public void updateExitStatus(ExitStatus exit_status){
         this.exit_status = exit_status;
     }
+    public void setIs_owner(boolean is_owner) {
+        this.is_owner = is_owner;
+    }
 }
