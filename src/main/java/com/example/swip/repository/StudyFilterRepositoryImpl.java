@@ -255,9 +255,9 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         if(memberRank != null) orderSpecifiers.add(memberRank.asc());    //인원
 
         JPQLQuery<Long> userStudySubQuery = JPAExpressions
-                .select(userStudy.study.id)
+                .select(userStudy.id.studyId)
                 .from(userStudy)
-                .where(userStudy.user.id.eq(userId), userStudy.is_owner.eq(true));
+                .where(userStudy.id.userId.eq(userId), userStudy.is_owner.eq(true));
 
         JPAQuery<Study> query = queryFactory
                 .selectFrom(study)

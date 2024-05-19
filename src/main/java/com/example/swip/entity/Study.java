@@ -90,7 +90,6 @@ public class Study {
 
     }
 
-
     public void updateViewcount(){
         this.view_count = this.view_count + 1;
     }
