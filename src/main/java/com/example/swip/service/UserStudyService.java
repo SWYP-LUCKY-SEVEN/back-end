@@ -77,7 +77,7 @@ public class UserStudyService {
         ExitStatus exitStatus = findUserStudy.getExit_status();
         //이미 강퇴된 유저는 강퇴 안하고 끝내기
         if(exitStatus==ExitStatus.Leave || exitStatus==ExitStatus.Forced_leave){ //내보내진 유저
-            return ResponseEntity.status(204).body("강퇴된 유저");
+            return ResponseEntity.status(200).body("강퇴된 유저");
         }
         Study findSutdy = studyRepository.findById(studyId).orElse(null);
         if(findSutdy != null && exitStatus==ExitStatus.None) {
