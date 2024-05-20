@@ -3,6 +3,7 @@ package com.example.swip.api;
 import com.example.swip.config.UserPrincipal;
 import com.example.swip.dto.JoinRequest.JoinRequestResponse;
 import com.example.swip.entity.JoinRequest;
+import com.example.swip.entity.enumtype.JoinStatus;
 import com.example.swip.service.JoinRequestService;
 import com.example.swip.service.StudyService;
 import com.example.swip.service.UserStudyService;
