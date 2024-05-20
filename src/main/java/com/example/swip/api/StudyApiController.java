@@ -286,8 +286,8 @@ public class StudyApiController {
 
     @Operation(summary = "스터디 참가 (정식 기능)",
             description = "스터디 참가 신청. 빠른 매칭 지원 스터디일 경우 즉시 참가. 승인제일 경우 신청 생성.\n" +
-                    "- 203 : 이미 참가 신청 혹은 참가" +
-                    "- 204 : 꽉 찬 스터디")
+                    "- 200 : 이미 참가 신청 혹은 참가" +
+                    "- 200 : 꽉 찬 스터디")
     @PostMapping("/study/join/{study_id}")
     public ResponseEntity matchStudy(
             @AuthenticationPrincipal UserPrincipal userPrincipal, // 권한 인증
