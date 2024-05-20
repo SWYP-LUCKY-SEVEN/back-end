@@ -10,7 +10,7 @@ import com.example.swip.dto.study.PostStudyRequest;
 public interface ChatServerService {
     PostProfileResponse postUser(PostProfileDto postProfileDto);
     PostProfileResponse updateUser(PostProfileDto postProfileDto);
-    DefaultResponse deleteUser(Long userId);
+    int deleteUser(Long userId);
 
     DefaultResponse postStudy(PostStudyRequest postStudyRequest);
 

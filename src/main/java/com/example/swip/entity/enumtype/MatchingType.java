@@ -10,10 +10,18 @@ public class MatchingType {
     private static final Map<String, Element> map;
     static {
         map = new HashMap<>();
-        map.put("approval", Element.Approval);
         map.put("quick", Element.Quick);
+        map.put("approval", Element.Approval);
     }
     public static Element toMatchingType(String matching_type){
         return map.get(matching_type);
+    }
+    public static String toString(MatchingType.Element matchingType){
+        String result = null;
+        for (String key : map.keySet()) {
+            if(matchingType.equals(map.get(key)))
+                result = key;
+        }
+        return result;
     }
 }

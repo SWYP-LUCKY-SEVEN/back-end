@@ -11,11 +11,10 @@ import com.example.swip.dto.user.UserEvaluationRequest;
 import com.example.swip.dto.user.UserMainProfileDto;
 import com.example.swip.dto.user.UserProfileGetResponse;
 import com.example.swip.dto.user.UserRelatedStudyCount;
+import com.example.swip.dto.userStudy.UserProgressStudyResponse;
 import com.example.swip.entity.User;
-import com.example.swip.service.ChatServerService;
-import com.example.swip.service.FavoriteStudyService;
-import com.example.swip.service.StudyService;
-import com.example.swip.service.UserService;
+import com.example.swip.service.*;
+import com.mysema.commons.lang.Pair;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +31,7 @@ public class UserApiController {
     private final ChatServerService chatServerService;
     private final UserService userService;
     private final StudyService studyService;
+    private final UserWithdrawalService userWithdrawalService;
 
     @Operation(summary = "닉네임 중복 확인", description = "path param으로 입력된 nickname의 존재 여부를 반환함.")
     @GetMapping("/user/nickname/{nickname}") //
@@ -178,6 +178,26 @@ public class UserApiController {
                 new StudyApiController.Result(filteredStudy,totalCount)
         );
     }
+    @Operation(summary = "진행중인 스터디 목록 확인",
+            description = "")
+    @GetMapping("/user/progress/study")
+    public ResponseEntity getProgressStudy(
+            @AuthenticationPrincipal UserPrincipal userPrincipal // 권한 인증
+    ) {
+        if(userPrincipal == null)
+            return ResponseEntity.status(403).body(
+                    DefaultResponse.builder()
+                            .message("로그인이 필요합니다.")
+                            .build());
+
+        List<UserProgressStudyResponse> userProgressStudy = null;
+        userProgressStudy = studyService.getProgressStudyList(userPrincipal.getUserId());
+        int totalCount = userProgressStudy.size(); //전체 리스트 개수
+
+        return ResponseEntity.status(200).body(
+                new StudyApiController.Result(userProgressStudy,totalCount)
+        );
+    }
 
     @Operation(summary = "참가 스터디 목록 확인",
             description = "status (null 허용): before, progress, done.\n" +
@@ -277,13 +297,20 @@ public class UserApiController {
     @PatchMapping("/user/withdrawal") //
     public ResponseEntity<DefaultResponse> withdrawalUser(@AuthenticationPrincipal UserPrincipal principal) {
         if(principal == null)
-            return null;
-        Long userId = userService.withdrawal(principal.getUserId());
-        if(userId==null)
-            return ResponseEntity.status(404).build();
+            return ResponseEntity.status(401).build();
 
-        return ResponseEntity.status(200).body(
-                chatServerService.deleteUser(userId)
-        );
+        Pair<Integer, Long> result = userWithdrawalService.withdrawal(principal.getUserId(), false);
+
+        if(result.getFirst() != 201) {
+            String massage = result.getSecond() == null ? "등록되지 않은 JWT" : "운영중인 스터디가 있습니다.";
+            return ResponseEntity.status(result.getFirst()).body(
+                    DefaultResponse.builder()
+                            .message(massage)
+                            .build()
+            );
+        }
+        int status = chatServerService.deleteUser(result.getSecond());
+
+        return ResponseEntity.status(status).build();
     }
 }

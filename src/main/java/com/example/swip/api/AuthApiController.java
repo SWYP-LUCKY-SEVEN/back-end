@@ -38,21 +38,8 @@ public class AuthApiController {
         return ResponseEntity.status(403).build();
     }
 
-
-    @Operation(summary = "JWT 검증 with HTTP header", description = "JWT가 userID와 일치하는지 확인합니다. JWT는 헤더 내 Authorization:Bearer ~ 형태의 입력이 필요로 합니다.")
-    @GetMapping("/auth/validate/token")
-    public ResponseEntity<ValidateTokenResponse> validateToken(
-            @AuthenticationPrincipal UserPrincipal principal,
-            @RequestParam(value = "user_id") Long user_id
-    ){
-
-        return ResponseEntity.status(200).body(ValidateTokenResponse.builder()
-                .validated(principal.getUserId() == user_id)
-                .build());
-    }
-
     @Operation(summary = "JWT 검증 without HTTP header", description = "JWT가 userID와 일치하는지 확인합니다.")
-    @GetMapping("/auth/validate/token2")
+    @GetMapping("/auth/validate/token")
     public ResponseEntity<ValidateTokenResponse> validateTokenTwoParam(
             @RequestParam(value = "token") String jwt,
             @RequestParam(value = "user_id") Long user_id

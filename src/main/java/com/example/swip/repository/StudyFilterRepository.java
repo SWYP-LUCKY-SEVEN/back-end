@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface StudyFilterRepository {
     List<StudyFilterResponse> filterStudy(StudyFilterCondition filterCondition);
-    List<QuickMatchResponse> quickFilterStudy(QuickMatchFilter quickMatchFilter, Long page, Long size);
+    List<Study> quickFilterStudy(QuickMatchFilter quickMatchFilter, Long userId, Long page, Long size);
     List<Study> progressStartStudy(LocalDate date);
     List<Study> completeExpiredStudy(LocalDate date);
 

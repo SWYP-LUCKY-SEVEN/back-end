@@ -9,11 +9,15 @@ import com.example.swip.dto.user.PostProfileDto;
 import com.example.swip.entity.Evaluation;
 import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
+import com.example.swip.entity.UserStudy;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.example.swip.repository.EvaluationRepository;
 import com.example.swip.repository.UserRepository;
 import com.example.swip.repository.UserRepositoryCustom;
+import com.example.swip.repository.UserStudyRepository;
+import com.mysema.commons.lang.Pair;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -136,23 +140,6 @@ public class UserService {
     public Long saveUser(AddUserRequest addUserRequest){
         User savedUser = userRepository.save(addUserRequest.toEntity());
         return savedUser.getId();
-    }
-
-    @Transactional
-    public Long withdrawal(Long id) {
-        User user = userRepository.findById(id).orElse(null);
-        if(user != null) {
-            String email = user.getEmail();
-            String validate = user.getValidate();
-            userRepository.deleteById(id);
-            User savedUser = userRepository.save(User.builder()
-                            .email(email)
-                            .validate(validate)
-                            .withdrawal_date(LocalDateTime.now().plusDays(30))
-                    .build());
-            return savedUser.getId();
-        }else
-            return null;
     }
 
     @Transactional

@@ -24,6 +24,25 @@ public class StudyTodoRepositoryCustom {
                 .fetch();
         return studyTodoList;
     }
+    public Long getMemberTodolistCount(Long study_id, Long user_id, LocalDate date) {
+        Long count = queryFactory
+                .select(studyTodo.count())
+                .from(studyTodo)
+                .where(studyTodo.study.id.eq(study_id), studyTodo.user.id.eq(user_id), studyTodo.date.eq(date))
+                .fetchOne();
+        return count;
+    }
+    public Long getCompleteTodolistCount(Long study_id, Long user_id, LocalDate date) {
+        Long count = queryFactory
+                .select(studyTodo.count())
+                .from(studyTodo)
+                .where(studyTodo.study.id.eq(study_id),
+                        studyTodo.user.id.eq(user_id),
+                        studyTodo.date.eq(date),
+                        studyTodo.complete.eq(true))
+                .fetchOne();
+        return count;
+    }
 
     //해당 스터디 전체의 개인 todo 개수 반환
     public Long getMemberTodoNumInGroup(Long study_id, LocalDate date) {

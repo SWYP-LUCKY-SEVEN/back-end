@@ -108,8 +108,6 @@ public class AuthServiceImpl implements AuthService {
         if(user == null) {
             user = userRepository.save(kakaoRegisterDto.toEntity());
         }
-        if(user.getWithdrawal_date() != null)
-            return null;
         return user;
     }
 

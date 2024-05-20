@@ -4,7 +4,9 @@ import com.example.swip.dto.quick_match.QuickMatchFilter;
 import com.example.swip.dto.quick_match.QuickMatchResponse;
 import com.example.swip.entity.Category;
 import com.example.swip.entity.SavedQuickMatchFilter;
+import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
+import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.Tendency;
 import com.example.swip.repository.QuickFilterRepository;
 import com.example.swip.repository.StudyFilterRepository;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -76,8 +79,30 @@ public class StudyQuickService {
         //return
         return savedFilter.getId();
     }
-    public List<QuickMatchResponse> quickFilteredStudy(QuickMatchFilter quickMatchFilter, Long page, Long size){
-        List<QuickMatchResponse> FilteredStudyList = studyRepository.quickFilterStudy(quickMatchFilter, page, size);
-        return FilteredStudyList;
+    public List<QuickMatchResponse> quickFilteredStudy(QuickMatchFilter quickMatchFilter, Long userId, Long page, Long size){
+
+        List<Study> findStudy = studyRepository.quickFilterStudy(quickMatchFilter, userId, page, size);
+
+        //
+        List<QuickMatchResponse> responses = findStudy.stream()
+                .map(study -> new QuickMatchResponse(
+                        study.getId(),
+                        MatchingType.toString(study.getMatching_type()),
+                        study.getTitle(),
+                        study.getCategory().getName(),
+                        study.getDescription(),
+                        study.getStart_date(),
+                        study.getDuration(),
+                        study.getMax_participants_num(),
+                        study.getCur_participants_num(),
+                        study.getCreated_time(),
+                        study.getTendency(),
+                        study.getAdditionalInfos().stream()
+                                .map(info -> info.getName())
+                                .collect(Collectors.toList())
+                ))
+                .collect(Collectors.toList());
+
+        return responses;
     }
 }

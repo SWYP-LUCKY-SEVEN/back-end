@@ -2,6 +2,8 @@ package com.example.swip.service;
 
 
 import com.example.swip.dto.study.*;
+import com.example.swip.dto.todo.MemberTodoResponse;
+import com.example.swip.dto.userStudy.UserProgressStudyResponse;
 import com.example.swip.entity.*;
 import com.example.swip.dto.*;
 import com.example.swip.entity.Category;
@@ -11,6 +13,7 @@ import com.example.swip.entity.User;
 import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.example.swip.repository.StudyRepository;
+import com.example.swip.repository.StudyTodoRepositoryCustom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -35,6 +38,7 @@ public class StudyService {
     private final UserSearchService userSearchService;
     private final JoinRequestService joinRequestService;
     private final ChatServerService chatServerService;
+    private final StudyTodoRepositoryCustom studyTodoRepositoryCustom;
 
     //저장
     @Transactional
@@ -121,22 +125,22 @@ public class StudyService {
         Study study = studyRepository.findById(studyId).orElse(null);
         User user = userService.findUserById(userId);
         if(study==null || user==null)
-            return ResponseEntity.status(400).body(DefaultResponse.builder()
+            return ResponseEntity.status(404).body(DefaultResponse.builder()
                     .message("존재하지 않는 식별자입니다.")
                     .build());
         if(userStudyService.getAlreadyJoin(userId, studyId))
-            return ResponseEntity.status(200).body(DefaultResponse.builder()
+            return ResponseEntity.status(202).body(DefaultResponse.builder()
                     .message("이미 참가중인 사용자입니다.")
                     .build());
         if(!(study.getMax_participants_num() > study.getCur_participants_num()))
-            return ResponseEntity.status(200).body(DefaultResponse.builder()
+            return ResponseEntity.status(204).body(DefaultResponse.builder()
                     .message("참가 인원이 꽉 찬 스터디입니다.")
                     .build());
 
-        else if(study.getMatching_type().equals(MatchingType.Element.Quick)) {
+        if(study.getMatching_type().equals(MatchingType.Element.Quick)) {
             UserStudy findUserStudy = userStudyService.saveUserStudy(user, study, false);
             //study entity의 cur_participants_num update
-            study.updateCurParticipants();
+            study.updateCurParticipants("+", 1);
             //채팅방 멤버 추가 (chat server 연동)
             if (findUserStudy!=null) { //채팅 서버에 저장
                 DefaultResponse defaultResponse = chatServerService.addStudyMember(
@@ -152,11 +156,10 @@ public class StudyService {
             return ResponseEntity.status(200).body(DefaultResponse.builder()
                     .message("스터디에 참가되었습니다.")
                     .build());
-
         } else { //approval
             //이미 스터디 참가 신청한 경우
             if(joinRequestService.getAlreadyRequest(userId, studyId)){
-                return ResponseEntity.status(200).body(DefaultResponse.builder()
+                return ResponseEntity.status(202).body(DefaultResponse.builder()
                         .message("이미 가입 신청한 사용자입니다.")
                         .build());
             }
@@ -219,21 +222,34 @@ public class StudyService {
 
     public List<StudyFilterResponse> studyListToStudyFilterResponse(List<Study> studyList) {
         List<StudyFilterResponse> responses = studyList.stream()
-                .map(r -> new StudyFilterResponse(
-                        r.getId(),
-                        r.getTitle(),
-                        r.getStart_date(),
-                        r.getEnd_date(),
-                        r.getMax_participants_num(),
-                        r.getCur_participants_num(),
-                        r.getCreated_time(),
-                        r.getCategory().getName(),
-                        r.getAdditionalInfos().stream()
+                .map(study -> new StudyFilterResponse(
+                        study.getId(),
+                        study.getTitle(),
+                        StudyProgressStatus.toString(study.getStatus()),
+                        study.getStart_date(),
+                        study.getEnd_date(),
+                        study.getMax_participants_num(),
+                        study.getCur_participants_num(),
+                        study.getCreated_time(),
+                        study.getCategory().getName(),
+                        study.getAdditionalInfos().stream()
                                 .map(info -> info.getName())
                                 .collect(Collectors.toList())
                 ))
                 .collect(Collectors.toList());
         return responses;
+    }
+    @Transactional
+    public int updateStudyStatus(Long studyId, Long userId, String status) {
+        if(userStudyService.getOwnerbyStudyId(studyId) != userId)
+            return 403;
+
+        Study study = studyRepository.findById(studyId).orElse(null);
+        if(study == null)
+            return 404;
+        study.updateStatus(StudyProgressStatus.toStudyProgressStatusType(status));
+
+        return 200;
     }
 
     public List<StudyFilterResponse> getProposerStudyList(Long userId) {
@@ -243,6 +259,41 @@ public class StudyService {
     public List<StudyFilterResponse> getRegisteredStudyList(Long userId, String status) {
         List<Study> list = userService.getRegisteredStudyList(userId, status);
         return studyListToStudyFilterResponse(list);
+    }
+    public MemberTodoResponse getProgressTodo(Long studyId, Long userId, LocalDate date) {
+        int total_num = studyTodoRepositoryCustom.getMemberTodolistCount(studyId, userId, date).intValue();
+        int complete_num = studyTodoRepositoryCustom.getCompleteTodolistCount(studyId, userId, date).intValue();
+        int percent = 0;
+        if (total_num != 0)
+            percent = (complete_num*100)/total_num;
+
+        return MemberTodoResponse.builder()
+                .total_num(total_num)
+                .complete_num(complete_num)
+                .percent(percent)
+                .build();
+    }
+    public List<UserProgressStudyResponse> getProgressStudyList(Long userId) {
+        List<Study> studyList = userService.getRegisteredStudyList(userId, "progress");
+        LocalDate now = LocalDate.now();
+
+        List<UserProgressStudyResponse> result = studyList.stream()
+                .map(study -> {
+                    MemberTodoResponse progress_todo = getProgressTodo(study.getId(), userId, now);
+                    return new UserProgressStudyResponse(
+                            study.getId(),
+                            study.getTitle(),
+                            study.getCategory().getName(),
+                            StudyProgressStatus.toString(study.getStatus()),
+                            study.getStart_date(),
+                            study.getEnd_date(),
+                            study.getMax_participants_num(),
+                            study.getCur_participants_num(),
+                            progress_todo
+                    );
+                })
+                .collect(Collectors.toList());
+        return result;
     }
   
     @Transactional

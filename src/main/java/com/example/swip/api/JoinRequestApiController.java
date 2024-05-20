@@ -22,7 +22,6 @@ public class JoinRequestApiController {
     private final JoinRequestService joinRequestService;
     private final UserStudyService userStudyService;
 
-
     @Operation(summary = "스터디 신청 내역 조회 (방장용)")
     @GetMapping("/joinRequest/{study_id}")
     public ResponseEntity<Result> getJoinRequestsByStudyId(

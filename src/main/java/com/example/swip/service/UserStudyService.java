@@ -10,12 +10,13 @@ import com.example.swip.entity.enumtype.ExitReason;
 import com.example.swip.entity.enumtype.ExitStatus;
 import com.example.swip.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+
 
 @Service
 @Transactional(readOnly = true)
@@ -50,7 +51,7 @@ public class UserStudyService {
     }
 
     public List<UserStudy> getAllUsersByStudyId(Long studyId){
-        List<UserStudy> allUsersByStudyId = userStudyRepository.findAllUsersByStudyId(studyId);
+        List<UserStudy> allUsersByStudyId = userStudyRepository.findAllExistUsersByStudyId(studyId);
         return allUsersByStudyId;
     }
 
@@ -67,21 +68,21 @@ public class UserStudyService {
     }
 
     @Transactional
-    public String getMemberOutOfStudy(Long studyId, Long userId, List<String> exitReason, String bearerToken) {
+    public ResponseEntity<String> getMemberOutOfStudy(Long studyId, Long userId, List<String> exitReason, String bearerToken) {
         //user_study update
         UserStudy findUserStudy = userStudyRepository.findById(new UserStudyId(userId, studyId)).orElse(null);
         if(findUserStudy == null){
-            return "존재하지 않는 유저";
+            return ResponseEntity.status(404).body("존재하지 않는 유저");
         }
         ExitStatus exitStatus = findUserStudy.getExit_status();
         //이미 강퇴된 유저는 강퇴 안하고 끝내기
         if(exitStatus==ExitStatus.Leave || exitStatus==ExitStatus.Forced_leave){ //내보내진 유저
-            return "내보내진 유저";
+            return ResponseEntity.status(404).body("내보내진 유저");
         }
-        else if(exitStatus==ExitStatus.None) {
+        Study findSutdy = studyRepository.findById(studyId).orElse(null);
+        if(findSutdy != null && exitStatus==ExitStatus.None) {
             findUserStudy.updateExitStatus(ExitStatus.Forced_leave); //강퇴
-            Study findSutdy = studyRepository.findById(studyId).orElse(null);
-            findSutdy.updateCurParticipants();
+            findSutdy.updateCurParticipants("-", 1);
 
             //exit_reasons 저장
             exitReason.forEach(reason -> {
@@ -119,5 +120,6 @@ public class UserStudyService {
             );
             System.out.println("defaultResponse = " + defaultResponse);
         }
+        return ResponseEntity.status(200).body("스터디 멤버 내보내기 성공");
     }
 }

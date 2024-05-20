@@ -143,6 +143,25 @@ public class StudyApiController {
         int totalCount = filteredStudy.size(); //전체 리스트 개수
         return new Result(filteredStudy, totalCount); // TODO: Result 타입으로 한번 감싸기
     }
+    @Operation(summary = "스터디 진행 상태 변경",
+            description = "status = before, progress, done")
+    @PatchMapping("/study/{study_id}/status")
+    public ResponseEntity<DefaultResponse> patchStudyStatus(
+            @AuthenticationPrincipal UserPrincipal principal, // 권한 인증
+            @PathVariable("study_id") Long study_id,
+            @RequestParam String status
+    )
+    {
+        if (principal == null)
+            return ResponseEntity.status(403).build();
+        Long user_id = principal.getUserId();
+
+        int respone_status = studyService.updateStudyStatus(study_id, user_id, status);
+
+        return ResponseEntity.status(respone_status).body(DefaultResponse.builder()
+                        .message("성공적입니다.")
+                .build());
+    }
     @Operation(summary = "저장된 빠른 매칭 가져오기")
     @GetMapping("/study/quick/filter")
     public ResponseEntity<QuickMatchFilter> getQuickFilter(
@@ -194,14 +213,23 @@ public class StudyApiController {
             studyQuickService.deleteQuickMatchFilter(user_id);
 
         // 필터링된 결과 리스트
-        List<QuickMatchResponse> filteredStudy =
+        List<QuickMatchResponse> filteredStudyList =
                 studyQuickService.quickFilteredStudy(
                         quickMatchFilter,
+                        user_id,
                         0L,
                         9L);
-        int totalCount = filteredStudy.size(); //전체 리스트 개수
 
-        return new Result(filteredStudy,totalCount);
+        filteredStudyList.stream().forEach(
+                filteredStudy -> {
+                    Boolean is_memeber = userStudyService.getAlreadyJoin(user_id, filteredStudy.getStudy_id());
+                    filteredStudy.setIs_member(is_memeber);
+                }
+        );
+
+        int totalCount = filteredStudyList.size(); //전체 리스트 개수
+
+        return new Result(filteredStudyList,totalCount);
     }
 
     @Operation(summary = "찜 추가",
@@ -257,7 +285,9 @@ public class StudyApiController {
 
 
     @Operation(summary = "스터디 참가 (정식 기능)",
-            description = "스터디 참가 신청. 빠른 매칭 지원 스터디일 경우 즉시 참가. 승인제일 경우 신청 생성.")
+            description = "스터디 참가 신청. 빠른 매칭 지원 스터디일 경우 즉시 참가. 승인제일 경우 신청 생성.\n" +
+                    "- 203 : 이미 참가 신청 혹은 참가" +
+                    "- 204 : 꽉 찬 스터디")
     @PostMapping("/study/join/{study_id}")
     public ResponseEntity matchStudy(
             @AuthenticationPrincipal UserPrincipal userPrincipal, // 권한 인증

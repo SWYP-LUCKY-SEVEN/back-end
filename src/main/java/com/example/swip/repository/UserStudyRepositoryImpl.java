@@ -1,4 +1,6 @@
 package com.example.swip.repository;
+import com.example.swip.entity.QStudy;
+import com.example.swip.entity.Study;
 import com.example.swip.entity.UserStudy;
 import com.example.swip.entity.enumtype.ExitStatus;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -18,12 +20,15 @@ public class UserStudyRepositoryImpl implements UserStudyRepositoryCustom {
 
 
     @Override
-    public List<UserStudy> findAllUsersByStudyId(Long studyId) {
+    public List<UserStudy> findAllExistUsersByStudyId(Long studyId) {
         List<UserStudy> findAllUsers = queryFactory
                 .select(userStudy)
                 .from(userStudy)
                 .leftJoin(userStudy.user, user).fetchJoin()
-                .where(userStudy.id.studyId.eq(studyId))
+                .where(
+                        userStudy.id.studyId.eq(studyId),
+                        userStudy.exit_status.eq(ExitStatus.None)
+                )
                 .orderBy(userStudy.join_date.asc()) //가입한 순서대로
                 .fetch();
 
@@ -40,6 +45,24 @@ public class UserStudyRepositoryImpl implements UserStudyRepositoryCustom {
                         userStudy.is_owner.eq(true)
                 )
                 .fetchOne();
+    }
+
+    @Override
+    public List<UserStudy> findStudyByUserId(Long userId) {
+        return queryFactory
+                .select(userStudy)
+                .from(userStudy)
+                .where(userStudy.id.userId.eq(userId))
+                .fetch();
+    }
+
+    @Override
+    public List<UserStudy> findStudyByStudyIdExceptOwner(Long studyId) {
+        return queryFactory
+                .select(userStudy)
+                .from(userStudy)
+                .where(userStudy.id.studyId.eq(studyId), userStudy.is_owner.eq(false))
+                .fetch();
     }
 
     @Override

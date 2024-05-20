@@ -37,13 +37,13 @@ public class ChatServerServiceImpl implements ChatServerService {
     public PostProfileResponse updateUser(PostProfileDto postProfileDto){
         return null;
     }
-    public DefaultResponse deleteUser(Long userId){
+    public int deleteUser(Long userId){
         sendHttpRequest(reqURL, "POST", "", null);
         Map<String, String> queryParams = Map.of("pk", userId.toString());
         String responseDelete = sendRequestUserQueryParam(reqURL, "DELETE", queryParams, null);
-        return DefaultResponse.builder()
-                .message(responseDelete)
-                .build();
+        if (!responseDelete.equals("success!"))
+            return 404;
+        return 200;
     }
 
     /**

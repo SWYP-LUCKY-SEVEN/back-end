@@ -5,10 +5,8 @@ import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.EvaluationRequest;
 import com.example.swip.dto.todo.StudyMBOResponse;
 import com.example.swip.entity.User;
-import com.example.swip.service.AuthService;
-import com.example.swip.service.StudyService;
-import com.example.swip.service.StudyTodoService;
-import com.example.swip.service.UserService;
+import com.example.swip.service.*;
+import com.mysema.commons.lang.Pair;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +23,8 @@ public class TesterApiController {
     private final AuthService authService;
     private final UserService userService;
     private final StudyService studyService;
-    private final StudyTodoService studyTodoService;
+    private final UserWithdrawalService userWithdrawalService;
+    private final ChatServerService chatServerService;
     @Operation(summary = "모든 USER ID 확인 (테스트용 API)", description = "가입된 모든 user의 Id를 반환합니다.")
     @GetMapping("/auth/user_id/all") // user id 반환
     public ResponseEntity<List<Long>> getAllUserId(@AuthenticationPrincipal UserPrincipal userPrincipal){  // Authorization 내 principal 없으면 null 값
@@ -49,6 +48,26 @@ public class TesterApiController {
             @PathVariable("user_id") Long user_id
     ){  // Authorization 내 principal 없으면 null 값
         return userService.deleteUser(user_id);
+    }
+
+    @Operation(summary = "회원 탈퇴 (운영중인 스터디 삭제)", description = "JWT 토큰 해당하는 계정에 탈퇴 과정을 진행합니다. 운영중인 스터디는 모두 사라집니다.")
+    @PatchMapping("/user/withdrawal/forcing") //
+    public ResponseEntity<DefaultResponse> withdrawalUserWithDeleteStudy(@AuthenticationPrincipal UserPrincipal principal) {
+        if(principal == null)
+            return ResponseEntity.status(401).build();
+
+        Pair<Integer, Long> result = userWithdrawalService.withdrawal(principal.getUserId(), true);
+
+        if(result.getSecond() == null) {
+            return ResponseEntity.status(401).body(
+                    DefaultResponse.builder()
+                            .message("등록되지 않은 JWT")
+                            .build()
+            );
+        }
+        int status = chatServerService.deleteUser(result.getSecond());
+
+        return ResponseEntity.status(status).build();
     }
 
     @Operation(summary = "특정 유저 스터디 참가 (테스트용 API)",
