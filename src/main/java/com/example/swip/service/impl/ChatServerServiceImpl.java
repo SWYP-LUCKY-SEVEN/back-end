@@ -1,7 +1,8 @@
 package com.example.swip.service.impl;
 
 import com.example.swip.dto.DefaultResponse;
-import com.example.swip.dto.study.PostStudyAddmemberRequest;
+import com.example.swip.dto.study.PostStudyAddMemberRequest;
+import com.example.swip.dto.study.PostStudyDeleteMemberRequest;
 import com.example.swip.dto.user.PostProfileDto;
 import com.example.swip.dto.user.PostProfileResponse;
 import com.example.swip.dto.study.PostStudyRequest;
@@ -65,13 +66,31 @@ public class ChatServerServiceImpl implements ChatServerService {
     @Value("${swyp.chat.server.study.add.member.uri}")
     private String studyAddMemberReqURL;
     @Override
-    public DefaultResponse addStudyMember(PostStudyAddmemberRequest postStudyAddmemberRequest) {
+    public DefaultResponse addStudyMember(PostStudyAddMemberRequest postStudyAddmemberRequest) {
         String bearerToken = postStudyAddmemberRequest.getToken();
 
         String jsonInputString = "{\"studyId\":\""+ postStudyAddmemberRequest.getStudyId().toString()
                 +"\",\"userId\":\""+postStudyAddmemberRequest.getUserId().toString()
                 +"\",\"type\":\""+postStudyAddmemberRequest.getType()+"\"}";
         String result = sendHttpRequest(studyAddMemberReqURL, "PUT", jsonInputString, bearerToken);
+
+        return DefaultResponse.builder()
+                .message(result)
+                .build();
+    }
+
+    @Value("${swyp.chat.server.study.delete.member.uri}")
+    private String studyDeleteMemberReqURL;
+    @Override
+    public DefaultResponse deleteStudyMember(PostStudyDeleteMemberRequest postStudymemberRequest) {
+        String bearerToken = postStudymemberRequest.getToken();
+
+        String jsonInputString = "{\"studyId\":\""+ postStudymemberRequest.getStudyId().toString()
+                +"\",\"userId\":\""+postStudymemberRequest.getUserId().toString() +"\"}";
+        String result = sendHttpRequest(studyDeleteMemberReqURL, "PUT", jsonInputString, bearerToken);
+
+        System.out.println("jsonInputString = " + jsonInputString);
+        System.out.println("bearerToken = " + bearerToken);
 
         return DefaultResponse.builder()
                 .message(result)

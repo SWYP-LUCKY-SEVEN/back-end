@@ -10,25 +10,19 @@ import com.example.swip.entity.Category;
 import com.example.swip.entity.Search;
 import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
-import com.example.swip.entity.compositeKey.JoinRequestId;
 import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.example.swip.repository.StudyRepository;
 import com.example.swip.repository.StudyTodoRepositoryCustom;
-import com.querydsl.core.Tuple;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @Transactional(readOnly = true)
@@ -150,11 +144,11 @@ public class StudyService {
             //채팅방 멤버 추가 (chat server 연동)
             if (findUserStudy!=null) { //채팅 서버에 저장
                 DefaultResponse defaultResponse = chatServerService.addStudyMember(
-                        PostStudyAddmemberRequest.builder()
+                        PostStudyAddMemberRequest.builder()
                                 .token(bearerToken)
                                 .studyId(study.getId())
                                 .userId(user.getId())
-                                .type(1) //본인이 참가 => 토큰에 있는 유저 초대
+                                .type("join") //본인이 참가 => 토큰에 있는 유저 초대
                                 .build()
                 );
                 System.out.println("postStudyResponse = " + defaultResponse.getMessage());

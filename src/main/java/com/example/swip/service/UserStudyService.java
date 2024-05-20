@@ -1,5 +1,8 @@
 package com.example.swip.service;
 
+import com.example.swip.dto.DefaultResponse;
+import com.example.swip.dto.study.PostStudyAddMemberRequest;
+import com.example.swip.dto.study.PostStudyDeleteMemberRequest;
 import com.example.swip.entity.*;
 import com.example.swip.entity.compositeKey.UserStudyExitId;
 import com.example.swip.entity.compositeKey.UserStudyId;
@@ -7,11 +10,13 @@ import com.example.swip.entity.enumtype.ExitReason;
 import com.example.swip.entity.enumtype.ExitStatus;
 import com.example.swip.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
 
 @Service
 @Transactional(readOnly = true)
@@ -23,6 +28,7 @@ public class UserStudyService {
     private final UserStudyExitRepository userStudyExitRepository;
     private final UserRepository userRepository;
     private final StudyRepository studyRepository;
+    private final ChatServerService chatServerService;
 
 
     //저장
@@ -62,15 +68,21 @@ public class UserStudyService {
     }
 
     @Transactional
-    public void getMemberOutOfStudy(Long studyId, Long userId, List<String> exitReason) {
+    public ResponseEntity<String> getMemberOutOfStudy(Long studyId, Long userId, List<String> exitReason, String bearerToken) {
         //user_study update
         UserStudy findUserStudy = userStudyRepository.findById(new UserStudyId(userId, studyId)).orElse(null);
-        Study findStudy = studyRepository.findById(studyId).orElse(null);
-
-        if(findUserStudy!=null && findUserStudy.getExit_status()==ExitStatus.None) {
+        if(findUserStudy == null){
+            return ResponseEntity.status(404).body("존재하지 않는 유저");
+        }
+        ExitStatus exitStatus = findUserStudy.getExit_status();
+        //이미 강퇴된 유저는 강퇴 안하고 끝내기
+        if(exitStatus==ExitStatus.Leave || exitStatus==ExitStatus.Forced_leave){ //내보내진 유저
+            return ResponseEntity.status(404).body("내보내진 유저");
+        }
+        Study findSutdy = studyRepository.findById(studyId).orElse(null);
+        if(findSutdy != null && exitStatus==ExitStatus.None) {
             findUserStudy.updateExitStatus(ExitStatus.Forced_leave); //강퇴
-            System.out.println("findUserStudy = " + findUserStudy);
-            findStudy.updateCurParticipants("-", 1);
+            findSutdy.updateCurParticipants("-", 1);
 
             //exit_reasons 저장
             exitReason.forEach(reason -> {
@@ -97,7 +109,18 @@ public class UserStudyService {
                             userStudyExitRepository.save(userStudyExit);
                         }
                     });
+
+            //채팅 서버에서 유저 삭제
+            DefaultResponse defaultResponse = chatServerService.deleteStudyMember(
+                    PostStudyDeleteMemberRequest.builder()
+                            .token(bearerToken)
+                            .studyId(studyId)
+                            .userId(userId)
+                            .build()
+            );
+            System.out.println("defaultResponse = " + defaultResponse);
         }
+        return ResponseEntity.status(200).body("스터디 멤버 내보내기 성공");
     }
 
 }

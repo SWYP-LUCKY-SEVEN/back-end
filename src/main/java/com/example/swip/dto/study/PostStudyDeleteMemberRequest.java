@@ -5,9 +5,8 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class PostStudyAddmemberRequest {
+public class PostStudyDeleteMemberRequest {
     private String token;
     private Long studyId;
     private Long userId;
-    private int type;
 }
