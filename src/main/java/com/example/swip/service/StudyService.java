@@ -129,11 +129,11 @@ public class StudyService {
                     .message("존재하지 않는 식별자입니다.")
                     .build());
         if(userStudyService.getAlreadyJoin(userId, studyId))
-            return ResponseEntity.status(202).body(DefaultResponse.builder()
+            return ResponseEntity.status(400).body(DefaultResponse.builder()
                     .message("이미 참가중인 사용자입니다.")
                     .build());
         if(!(study.getMax_participants_num() > study.getCur_participants_num()))
-            return ResponseEntity.status(204).body(DefaultResponse.builder()
+            return ResponseEntity.status(400).body(DefaultResponse.builder()
                     .message("참가 인원이 꽉 찬 스터디입니다.")
                     .build());
 
@@ -154,19 +154,19 @@ public class StudyService {
                 System.out.println("postStudyResponse = " + defaultResponse.getMessage());
             }
             return ResponseEntity.status(200).body(DefaultResponse.builder()
-                    .message("스터디에 참가되었습니다.")
+                    .message("쇼터디에 가입했어요.")
                     .build());
         } else { //approval
             //이미 스터디 참가 신청한 경우
             if(joinRequestService.getAlreadyRequest(userId, studyId)){
-                return ResponseEntity.status(202).body(DefaultResponse.builder()
+                return ResponseEntity.status(400).body(DefaultResponse.builder()
                         .message("이미 가입 신청한 사용자입니다.")
                         .build());
             }
             else { //처음 참가 신청하는 경우
                 joinRequestService.saveJoinRequest(user, study);
                 return ResponseEntity.status(200).body(DefaultResponse.builder()
-                        .message("스터디 가입 신청이 완료되었습니다.")
+                        .message("스터디 가입신청을 요청했어요.")
                         .build());
             }
         }
