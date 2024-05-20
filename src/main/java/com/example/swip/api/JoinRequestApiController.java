@@ -96,15 +96,15 @@ public class JoinRequestApiController {
         //꽉찬 스터디의 경우 수락 불가
         boolean isFull = studyService.isAlreadyFull(studyId);
         if(isFull){
-            return ResponseEntity.status(400).body("참여 인원이 꽉 찼습니다.");
+            return ResponseEntity.status(204).body("참여 인원이 꽉 찼습니다.");
         }
         //이미 신청 수락/거부한 경우(더블체크)
         JoinStatus joinStatus = joinRequestService.checkJoinStatusById(studyId, userId);
         if(joinStatus != null) {
             if (joinStatus.equals(JoinStatus.Approved)) {
-                return ResponseEntity.status(400).body("이미 수락된 사용자입니다.");
+                return ResponseEntity.status(204).body("이미 수락된 사용자입니다.");
             } else if (joinStatus.equals(JoinStatus.Rejected)) {
-                return ResponseEntity.status(400).body("이미 거부된 사용자입니다.");
+                return ResponseEntity.status(204).body("이미 거부된 사용자입니다.");
             }
         }
 
@@ -132,9 +132,9 @@ public class JoinRequestApiController {
         JoinStatus joinStatus = joinRequestService.checkJoinStatusById(studyId, userId);
         if(joinStatus != null) {
             if (joinStatus.equals(JoinStatus.Approved)) {
-                return ResponseEntity.status(400).body("이미 수락된 사용자입니다.");
+                return ResponseEntity.status(204).body("이미 수락된 사용자입니다.");
             } else if (joinStatus.equals(JoinStatus.Rejected)) {
-                return ResponseEntity.status(400).body("이미 거부된 사용자입니다.");
+                return ResponseEntity.status(204).body("이미 거부된 사용자입니다.");
             }
         }
 
