@@ -51,7 +51,7 @@ public class UserStudyService {
     }
 
     public List<UserStudy> getAllUsersByStudyId(Long studyId){
-        List<UserStudy> allUsersByStudyId = userStudyRepository.findAllExistUsersByStudyId(studyId);
+        List<UserStudy> allUsersByStudyId = userStudyRepository.findAllByStudyId(studyId);
         return allUsersByStudyId;
     }
 

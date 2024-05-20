@@ -18,23 +18,6 @@ public class UserStudyRepositoryImpl implements UserStudyRepositoryCustom {
         this.queryFactory = new JPAQueryFactory(em);
     }
 
-
-    @Override
-    public List<UserStudy> findAllExistUsersByStudyId(Long studyId) {
-        List<UserStudy> findAllUsers = queryFactory
-                .select(userStudy)
-                .from(userStudy)
-                .leftJoin(userStudy.user, user).fetchJoin()
-                .where(
-                        userStudy.id.studyId.eq(studyId),
-                        userStudy.exit_status.eq(ExitStatus.None)
-                )
-                .orderBy(userStudy.join_date.asc()) //가입한 순서대로
-                .fetch();
-
-        return findAllUsers;
-    }
-
     @Override
     public Long findOwnerByStudyId(Long studyId) {
         return queryFactory
@@ -77,6 +60,19 @@ public class UserStudyRepositoryImpl implements UserStudyRepositoryCustom {
                         userStudy.is_owner.eq(false) //방장 제외하고 출력
                 )
                 .orderBy(userStudy.join_date.desc())
+                .fetch();
+
+        return findAllUsers;
+    }
+
+    @Override
+    public List<UserStudy> findAllByStudyId(Long studyId) {
+        List<UserStudy> findAllUsers = queryFactory
+                .select(userStudy)
+                .from(userStudy)
+                .leftJoin(userStudy.user, user).fetchJoin()
+                .where(userStudy.id.studyId.eq(studyId))
+                .orderBy(userStudy.join_date.asc()) //가입한 순서대로
                 .fetch();
 
         return findAllUsers;

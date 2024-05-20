@@ -209,6 +209,7 @@ public class StudyService {
                                             .nickname(member.getUser().getNickname())
                                             .profileImage(member.getUser().getProfile_image())
                                             .is_owner(member.is_owner())
+                                            .exit_status(member.getExit_status())
                                             .build();
                                 })
                                 .collect(Collectors.toList())
