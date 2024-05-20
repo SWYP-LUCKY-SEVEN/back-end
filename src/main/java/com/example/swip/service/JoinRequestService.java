@@ -77,11 +77,9 @@ public class JoinRequestService {
                                 .token(bearerToken)
                                 .studyId(studyId)
                                 .userId(userId)
-                                .type(0) //참여자 받아주기
+                                .type("accept") //방장이 허가 -> body userId 초대
                                 .build()
                 );
-                System.out.println("userId = " + userId);
-                System.out.println("postStudyResponse = " + defaultResponse.getMessage());
             }
         }
     }

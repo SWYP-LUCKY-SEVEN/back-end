@@ -9,5 +9,5 @@ public class PostStudyAddMemberRequest {
     private String token;
     private Long studyId;
     private Long userId;
-    private int type;
+    private String type;
 }

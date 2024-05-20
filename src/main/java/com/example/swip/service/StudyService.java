@@ -144,7 +144,7 @@ public class StudyService {
                                 .token(bearerToken)
                                 .studyId(study.getId())
                                 .userId(user.getId())
-                                .type(1) //본인이 참가 => 토큰에 있는 유저 초대
+                                .type("join") //본인이 참가 => 토큰에 있는 유저 초대
                                 .build()
                 );
                 System.out.println("postStudyResponse = " + defaultResponse.getMessage());
