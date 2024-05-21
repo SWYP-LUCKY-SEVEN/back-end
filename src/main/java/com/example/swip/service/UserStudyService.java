@@ -62,8 +62,8 @@ public class UserStudyService {
     public Long getOwnerbyStudyId(Long studyId) {
         return userStudyRepository.findOwnerByStudyId(studyId);
     }
-    public boolean isStudyOwner(Long studyId, User user) {
-        return user.getId().equals(getOwnerbyStudyId(studyId));
+    public boolean isStudyOwner(Long studyId, Long userId) {
+        return userId.equals(getOwnerbyStudyId(studyId));
     }
 
     public List<UserStudy> getAllNotExitedUsersByStudyId(Long studyId){
@@ -135,5 +135,13 @@ public class UserStudyService {
             findStudy.get().updateCurParticipants("-", 1);
         }
 
+    }
+
+    public ExitStatus getExitStatus(Long userId, Long studyId) {
+        Optional<UserStudy> findUserStudy = userStudyRepository.findById(new UserStudyId(userId, studyId));
+        if (findUserStudy.isPresent()){
+            return findUserStudy.get().getExit_status();
+        }
+        return null;
     }
 }

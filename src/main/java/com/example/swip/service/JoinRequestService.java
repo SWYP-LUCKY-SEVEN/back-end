@@ -7,6 +7,7 @@ import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
 import com.example.swip.entity.UserStudy;
 import com.example.swip.entity.compositeKey.JoinRequestId;
+import com.example.swip.entity.enumtype.ExitStatus;
 import com.example.swip.entity.enumtype.JoinStatus;
 import com.example.swip.repository.JoinRequestRepository;
 import com.example.swip.repository.StudyRepository;
@@ -95,6 +96,14 @@ public class JoinRequestService {
 
     @Transactional
     public boolean cancelJoinRequest(Long userId, Long studyId) {
+
+        if(!userStudyService.getExitStatus(userId, studyId).equals(ExitStatus.None)){ //강퇴, 이탈 멤버는 취소 불가
+            return false;
+        }
+
+        if(userStudyService.isStudyOwner(studyId, userId)){ //방장은 취소 불가
+            return false;
+        }
 
         JoinRequestId id = new JoinRequestId(userId, studyId);
         JoinRequest findRequest = joinRequestRepository.findById(id).orElse(null);
