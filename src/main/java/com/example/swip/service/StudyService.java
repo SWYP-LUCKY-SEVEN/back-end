@@ -139,8 +139,6 @@ public class StudyService {
 
         if(study.getMatching_type().equals(MatchingType.Element.Quick)) {
             UserStudy findUserStudy = userStudyService.saveUserStudy(user, study, false);
-            //study entity의 cur_participants_num update
-            study.updateCurParticipants("+", 1);
             //채팅방 멤버 추가 (chat server 연동)
             if (findUserStudy!=null) { //채팅 서버에 저장
                 DefaultResponse defaultResponse = chatServerService.addStudyMember(

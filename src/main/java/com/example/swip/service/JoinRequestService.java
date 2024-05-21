@@ -35,7 +35,7 @@ public class JoinRequestService {
 
     @Transactional
     public void saveJoinRequest(User user, Study study) {
-        JoinRequest savedJoinRequest = joinRequestRepository.save(
+        joinRequestRepository.save(
                 JoinRequest.builder()
                         .id(new JoinRequestId(user.getId(), study.getId()))
                         .user(user)
@@ -69,7 +69,7 @@ public class JoinRequestService {
 
         if(findUser != null && findStudy != null) {
             UserStudy userStudy = userStudyService.saveUserStudy(findUser, findStudy, false);
-            findStudy.updateCurParticipants("+", 1);
+
             //채팅방 멤버 추가 (chat server 연동)
             if(userStudy != null) {
                 DefaultResponse defaultResponse = chatServerService.addStudyMember(
@@ -95,18 +95,29 @@ public class JoinRequestService {
 
     @Transactional
     public boolean cancelJoinRequest(Long userId, Long studyId) {
+
         JoinRequestId id = new JoinRequestId(userId, studyId);
         JoinRequest findRequest = joinRequestRepository.findById(id).orElse(null);
-        if (findRequest == null) {
-            return false;
+        Boolean isJoin = userStudyService.getAlreadyJoin(userId, studyId);
+
+        if(isJoin && findRequest == null){ // 스터디 참가자 (빠른매칭)
+            // 1. user_study 테이블에서 삭제
+            userStudyService.deleteUserStudyById(userId, studyId);
+            return true;
         }
-        else if(findRequest.getJoin_status() != JoinStatus.Waiting) {
-            return false;
+        else if(isJoin && findRequest != null){ // 스터디 참가자 (승인제 : 신청 수락이 된 경우)
+            // 1. 신청 테이블에서 삭제
+            joinRequestRepository.deleteById(id);
+            // 2. user_study 테이블에서 삭제
+            userStudyService.deleteUserStudyById(userId, studyId);
+            return true;
         }
-        else{
+        else if(!isJoin && findRequest.getJoin_status() == JoinStatus.Waiting){ // 신청 수락 대기중인 경우
+            // 1. join_request 테이블에서 삭제
             joinRequestRepository.deleteById(id);
             return true;
         }
+        return false;
     }
 
     @Transactional
@@ -117,4 +128,6 @@ public class JoinRequestService {
     public JoinStatus checkJoinStatusById(Long studyId, Long userId) {
         return joinRequestRepository.findJoinStatusById(new JoinRequestId(userId, studyId));
     }
+
+    //==서비스 내부 로직==//
 }
