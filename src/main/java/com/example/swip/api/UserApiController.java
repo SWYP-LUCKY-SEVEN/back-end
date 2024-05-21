@@ -43,10 +43,9 @@ public class UserApiController {
                 .build());
     }
 
-    @Operation(summary = "회원가입 시 프로필 생성 메소드", description = "회원가입 시 프로필을 생성하는 메소드입니다. 헤더 내 Authorization:Bearer ~ 형태의 JWT 토큰을 필요로 합니다. " +
-            "우선 회원정보 변경시에도 해당 API를 사용 가능합니다. 회원 정보 변경은 Chat 서버의 고려사항을 파악 후 완성하려 합니다.")
+    @Operation(summary = "회원가입 시 프로필 등록", description = "회원가입 시 프로필을 등록하는 메소드입니다. 헤더 내 Authorization:Bearer ~ 형태의 JWT 토큰을 필요로 합니다.")
     @PostMapping("/user/profile") // swagger를 위해 변형을 줌
-    public ResponseEntity<PostProfileResponse> postUserProfile(
+    public ResponseEntity<DefaultResponse> postUserProfile(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestBody @Validated PostProfileRequest postProfileRequest
     ) {
@@ -58,15 +57,14 @@ public class UserApiController {
         if (!check)
             return ResponseEntity.status(400).build();
 
-        PostProfileResponse postProfileResponse = chatServerService.postUser(postProfileDto);
+        ResponseEntity<DefaultResponse> response = chatServerService.postUser(postProfileDto);
 
-        return ResponseEntity.status(201).body(postProfileResponse);
+        return response;
     }
 
-    @Operation(summary = "회원가입 시 프로필 생성 메소드", description = "회원가입 시 프로필을 생성하는 메소드입니다. 헤더 내 Authorization:Bearer ~ 형태의 JWT 토큰을 필요로 합니다. " +
-            "우선 회원정보 변경시에도 해당 API를 사용 가능합니다. 회원 정보 변경은 Chat 서버의 고려사항을 파악 후 완성하려 합니다.")
+    @Operation(summary = "프로필 수정", description = "회원가입 시 프로필을 수정하는 메소드입니다. 헤더 내 Authorization:Bearer ~ 형태의 JWT 토큰을 필요로 합니다.")
     @PatchMapping("/user/profile") // swagger를 위해 변형을 줌
-    public ResponseEntity<PostProfileResponse> patchUserProfile(
+    public ResponseEntity<DefaultResponse> patchUserProfile(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestBody @Validated PostProfileRequest postProfileRequest
     ) {
@@ -78,9 +76,9 @@ public class UserApiController {
         if (!check)
             return ResponseEntity.status(400).build();
 
-        PostProfileResponse postProfileResponse = chatServerService.postUser(postProfileDto);
+        ResponseEntity<DefaultResponse> response = chatServerService.updateUser(postProfileDto);
 
-        return ResponseEntity.status(201).body(postProfileResponse);
+        return response;
     }
 
     @Operation(summary = "공유 프로필 정보 반환", description = "마이프로필 외 위치에서 사용자 프로필을 조회할 때, 사용됩니다.")
@@ -309,8 +307,8 @@ public class UserApiController {
                             .build()
             );
         }
-        int status = chatServerService.deleteUser(result.getSecond());
+        ResponseEntity<DefaultResponse> response = chatServerService.deleteUser(result.getSecond());
 
-        return ResponseEntity.status(status).build();
+        return response;
     }
 }
