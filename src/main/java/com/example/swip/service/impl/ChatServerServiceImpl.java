@@ -7,8 +7,10 @@ import com.example.swip.dto.user.PostProfileDto;
 import com.example.swip.dto.user.PostProfileResponse;
 import com.example.swip.dto.study.PostStudyRequest;
 import com.example.swip.service.ChatServerService;
+import com.mysema.commons.lang.Pair;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -22,28 +24,32 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ChatServerServiceImpl implements ChatServerService {
     @Value("${swyp.chat.server.uri}")
-    private String reqURL;
-    public PostProfileResponse postUser(PostProfileDto postProfileDto){
-        String jsonInputString = "{\"pk\":\""+postProfileDto.getUser_id().toString()
-                +"\",\"nickname\":\""+postProfileDto.getNickname()
-                +"\",\"pic\":\""+postProfileDto.getProfileImage()+"\"}";
-        String result = sendHttpRequest(reqURL, "POST", jsonInputString, null);
+    private String reqUserURL;
+    public ResponseEntity<DefaultResponse> postUser(PostProfileDto profileDto){
+        String jsonInputString = "{\"pk\":\""+profileDto.getUser_id().toString()
+                +"\",\"nickname\":\""+profileDto.getNickname()
+                +"\",\"pic\":\""+profileDto.getProfileImage()+"\"}";
+        Pair<String, Integer> result = sendHttpRequest(reqUserURL, "POST", jsonInputString, null);
 
-        return PostProfileResponse.builder()
-                .message(result)
-                .build();
+        return ResponseEntity.status(result.getSecond())
+                .body(new DefaultResponse(result.getFirst()));
     }
 
-    public PostProfileResponse updateUser(PostProfileDto postProfileDto){
-        return null;
+    public ResponseEntity<DefaultResponse> updateUser(PostProfileDto profileDto){
+        String reqDeleteUserURL = String.format("%s/%s", reqUserURL, profileDto.getUser_id());
+        String jsonInputString = "{\"nickname\":\""+profileDto.getNickname()
+                +"\",\"pic\":\""+profileDto.getProfileImage()+"\"}";
+        Pair<String, Integer> result = sendHttpRequest(reqDeleteUserURL, "POST", jsonInputString, null);
+
+        return ResponseEntity.status(result.getSecond())
+                .body(new DefaultResponse(result.getFirst()));
     }
-    public int deleteUser(Long userId){
-        sendHttpRequest(reqURL, "POST", "", null);
-        Map<String, String> queryParams = Map.of("pk", userId.toString());
-        String responseDelete = sendRequestUserQueryParam(reqURL, "DELETE", queryParams, null);
-        if (!responseDelete.equals("success!"))
-            return 404;
-        return 200;
+    public ResponseEntity<DefaultResponse> deleteUser(Long userId){
+        String reqDeleteUserURL = String.format("%s/%s", reqUserURL, userId);
+        Pair<String, Integer> result = sendHttpRequest(reqDeleteUserURL, "DELETE", null, null);
+
+        return ResponseEntity.status(result.getSecond())
+                .body(new DefaultResponse(result.getFirst()));
     }
 
     /**
@@ -56,10 +62,10 @@ public class ChatServerServiceImpl implements ChatServerService {
         String jsonInputString = "{\"studyId\":\""+ postStudyRequest.getStudyId().toString()
                 +"\",\"pk\":\""+postStudyRequest.getPk().toString()
                 +"\",\"name\":\""+postStudyRequest.getName()+"\"}";
-        String result = sendHttpRequest(studyReqURL, "POST", jsonInputString, null);
+        Pair<String, Integer> result = sendHttpRequest(studyReqURL, "POST", jsonInputString, null);
 
         return DefaultResponse.builder()
-                .message(result)
+                .message(result.getFirst())
                 .build();
     }
 
@@ -72,10 +78,10 @@ public class ChatServerServiceImpl implements ChatServerService {
         String jsonInputString = "{\"studyId\":\""+ postStudyAddmemberRequest.getStudyId().toString()
                 +"\",\"userId\":\""+postStudyAddmemberRequest.getUserId().toString()
                 +"\",\"type\":\""+postStudyAddmemberRequest.getType()+"\"}";
-        String result = sendHttpRequest(studyAddMemberReqURL, "PUT", jsonInputString, bearerToken);
+        Pair<String, Integer> result = sendHttpRequest(studyAddMemberReqURL, "PUT", jsonInputString, bearerToken);
 
         return DefaultResponse.builder()
-                .message(result)
+                .message(result.getFirst())
                 .build();
     }
 
@@ -87,17 +93,17 @@ public class ChatServerServiceImpl implements ChatServerService {
 
         String jsonInputString = "{\"studyId\":\""+ postStudymemberRequest.getStudyId().toString()
                 +"\",\"userId\":\""+postStudymemberRequest.getUserId().toString() +"\"}";
-        String result = sendHttpRequest(studyDeleteMemberReqURL, "PUT", jsonInputString, bearerToken);
+        Pair<String, Integer> result = sendHttpRequest(studyDeleteMemberReqURL, "PUT", jsonInputString, bearerToken);
 
         System.out.println("jsonInputString = " + jsonInputString);
         System.out.println("bearerToken = " + bearerToken);
 
         return DefaultResponse.builder()
-                .message(result)
+                .message(result.getFirst())
                 .build();
     }
 
-    public static String sendHttpRequest(String reqURL, String method, String jsonInputString, String bearerToken) {
+    public static Pair<String, Integer> sendHttpRequest(String reqURL, String method, String jsonInputString, String bearerToken) {
         StringBuilder response = new StringBuilder();
         try {
             URL url = new URL(reqURL);
@@ -124,7 +130,7 @@ public class ChatServerServiceImpl implements ChatServerService {
             System.out.println("responseCode : " + responseCode);
 
             if (responseCode >= 300 || responseCode < 200) {
-                return "HTTP request failed. Response code: " + responseCode;
+                return Pair.of("HTTP request failed. Response code: ", responseCode);
             }
 
             // 요청을 통해 얻은 Response 메세지 읽어오기
@@ -139,9 +145,9 @@ public class ChatServerServiceImpl implements ChatServerService {
             e.printStackTrace();
         }
 
-        return "success!";
+        return Pair.of("success!", 200);
     }
-    public static String sendRequestUserQueryParam(String reqURL, String method, Map<String, String> queryParams, String bearerToken) {
+    public static Pair<String, Integer> sendRequestUserQueryParam(String reqURL, String method, Map<String, String> queryParams, String bearerToken) {
         String jsonInputString = null; // GET 요청에는 body가 없으므로 null 처리
         // 쿼리 파라미터 추가
         if (queryParams != null && !queryParams.isEmpty()) {
