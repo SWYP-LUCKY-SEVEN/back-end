@@ -35,7 +35,7 @@ public class StudySaveRequest {
                 .end_date(toEndDate(toLocalDate(this.start_date), this.duration))
                 .duration(this.duration)
                 .max_participants_num(this.max_participants_num)
-                .cur_participants_num(1) //생성시 작성자 1명 참여하므로 1
+                .cur_participants_num(0) //생성시 작성자 1명 -> study_user를 추가하면 저절로 생성.
                 .tendency(Tendency.toTendency(this.tendency))
                 .matching_type(MatchingType.toMatchingType(this.matching_type))
                 .status(toStatus())
