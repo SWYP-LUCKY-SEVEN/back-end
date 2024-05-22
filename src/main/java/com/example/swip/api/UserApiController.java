@@ -314,7 +314,7 @@ public class UserApiController {
         Pair<String, Integer> response = chatServerService.deleteUser(result.getSecond());
 
         return ResponseEntity.status(result.getFirst()).body(DefaultResponse.builder()
-                .message("chat server response : "+response.getFirst() + response.getSecond().toString())
+                        .message("chat server response : "+response.getFirst() + response.getSecond().toString())
                 .build());
     }
 }

@@ -73,7 +73,7 @@ public class StudyTodoService {
     public StudyMBOResponse getMemberTodoList(Long studyId, String nickname, LocalDate date) {
         User user = userRepository.findByNickname(nickname);
 
-        if(!userStudyService.isStudyOwner(studyId, user)) //관리자가 아닐경우 null 반환
+        if(!userStudyService.isStudyOwner(studyId, user.getId())) //관리자가 아닐경우 null 반환
             return null;
         //해당 날짜 스터디 멤버의 모든 todo를 가져옴.
         List<StudyTodo> memberTodoList = studyTodoRepositoryCustom.getMemberTodolist(studyId, user.getId(), date);
@@ -154,7 +154,7 @@ public class StudyTodoService {
         User user = userRepository.findById(user_id).orElse(null);
         if(study == null || user == null)
             return 404;
-        if(!userStudyService.isStudyOwner(study_id, user))
+        if(!userStudyService.isStudyOwner(study_id, user.getId()))
             return 403;
 
         StudyTodoPublic studyTodoPublic = studyTodoPublicRepository.save(
@@ -190,7 +190,7 @@ public class StudyTodoService {
         if(user == null)
             return 401; //정상적인 유저가 아닙니다.
         //권한 확인.
-        if(!userStudyService.isStudyOwner(study_id, user))
+        if(!userStudyService.isStudyOwner(study_id, user.getId()))
             return 403; //스터디의 관리자가 아닙니다.
         //공용 todo목록에서 id 가져옴.
 

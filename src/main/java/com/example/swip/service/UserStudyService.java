@@ -1,7 +1,6 @@
 package com.example.swip.service;
 
 import com.example.swip.dto.DefaultResponse;
-import com.example.swip.dto.study.PostStudyAddMemberRequest;
 import com.example.swip.dto.study.PostStudyDeleteMemberRequest;
 import com.example.swip.entity.*;
 import com.example.swip.entity.compositeKey.UserStudyExitId;
@@ -16,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -44,7 +44,11 @@ public class UserStudyService {
                 .join_date(LocalDateTime.now())
                 .build();
 
-        return userStudyRepository.save(userStudy);
+        UserStudy savedUserStudy = userStudyRepository.save(userStudy);
+        if(savedUserStudy != null) { //userStudy 저장되면 바로 + 1
+            savedStudy.updateCurParticipants("+", 1);
+        }
+        return savedUserStudy;
     }
     public boolean getAlreadyJoin(Long userId, Long studyId) {
         return userStudyRepository.existsById(new UserStudyId(userId, studyId));
@@ -58,8 +62,8 @@ public class UserStudyService {
     public Long getOwnerbyStudyId(Long studyId) {
         return userStudyRepository.findOwnerByStudyId(studyId);
     }
-    public boolean isStudyOwner(Long studyId, User user) {
-        return user.getId().equals(getOwnerbyStudyId(studyId));
+    public boolean isStudyOwner(Long studyId, Long userId) {
+        return userId.equals(getOwnerbyStudyId(studyId));
     }
 
     public List<UserStudy> getAllNotExitedUsersByStudyId(Long studyId){
@@ -123,4 +127,21 @@ public class UserStudyService {
         return ResponseEntity.status(200).body("스터디 멤버 내보내기 성공");
     }
 
+    @Transactional
+    public void deleteUserStudyById(Long userId, Long studyId) {
+        userStudyRepository.deleteById(new UserStudyId(userId, studyId)); //삭제
+        Optional<Study> findStudy = studyRepository.findById(studyId);
+        if(findStudy.isPresent()){
+            findStudy.get().updateCurParticipants("-", 1);
+        }
+
+    }
+
+    public ExitStatus getExitStatus(Long userId, Long studyId) {
+        Optional<UserStudy> findUserStudy = userStudyRepository.findById(new UserStudyId(userId, studyId));
+        if (findUserStudy.isPresent()){
+            return findUserStudy.get().getExit_status();
+        }
+        return null;
+    }
 }
