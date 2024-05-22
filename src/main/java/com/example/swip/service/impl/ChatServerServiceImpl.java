@@ -34,14 +34,18 @@ public class ChatServerServiceImpl implements ChatServerService {
     }
 
     public Pair<String, Integer> updateUser(PostProfileDto profileDto){
-        String reqDeleteUserURL = String.format("%s/%s", reqUserURL, profileDto.getUser_id());
+        String reqDeleteUserURL = "";
+        if(!reqUserURL.isEmpty())
+            reqDeleteUserURL = String.format("%s/%s", reqUserURL, profileDto.getUser_id());
         String jsonInputString = "{\"nickname\":\""+profileDto.getNickname()
                 +"\",\"pic\":\""+profileDto.getProfileImage()+"\"}";
         Pair<String, Integer> result = sendHttpRequest(reqDeleteUserURL, "PATCH", jsonInputString, null);
         return result;
     }
     public Pair<String, Integer> deleteUser(Long userId){
-        String reqDeleteUserURL = String.format("%s/%s", reqUserURL, userId);
+        String reqDeleteUserURL = "";
+        if(!reqUserURL.isEmpty())
+            reqDeleteUserURL = String.format("%s/%s", reqUserURL, userId);
         Pair<String, Integer> result = sendHttpRequest(reqDeleteUserURL, "DELETE", null, null);
         return result;
     }
@@ -100,7 +104,7 @@ public class ChatServerServiceImpl implements ChatServerService {
     public static Pair<String, Integer> sendHttpRequest(String reqURL, String method, String jsonInputString, String bearerToken) {
         StringBuilder response = new StringBuilder();
         if(reqURL==null || reqURL.isEmpty())
-            return "deprecated";
+            return Pair.of("deprecated",200);
         try {
             URL url = new URL(reqURL);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
