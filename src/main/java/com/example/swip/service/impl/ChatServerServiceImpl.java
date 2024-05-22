@@ -100,7 +100,7 @@ public class ChatServerServiceImpl implements ChatServerService {
     public static Pair<String, Integer> sendHttpRequest(String reqURL, String method, String jsonInputString, String bearerToken) {
         StringBuilder response = new StringBuilder();
         if(reqURL==null || reqURL.isEmpty())
-            return "deprecated";
+            return Pair.of("deprecated",200);
         try {
             URL url = new URL(reqURL);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
