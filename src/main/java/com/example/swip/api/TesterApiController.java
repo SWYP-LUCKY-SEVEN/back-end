@@ -34,33 +34,23 @@ public class TesterApiController {
         return ResponseEntity.status(403).build();
     }
 
-    @Operation(summary = "회원 삭제 [주의] (운영중인 스터디 삭제)", description = "회원을 즉시 삭제합니다. 관련된 모든 스터디도 삭제됩니다.")
-    @DeleteMapping("/test/user") // user id 반환
-    public ResponseEntity<DefaultResponse> deleteUserByUserId(@AuthenticationPrincipal UserPrincipal principal){  // Authorization 내 principal 없으면 null 값
-        if(principal == null)
-            return ResponseEntity.status(401).build();
-
-        Pair<Integer, Long> result = userWithdrawalService.deleteUser(principal.getUserId(), true);
-
-        if(result.getSecond() == null) {
-            return ResponseEntity.status(401).body(
-                    DefaultResponse.builder()
-                            .message("등록되지 않은 JWT")
-                            .build()
-            );
-        }
-        Pair<String, Integer> response = chatServerService.deleteUser(result.getSecond());
-
-        String status_text = "";
-        if(result.getFirst() == 201)
-            status_text = "Delete success!";
-
-        return ResponseEntity.status(result.getFirst()).body(DefaultResponse.builder()
-                .message(status_text +" chat server response : "+response.getFirst() + response.getSecond().toString())
-                .build());
+    @Operation(summary = "회원 탈퇴 JWT (테스트용 API)", description = "JWT 토큰 해당하는 계정을 지웁니다.")
+    @DeleteMapping("/auth/user_id") // user id 반환
+    public String deleteUserById(@AuthenticationPrincipal UserPrincipal principal){  // Authorization 내 principal 없으면 null 값
+        if(principal != null)
+            return userService.deleteUser(principal.getUserId());
+        return "need JWT in Authorization";
     }
 
-    @Operation(summary = "회원 탈퇴 [주의] (운영중인 스터디 삭제)", description = "JWT 토큰 해당하는 계정에 탈퇴 과정을 진행합니다. 운영중인 스터디는 모두 사라집니다.")
+    @Operation(summary = "회원 탈퇴 (테스트용 API)", description = "입력된 ID의 계정을 지웁니다.")
+    @DeleteMapping("/auth/{user_id}") // user id 반환
+    public String deleteUserByUserId(
+            @PathVariable("user_id") Long user_id
+    ){  // Authorization 내 principal 없으면 null 값
+        return userService.deleteUser(user_id);
+    }
+
+    @Operation(summary = "회원 탈퇴 (운영중인 스터디 삭제)", description = "JWT 토큰 해당하는 계정에 탈퇴 과정을 진행합니다. 운영중인 스터디는 모두 사라집니다.")
     @PatchMapping("/user/withdrawal/forcing") //
     public ResponseEntity<DefaultResponse> withdrawalUserWithDeleteStudy(@AuthenticationPrincipal UserPrincipal principal) {
         if(principal == null)
@@ -75,15 +65,9 @@ public class TesterApiController {
                             .build()
             );
         }
-        Pair<String, Integer> response = chatServerService.deleteUser(result.getSecond());
+        ResponseEntity<DefaultResponse> response = chatServerService.deleteUser(result.getSecond());
 
-        String status_text = "";
-        if(result.getFirst() == 201)
-            status_text = "Delete success!";
-
-        return ResponseEntity.status(result.getFirst()).body(DefaultResponse.builder()
-                .message(status_text +" chat server response : "+response.getFirst() + response.getSecond().toString())
-                .build());
+        return response;
     }
 
     @Operation(summary = "특정 유저 스터디 참가 (테스트용 API)",

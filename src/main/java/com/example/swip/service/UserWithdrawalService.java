@@ -82,21 +82,4 @@ public class UserWithdrawalService {
                 .build());
         return new Pair(201, userId);
     }
-    @Transactional
-    public Pair<Integer, Long> deleteUser(Long userId, Boolean isForce) {
-        User user = userRepository.findById(userId).orElse(null);
-        if(user == null)
-            return new Pair(401, null);
-
-        //참가중인 모든 스터디 반환
-        List<UserStudy> userStudyList = userStudyRepository.findStudyByUserId(userId);
-
-        for(UserStudy userStudy : userStudyList) {
-            if(!deleteStudyAction(userStudy, isForce))
-                return new Pair(403, userStudy.getId().getStudyId());
-        }
-
-        userRepository.deleteById(userId);
-        return new Pair(201, userId);
-    }
 }
