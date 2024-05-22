@@ -65,9 +65,9 @@ public class TesterApiController {
                             .build()
             );
         }
-        ResponseEntity<DefaultResponse> response = chatServerService.deleteUser(result.getSecond());
+        int status = chatServerService.deleteUser(result.getSecond());
 
-        return response;
+        return ResponseEntity.status(status).build();
     }
 
     @Operation(summary = "특정 유저 스터디 참가 (테스트용 API)",
