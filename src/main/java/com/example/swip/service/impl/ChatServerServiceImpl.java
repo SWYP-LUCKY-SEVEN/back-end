@@ -34,14 +34,18 @@ public class ChatServerServiceImpl implements ChatServerService {
     }
 
     public Pair<String, Integer> updateUser(PostProfileDto profileDto){
-        String reqDeleteUserURL = String.format("%s/%s", reqUserURL, profileDto.getUser_id());
+        String reqDeleteUserURL = "";
+        if(!reqUserURL.isEmpty())
+            reqDeleteUserURL = String.format("%s/%s", reqUserURL, profileDto.getUser_id());
         String jsonInputString = "{\"nickname\":\""+profileDto.getNickname()
                 +"\",\"pic\":\""+profileDto.getProfileImage()+"\"}";
         Pair<String, Integer> result = sendHttpRequest(reqDeleteUserURL, "PATCH", jsonInputString, null);
         return result;
     }
     public Pair<String, Integer> deleteUser(Long userId){
-        String reqDeleteUserURL = String.format("%s/%s", reqUserURL, userId);
+        String reqDeleteUserURL = "";
+        if(!reqUserURL.isEmpty())
+            reqDeleteUserURL = String.format("%s/%s", reqUserURL, userId);
         Pair<String, Integer> result = sendHttpRequest(reqDeleteUserURL, "DELETE", null, null);
         return result;
     }
