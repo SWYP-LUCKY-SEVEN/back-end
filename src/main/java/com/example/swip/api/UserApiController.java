@@ -294,7 +294,7 @@ public class UserApiController {
                         .message("평가 리스트가 성공적으로 저장되었습니다.")
                         .build());
     }
-  
+
     @Operation(summary = "회원 탈퇴", description = "JWT 토큰 해당하는 계정에 탈퇴 과정을 진행합니다.")
     @PatchMapping("/user/withdrawal") //
     public ResponseEntity<DefaultResponse> withdrawalUser(@AuthenticationPrincipal UserPrincipal principal) {
