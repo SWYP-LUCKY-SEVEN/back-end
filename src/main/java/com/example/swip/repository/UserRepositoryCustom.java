@@ -94,7 +94,6 @@ public class UserRepositoryCustom {
         return queryFactory
                 .select(favoriteStudy.count())
                 .from(favoriteStudy)
-                .fetchJoin()
                 .where(
                         favoriteStudy.user.id.eq(userId),
                         favoriteStudy.study.status.ne(StudyProgressStatus.Element.Done)
@@ -104,7 +103,6 @@ public class UserRepositoryCustom {
         Long test = queryFactory
                 .select(userStudy.count())
                 .from(userStudy)
-                .fetchJoin()
                 .where(userStudy.user.id.eq(userId),
                         userStudy.study.status.eq(status),
                         userStudy.exit_status.eq(ExitStatus.None))  //탈퇴 혹은 강퇴된 스터디는 제외
