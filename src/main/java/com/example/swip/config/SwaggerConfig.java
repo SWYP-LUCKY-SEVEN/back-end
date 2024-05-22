@@ -7,6 +7,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -21,12 +22,17 @@ import java.util.List;
     ))
 @Configuration
 public class SwaggerConfig {
+    @Value("${spring.server.api.url}")
+    private String apiUrl;
     @Bean
     public OpenAPI api() {    //Authorization 처리
 
         Server httpsServer = new Server();
         httpsServer.setDescription("HTTPS");
-        httpsServer.setUrl("https://api.showtudy.r-e.kr");
+        httpsServer.setUrl(apiUrl);
+        Server localServer = new Server();
+        localServer.setDescription("Local");
+        localServer.setUrl("http://localhost:8080");
 
         SecurityScheme apiKey = new SecurityScheme()
                 .type(SecurityScheme.Type.APIKEY)
@@ -37,7 +43,7 @@ public class SwaggerConfig {
                 .addList("Bearer Token");
 
         return new OpenAPI()
-                .servers(List.of(httpsServer))
+                .servers(List.of(httpsServer, localServer))
                 .components(new Components().addSecuritySchemes("Bearer Token", apiKey))
                 .addSecurityItem(securityRequirement);
     }
