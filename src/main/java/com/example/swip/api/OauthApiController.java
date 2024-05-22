@@ -5,6 +5,7 @@ import com.example.swip.dto.oauth.OauthKakaoResponse;
 import com.example.swip.entity.User;
 import com.example.swip.service.AuthService;
 import com.example.swip.service.KakaoOauthService;
+import com.mysema.commons.lang.Pair;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,9 +26,10 @@ public class OauthApiController {
         String accessToken = kakaoOauthService.getKakaoAccessToken(code);
 
         if(accessToken != "") {
-            KakaoRegisterDto kakaoRegisterDto = kakaoOauthService.getKakaoProfile(accessToken);
+            Pair<KakaoRegisterDto, Long> kakaoRegisterRes = kakaoOauthService.getKakaoProfile(accessToken);
+            kakaoOauthService.logOutKakao(kakaoRegisterRes.getSecond());
             //회원가입 후, user 정보를 반환함. 회원가입이 되어있다면 바로 user정보를 반환함
-            User user = authService.kakaoRegisterUser(kakaoRegisterDto);
+            User user = authService.kakaoRegisterUser(kakaoRegisterRes.getFirst());
 
             if(user == null)
                 return ResponseEntity.status(404).build();
