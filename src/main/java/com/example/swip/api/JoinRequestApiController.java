@@ -154,7 +154,7 @@ public class JoinRequestApiController {
             if (cancleStatus) {
                 return ResponseEntity.status(200).body("스터디 취소 성공!");
             } else {
-                return ResponseEntity.status(403).body("해당 스터디 신청 내역이 없거나 취소할 수 없는 사용자입니다.");
+                return ResponseEntity.status(403).body("해당 스터디 신청 내역이 없습니다.");
             }
         }
         return ResponseEntity.status(403).body("인증되지 않은 사용자입니다.");
