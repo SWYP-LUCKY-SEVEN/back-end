@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -109,23 +110,24 @@ public class UserService {
     public List<Study> getProposerStudyList(Long userId) {
         return userRepositoryCustom.proposerStudyList(userId);
     }
-    public List<Study> getRegisteredStudyList(Long userId, String status) {
-        StudyProgressStatus.Element statusEnum = status != null? StudyProgressStatus.toStudyProgressStatusType(status):null;
-        return userRepositoryCustom.registeredStudyList(userId, statusEnum);
+    public List<Study> getRegisteredStudyList(Long userId, StudyProgressStatus.Element status) {
+        return userRepositoryCustom.registeredStudyList(userId, status);
     }
 
     public UserRelatedStudyCount getRelatedStudyNum(Long user_id) {
         UserRelatedStudyCount urscount = new UserRelatedStudyCount();
-        urscount.setIn_progress(userRepositoryCustom.countInUserStudy(user_id, false));
-        urscount.setIn_complete(userRepositoryCustom.countInUserStudy(user_id, true));
+        urscount.setIn_progress(userRepositoryCustom.countInUserStudy(user_id, StudyProgressStatus.Element.InProgress));
+        urscount.setIn_complete(userRepositoryCustom.countInUserStudy(user_id, StudyProgressStatus.Element.Done));
         urscount.setIn_favorite(userRepositoryCustom.countFavorite(user_id));
-        urscount.setIn_proposal(userRepositoryCustom.countProposer(user_id));
+        Long countProposal = userRepositoryCustom.countProposer(user_id)
+                + userRepositoryCustom.countInUserStudy(user_id,StudyProgressStatus.Element.BeforeStart);
+        urscount.setIn_proposal(countProposal);
         return urscount;
     }
     public UserRelatedStudyCount getPublicRelatedStudyNum(Long user_id) {
         UserRelatedStudyCount urscount = new UserRelatedStudyCount();
-        urscount.setIn_progress(userRepositoryCustom.countInUserStudy(user_id, false));
-        urscount.setIn_complete(userRepositoryCustom.countInUserStudy(user_id, true));
+        urscount.setIn_progress(userRepositoryCustom.countInUserStudy(user_id, StudyProgressStatus.Element.InProgress));
+        urscount.setIn_complete(userRepositoryCustom.countInUserStudy(user_id, StudyProgressStatus.Element.Done));
         return urscount;
     }
 

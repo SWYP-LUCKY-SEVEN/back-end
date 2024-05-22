@@ -2,8 +2,11 @@ package com.example.swip.repository;
 
 import com.example.swip.dto.user.SimpleUserProfileDto;
 import com.example.swip.entity.*;
+import com.example.swip.entity.enumtype.ExitStatus;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
+import com.querydsl.core.Query;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -43,6 +46,19 @@ public class UserRepositoryCustom {
                 .where(joinRequest.user.id.eq(userId))
                 .fetch();
     }
+    public List<Study> joinedButBeforeStartList(Long userId) {
+        QStudy study = QStudy.study;
+        return queryFactory
+                .select(study)
+                .from(userStudy)
+                .innerJoin(study)
+                .on(userStudy.study.eq(study))
+                .fetchJoin()
+                .where(userStudy.user.id.eq(userId),
+                        userStudy.study.status.eq(StudyProgressStatus.Element.BeforeStart),
+                        userStudy.exit_status.eq(ExitStatus.None))  //탈퇴 혹은 강퇴된 스터디는 제외
+                .fetch();
+    }
 
     public List<Study> registeredStudyList(Long userId, StudyProgressStatus.Element status) {   //InProgress 상태의 스터디 개수
         QStudy study = QStudy.study;
@@ -50,7 +66,7 @@ public class UserRepositoryCustom {
         if(status != null)
             be = userStudy.study.status.eq(status);
         else
-            be = userStudy.study.status.ne(StudyProgressStatus.Element.Done);
+            be = userStudy.study.status.eq(StudyProgressStatus.Element.InProgress);
 
         return queryFactory
                 .select(study)
@@ -58,7 +74,8 @@ public class UserRepositoryCustom {
                 .innerJoin(study)
                 .on(userStudy.study.eq(study))
                 .fetchJoin()
-                .where(userStudy.user.id.eq(userId),be)
+                .where(userStudy.user.id.eq(userId),be,
+                        userStudy.exit_status.eq(ExitStatus.None))  //탈퇴 혹은 강퇴된 스터디는 제외
                 .fetch();
     }
     public Long countProposer(Long userId) {   //신청중인 개수 카운트
@@ -73,33 +90,24 @@ public class UserRepositoryCustom {
                 .where(joinRequest.user.id.eq(userId))
                 .fetchFirst();
     }
-    public Long countFavorite(Long userId) {   //신청중인 개수 카운트
-        QStudy study = QStudy.study;
+    public Long countFavorite(Long userId) {   //찜 중인 개수 카운트
         return queryFactory
                 .select(favoriteStudy.count())
                 .from(favoriteStudy)
-                .innerJoin(study)
-                .on(favoriteStudy.study.eq(study))
                 .fetchJoin()
                 .where(
                         favoriteStudy.user.id.eq(userId),
                         favoriteStudy.study.status.ne(StudyProgressStatus.Element.Done)
                 ).fetchOne();
     }
-    public Long countInUserStudy(Long userId, boolean isDone) {   //InProgress 상태의 스터디 개수
-        QStudy study = QStudy.study;
-        BooleanExpression be = null;
-        if(isDone)
-            be = userStudy.study.status.eq(StudyProgressStatus.Element.Done);
-        else
-            be = userStudy.study.status.ne(StudyProgressStatus.Element.Done);
+    public Long countInUserStudy(Long userId, StudyProgressStatus.Element status) {   //InProgress 상태의 스터디 개수
         Long test = queryFactory
                 .select(userStudy.count())
                 .from(userStudy)
-                .innerJoin(study)
-                .on(userStudy.study.eq(study))
                 .fetchJoin()
-                .where(userStudy.user.id.eq(userId),be)
+                .where(userStudy.user.id.eq(userId),
+                        userStudy.study.status.eq(status),
+                        userStudy.exit_status.eq(ExitStatus.None))  //탈퇴 혹은 강퇴된 스터디는 제외
                 .fetchOne();
         System.out.println(test);
         return test;
