@@ -57,11 +57,9 @@ public class UserApiController {
         if (!check)
             return ResponseEntity.status(400).build();
 
-        Pair<String, Integer> response = chatServerService.postUser(postProfileDto);
+        ResponseEntity<DefaultResponse> response = chatServerService.postUser(postProfileDto);
 
-        return ResponseEntity.status(200).body(DefaultResponse.builder()
-                .message("chat server response : "+response.getFirst() + response.getSecond().toString())
-                .build());
+        return response;
     }
 
     @Operation(summary = "프로필 수정", description = "회원가입 시 프로필을 수정하는 메소드입니다. 헤더 내 Authorization:Bearer ~ 형태의 JWT 토큰을 필요로 합니다.")
@@ -78,11 +76,9 @@ public class UserApiController {
         if (!check)
             return ResponseEntity.status(400).build();
 
-        Pair<String, Integer> response = chatServerService.updateUser(postProfileDto);
+        ResponseEntity<DefaultResponse> response = chatServerService.updateUser(postProfileDto);
 
-        return ResponseEntity.status(200).body(DefaultResponse.builder()
-                .message("chat server response : "+response.getFirst() + response.getSecond().toString())
-                .build());
+        return response;
     }
 
     @Operation(summary = "공유 프로필 정보 반환", description = "마이프로필 외 위치에서 사용자 프로필을 조회할 때, 사용됩니다.")
@@ -311,10 +307,8 @@ public class UserApiController {
                             .build()
             );
         }
-        Pair<String, Integer> response = chatServerService.deleteUser(result.getSecond());
+        ResponseEntity<DefaultResponse> response = chatServerService.deleteUser(result.getSecond());
 
-        return ResponseEntity.status(result.getFirst()).body(DefaultResponse.builder()
-                        .message("chat server response : "+response.getFirst() + response.getSecond().toString())
-                .build());
+        return response;
     }
 }
