@@ -256,35 +256,19 @@ public class StudyService {
         List<StudyFilterResponse> list =
                 studyListToStudyFilterResponse(userService.getProposerStudyList(userId));
 
-        List<Study> studyList = userService.getRegisteredStudyList(userId,
+        List<StudyFilterResponse> responses = userService.getRegisteredStudyList(userId,
                         StudyProgressStatus.Element.BeforeStart);
 
-        List<StudyFilterResponse> responses = studyList.stream()
-                .map(study -> new StudyFilterResponse(
-                            study.getId(),
-                            study.getTitle(),
-                            StudyProgressStatus.toString(study.getStatus()),
-                            study.getStart_date(),
-                            study.getEnd_date(),
-                            study.getMax_participants_num(),
-                            study.getCur_participants_num(),
-                            study.getCreated_time(),
-                            study.getCategory().getName(),
-                            study.getAdditionalInfos().stream()
-                                    .map(info -> info.getName())
-                                    .collect(Collectors.toList()),
-                            true
-                        )
-                )
-                .collect(Collectors.toList());
         list.addAll(responses);
         list.sort(Comparator.comparing(StudyFilterResponse::getCreated_time));
         return list;
     }
     public List<StudyFilterResponse> getRegisteredStudyList(Long userId, String status) {
-        StudyProgressStatus.Element statusEnum = status != null? StudyProgressStatus.toStudyProgressStatusType(status):null;
-        List<Study> list = userService.getRegisteredStudyList(userId, statusEnum);
-        return studyListToStudyFilterResponse(list);
+        StudyProgressStatus.Element statusEnum = status != null?
+                StudyProgressStatus.toStudyProgressStatusType(status)
+                :StudyProgressStatus.Element.InProgress;
+        List<StudyFilterResponse> responses = userService.getRegisteredStudyList(userId, statusEnum);
+        return responses;
     }
     public MemberTodoResponse getProgressTodo(Long studyId, Long userId, LocalDate date) {
         int total_num = studyTodoRepositoryCustom.getMemberTodolistCount(studyId, userId, date).intValue();
@@ -300,7 +284,7 @@ public class StudyService {
                 .build();
     }
     public List<UserProgressStudyResponse> getProgressStudyList(Long userId) {
-        List<Study> studyList = userService.getRegisteredStudyList(userId, StudyProgressStatus.Element.InProgress);
+        List<Study> studyList = userService.getProgressStudyList(userId);
         LocalDate now = LocalDate.now();
 
         List<UserProgressStudyResponse> result = studyList.stream()

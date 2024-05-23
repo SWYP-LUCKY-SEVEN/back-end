@@ -1,10 +1,13 @@
 package com.example.swip.repository;
 
+import com.example.swip.dto.UserRelationship;
+import com.example.swip.dto.study.StudyFilterResponse;
 import com.example.swip.dto.user.SimpleUserProfileDto;
 import com.example.swip.entity.*;
 import com.example.swip.entity.enumtype.ExitStatus;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.querydsl.core.Query;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -13,6 +16,8 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import static com.example.swip.entity.QUserStudy.userStudy;
 import static com.example.swip.entity.QFavoriteStudy.favoriteStudy;
 
@@ -27,9 +32,7 @@ public class UserRepositoryCustom {
         List<Study> findStudy = queryFactory
                 .select(favoriteStudy.study)
                 .from(favoriteStudy)
-                .innerJoin(study)
-                .on(favoriteStudy.study.eq(study))
-                .fetchJoin()
+                .join(favoriteStudy.study, study)
                 .where(favoriteStudy.user.id.eq(userId))
                 .fetch();
         return findStudy;
@@ -40,43 +43,62 @@ public class UserRepositoryCustom {
         return queryFactory
                 .select(study)
                 .from(joinRequest)
-                .innerJoin(study)
-                .on(joinRequest.study.eq(study))
-                .fetchJoin()
+                .join(joinRequest.study, study)
                 .where(joinRequest.user.id.eq(userId))
                 .fetch();
     }
-    public List<Study> joinedButBeforeStartList(Long userId) {
+    public List<Study> processStudyList(Long userId) {   //InProgress 상태의 스터디 개수
         QStudy study = QStudy.study;
+
+        BooleanExpression statusCondition = userStudy.study.status.eq(StudyProgressStatus.Element.InProgress);
+        BooleanExpression userCondition = userStudy.user.id.eq(userId);
+        BooleanExpression exitCondition = userStudy.exit_status.eq(ExitStatus.None);
+
         return queryFactory
                 .select(study)
                 .from(userStudy)
-                .innerJoin(study)
-                .on(userStudy.study.eq(study))
-                .fetchJoin()
-                .where(userStudy.user.id.eq(userId),
-                        userStudy.study.status.eq(StudyProgressStatus.Element.BeforeStart),
-                        userStudy.exit_status.eq(ExitStatus.None))  //탈퇴 혹은 강퇴된 스터디는 제외
+                .join(userStudy.study, study)
+                .where(statusCondition,userCondition,exitCondition)  //탈퇴 혹은 강퇴된 스터디는 제외
                 .fetch();
     }
-
-    public List<Study> registeredStudyList(Long userId, StudyProgressStatus.Element status) {   //InProgress 상태의 스터디 개수
+    public List<StudyFilterResponse> registeredStudyList(Long userId, StudyProgressStatus.Element status) {   //InProgress 상태의 스터디 개수
         QStudy study = QStudy.study;
-        BooleanExpression be;
+        BooleanExpression statusCondition = null;
         if(status != null)
-            be = userStudy.study.status.eq(status);
-        else
-            be = userStudy.study.status.eq(StudyProgressStatus.Element.InProgress);
+            statusCondition = userStudy.study.status.eq(status);
+        BooleanExpression userCondition = userStudy.user.id.eq(userId);
+        BooleanExpression exitCondition = userStudy.exit_status.eq(ExitStatus.None);
 
-        return queryFactory
-                .select(study)
+        List<Tuple> result = queryFactory
+                .select(study, userStudy.is_owner)
                 .from(userStudy)
-                .innerJoin(study)
-                .on(userStudy.study.eq(study))
-                .fetchJoin()
-                .where(userStudy.user.id.eq(userId),be,
-                        userStudy.exit_status.eq(ExitStatus.None))  //탈퇴 혹은 강퇴된 스터디는 제외
+                .join(userStudy.study, study)
+                .where(statusCondition,userCondition,exitCondition)  //탈퇴 혹은 강퇴된 스터디는 제외
                 .fetch();
+
+        return result.stream()
+                .map(tuple -> {
+                    Study s = tuple.get(study);
+                    Boolean is_owner = tuple.get(userStudy.is_owner);
+                    UserRelationship user_relation =
+                            new UserRelationship(is_owner, true, null);
+                    return new StudyFilterResponse(
+                            s.getId(),
+                            s.getTitle(),
+                            StudyProgressStatus.toString(s.getStatus()),
+                            s.getStart_date(),
+                            s.getEnd_date(),
+                            s.getMax_participants_num(),
+                            s.getCur_participants_num(),
+                            s.getCreated_time(),
+                            s.getCategory().getName(),
+                            s.getAdditionalInfos().stream()
+                                    .map(info -> info.getName())
+                                    .collect(Collectors.toList()),
+                            user_relation
+                            );
+                        }
+                ).collect(Collectors.toList());
     }
     public Long countProposer(Long userId) {   //신청중인 개수 카운트
         QJoinRequest joinRequest = QJoinRequest.joinRequest;
@@ -84,9 +106,7 @@ public class UserRepositoryCustom {
         return queryFactory
                 .select(joinRequest.count())
                 .from(joinRequest)
-                .innerJoin(study)
-                .on(joinRequest.study.eq(study))
-                .fetchJoin()
+                .join(joinRequest.study, study)
                 .where(joinRequest.user.id.eq(userId))
                 .fetchFirst();
     }

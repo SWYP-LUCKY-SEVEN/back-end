@@ -1,5 +1,6 @@
 package com.example.swip.repository;
 
+import com.example.swip.dto.UserRelationship;
 import com.example.swip.dto.quick_match.QuickMatchFilter;
 import com.example.swip.dto.quick_match.QuickMatchResponse;
 import com.example.swip.dto.study.StudyFilterCondition;
@@ -9,6 +10,7 @@ import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.example.swip.entity.enumtype.Tendency;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -209,9 +211,10 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
     }
 
     @Override
-    public List<Study> quickFilterStudy(QuickMatchFilter quickMatchFilter, Long userId, Long page, Long size) {
+    public List<QuickMatchResponse> quickFilterStudy(QuickMatchFilter quickMatchFilter, Long userId, Long page, Long size) {
         QCategory category = QCategory.category;
         QUserStudy userStudy = QUserStudy.userStudy;
+        QFavoriteStudy favoriteStudy = QFavoriteStudy.favoriteStudy;
 
         BooleanBuilder scope_builder = includeMemberNumber(quickMatchFilter.getMem_scope());
         // 카테고리 정렬
@@ -254,22 +257,30 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         if(tendencyRank != null) orderSpecifiers.add(tendencyRank.asc());    //성향
         if(memberRank != null) orderSpecifiers.add(memberRank.asc());    //인원
 
+        //필터링 할 스터디 리스트 (자신이 운영중일 경우 전부 제거)
         JPQLQuery<Long> userStudySubQuery = JPAExpressions
                 .select(userStudy.id.studyId)
                 .from(userStudy)
                 .where(userStudy.id.userId.eq(userId), userStudy.is_owner.eq(true));
 
-        JPAQuery<Study> query = queryFactory
-                .selectFrom(study)
-                .leftJoin(study.category, category)
-                .fetchJoin();
-        
         BooleanBuilder builder = new BooleanBuilder();
         quickFilter(builder, quickMatchFilter);
         if(scope_builder != null)
             builder.or(scope_builder);
 
-        List<Study> findStudy = query
+        List<Tuple> findStudy = queryFactory
+                .select(study, userStudy.isNotNull(), favoriteStudy.isNotNull())
+                .from(study)
+                .leftJoin(study.category, category)
+                .leftJoin(userStudy)
+                .on(userStudy.study.eq(study)
+                        .and(userStudy.user.id.eq(userId)) //없다면 userStudy는 null값을 가진다.
+                )
+                .leftJoin(favoriteStudy)
+                .on(favoriteStudy.study.eq(study)
+                        .and(userStudy.user.id.eq(userId)) //없다면 favoriteStudy는 null값을 가진다.
+                )
+                .fetchJoin()
                 .where(builder.and(study.start_date.after(LocalDate.now().minusDays(1))),
                         study.matching_type.eq(MatchingType.Element.Quick),
                         study.id.notIn(userStudySubQuery))  //첫 BooleanExpression는 무조건 AND 연산이 적용된다.
@@ -279,7 +290,36 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                 .limit(size)   //최대 조회 건수
                 .fetch();
 
-        return findStudy;
+        List<QuickMatchResponse> responses = findStudy.stream()
+                .map(tuple -> {
+                    Study s = tuple.get(study);
+                    UserRelationship user_relation =
+                            new UserRelationship(
+                                    false,
+                                    tuple.get(userStudy.isNotNull()),
+                                    tuple.get(favoriteStudy.isNotNull())
+                            );
+                    return new QuickMatchResponse(
+                            s.getId(),
+                            MatchingType.toString(s.getMatching_type()),
+                            s.getTitle(),
+                            s.getCategory().getName(),
+                            s.getDescription(),
+                            s.getStart_date(),
+                            s.getDuration(),
+                            s.getMax_participants_num(),
+                            s.getCur_participants_num(),
+                            s.getCreated_time(),
+                            s.getTendency(),
+                            s.getAdditionalInfos().stream()
+                                    .map(info -> info.getName())
+                                    .collect(Collectors.toList()),
+                            user_relation
+                    );
+                })
+                .collect(Collectors.toList());
+
+        return responses;
     }
 
     private BooleanBuilder includeMemberNumber(List<Long> mem_scope) {

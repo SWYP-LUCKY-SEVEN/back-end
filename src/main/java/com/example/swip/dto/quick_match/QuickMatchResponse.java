@@ -1,5 +1,6 @@
 package com.example.swip.dto.quick_match;
 
+import com.example.swip.dto.UserRelationship;
 import com.example.swip.entity.enumtype.Tendency;
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.Builder;
@@ -13,7 +14,6 @@ import java.util.List;
 @Getter
 public class QuickMatchResponse {
     private Long study_id;
-    private Boolean is_member;
     private String match_type;
     private String title;
     private String category;
@@ -25,13 +25,15 @@ public class QuickMatchResponse {
     private LocalDateTime created_time;
     private Tendency.Element tendency;
     List<String> additional_infos = new ArrayList<>();
+    private UserRelationship user_relation;
 
     @QueryProjection
     public QuickMatchResponse(Long study_id, String match_type, String title, String category,
                               String description, LocalDate start_date,
                               String duration, int max_participants_num,
                               int cur_participants_num, LocalDateTime created_time,
-                              Tendency.Element tendency, List<String> additional_infos) {
+                              Tendency.Element tendency, List<String> additional_infos,
+                              UserRelationship user_relation) {
         this.study_id = study_id;
         this.match_type = match_type;
         this.title = title;
@@ -44,9 +46,7 @@ public class QuickMatchResponse {
         this.created_time = created_time;
         this.tendency = tendency;
         this.additional_infos = additional_infos;
+        this.user_relation = user_relation;
     }
 
-    public void setIs_member(Boolean is_member) {
-        this.is_member = is_member;
-    }
 }
