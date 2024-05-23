@@ -143,7 +143,7 @@ public class StudyApiController {
         int totalCount = filteredStudy.size(); //전체 리스트 개수
         return new Result(filteredStudy, totalCount); // TODO: Result 타입으로 한번 감싸기
     }
-    @Operation(summary = "스터디 진행 상태 변경",
+    @Operation(summary = "스터디 진행 상태 변경 (방장 권한 필요)",
             description = "status = before, progress, done")
     @PatchMapping("/study/{study_id}/status")
     public ResponseEntity<DefaultResponse> patchStudyStatus(
