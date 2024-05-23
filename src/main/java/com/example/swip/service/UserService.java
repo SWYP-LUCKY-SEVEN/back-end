@@ -2,6 +2,7 @@ package com.example.swip.service;
 
 
 
+import com.example.swip.dto.study.StudyFilterResponse;
 import com.example.swip.dto.user.UserMainProfileDto;
 import com.example.swip.dto.user.UserRelatedStudyCount;
 import com.example.swip.dto.auth.AddUserRequest;
@@ -110,7 +111,10 @@ public class UserService {
     public List<Study> getProposerStudyList(Long userId) {
         return userRepositoryCustom.proposerStudyList(userId);
     }
-    public List<Study> getRegisteredStudyList(Long userId, StudyProgressStatus.Element status) {
+    public List<Study> getProgressStudyList(Long userId) {
+        return userRepositoryCustom.processStudyList(userId);
+    }
+    public List<StudyFilterResponse> getRegisteredStudyList(Long userId, StudyProgressStatus.Element status) {
         return userRepositoryCustom.registeredStudyList(userId, status);
     }
 

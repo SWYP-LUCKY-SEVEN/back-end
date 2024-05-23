@@ -1,5 +1,6 @@
 package com.example.swip.dto.study;
 
+import com.example.swip.dto.UserRelationship;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.Builder;
@@ -23,11 +24,11 @@ public class StudyFilterResponse {
     private int cur_participants_num;
     private LocalDateTime created_time;
     private String category;
-    private List<String> additionalInfos = new ArrayList<>(); //태그
-    private Boolean is_member;
+    private List<String> additionalInfos = new ArrayList<>(); //
+    private UserRelationship user_relation;
 
     @QueryProjection
-    public StudyFilterResponse(Long id, String title, String status, LocalDate start_date, LocalDate end_date, int max_participants_num, int cur_participants_num, LocalDateTime created_time, String category, List<String> additionalInfos, Boolean is_member) {
+    public StudyFilterResponse(Long id, String title, String status, LocalDate start_date, LocalDate end_date, int max_participants_num, int cur_participants_num, LocalDateTime created_time, String category, List<String> additionalInfos, UserRelationship user_relation) {
         this.id = id;
         this.title = title;
         this.status = status;
@@ -38,7 +39,7 @@ public class StudyFilterResponse {
         this.created_time = created_time;
         this.category = category;
         this.additionalInfos = additionalInfos;
-        this.is_member = is_member;
+        this.user_relation = user_relation;
     }
     @QueryProjection
     public StudyFilterResponse(Long id, String title, String status, LocalDate start_date, LocalDate end_date, int max_participants_num, int cur_participants_num, LocalDateTime created_time, String category, List<String> additionalInfos) {

@@ -220,13 +220,6 @@ public class StudyApiController {
                         0L,
                         9L);
 
-        filteredStudyList.stream().forEach(
-                filteredStudy -> {
-                    Boolean is_memeber = userStudyService.getAlreadyJoin(user_id, filteredStudy.getStudy_id());
-                    filteredStudy.setIs_member(is_memeber);
-                }
-        );
-
         int totalCount = filteredStudyList.size(); //전체 리스트 개수
 
         return new Result(filteredStudyList,totalCount);

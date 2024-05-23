@@ -11,6 +11,7 @@ import com.example.swip.entity.enumtype.Tendency;
 import com.example.swip.repository.QuickFilterRepository;
 import com.example.swip.repository.StudyFilterRepository;
 import com.example.swip.repository.StudyRepository;
+import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -80,29 +81,6 @@ public class StudyQuickService {
         return savedFilter.getId();
     }
     public List<QuickMatchResponse> quickFilteredStudy(QuickMatchFilter quickMatchFilter, Long userId, Long page, Long size){
-
-        List<Study> findStudy = studyRepository.quickFilterStudy(quickMatchFilter, userId, page, size);
-
-        //
-        List<QuickMatchResponse> responses = findStudy.stream()
-                .map(study -> new QuickMatchResponse(
-                        study.getId(),
-                        MatchingType.toString(study.getMatching_type()),
-                        study.getTitle(),
-                        study.getCategory().getName(),
-                        study.getDescription(),
-                        study.getStart_date(),
-                        study.getDuration(),
-                        study.getMax_participants_num(),
-                        study.getCur_participants_num(),
-                        study.getCreated_time(),
-                        study.getTendency(),
-                        study.getAdditionalInfos().stream()
-                                .map(info -> info.getName())
-                                .collect(Collectors.toList())
-                ))
-                .collect(Collectors.toList());
-
-        return responses;
+        return studyRepository.quickFilterStudy(quickMatchFilter, userId, page, size);
     }
 }
