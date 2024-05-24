@@ -147,6 +147,12 @@ public class UserService {
         User savedUser = userRepository.save(addUserRequest.toEntity());
         return savedUser.getId();
     }
+    // 저장
+    @Transactional
+    public Long saveTestUser(AddUserRequest addUserRequest){
+        User savedUser = userRepository.save(addUserRequest.toTestEntity());
+        return savedUser.getId();
+    }
 
     @Transactional
     public void deleteExpiredUserData(LocalDateTime time) {
