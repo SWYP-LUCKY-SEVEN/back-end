@@ -315,4 +315,30 @@ public class UserApiController {
                         .message("chat server response : "+response.getFirst() + response.getSecond().toString())
                 .build());
     }
+
+    @Operation(summary = "회원 탈퇴 진행 (운영중인 스터디 삭제)", description = "JWT 토큰 해당하는 계정에 탈퇴 과정을 진행합니다. 운영중인 스터디는 모두 사라집니다.")
+    @PatchMapping("/user/withdrawal/forcing") //
+    public ResponseEntity<DefaultResponse> withdrawalUserWithDeleteStudy(@AuthenticationPrincipal UserPrincipal principal) {
+        if(principal == null)
+            return ResponseEntity.status(401).build();
+
+        Pair<Integer, Long> result = userWithdrawalService.withdrawal(principal.getUserId(), true);
+
+        if(result.getSecond() == null) {
+            return ResponseEntity.status(401).body(
+                    DefaultResponse.builder()
+                            .message("등록되지 않은 JWT")
+                            .build()
+            );
+        }
+        Pair<String, Integer> response = chatServerService.deleteUser(result.getSecond());
+
+        String status_text = "";
+        if(result.getFirst() == 201)
+            status_text = "Delete success!";
+
+        return ResponseEntity.status(result.getFirst()).body(DefaultResponse.builder()
+                .message(status_text +" chat server response : "+response.getFirst() + response.getSecond().toString())
+                .build());
+    }
 }

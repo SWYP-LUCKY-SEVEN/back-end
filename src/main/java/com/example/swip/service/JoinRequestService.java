@@ -1,6 +1,7 @@
 package com.example.swip.service;
 
 import com.example.swip.dto.DefaultResponse;
+import com.example.swip.dto.JoinRequest.JoinRequestResponse;
 import com.example.swip.dto.study.PostStudyAddMemberRequest;
 import com.example.swip.entity.JoinRequest;
 import com.example.swip.entity.Study;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -47,8 +49,19 @@ public class JoinRequestService {
         );
     }
 
-    public List<JoinRequest> getAllByStudyId(Long studyId) {
-        return joinRequestRepository.findAllByStudyId(studyId);
+    public List<JoinRequestResponse> getAllByStudyId(Long studyId) {
+        List<JoinRequest> findJoinRequests = joinRequestRepository.findAllByStudyId(studyId);
+        return findJoinRequests.stream()
+                .map(request -> {
+                    return JoinRequestResponse.builder()
+                            .study_id(request.getId().getStudyId())
+                            .user_id(request.getId().getUserId())
+                            .join_status(request.getJoin_status().toString())
+                            .request_date(request.getRequest_date())
+                            .nickname(request.getUser().getNickname())
+                            .profile_image(request.getUser().getProfile_image())
+                            .build();
+                }).collect(Collectors.toList());
     }
 
     public Integer getAllWaitingCountByStudyId(Long studyId) {
