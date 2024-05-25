@@ -5,6 +5,7 @@ import com.example.swip.dto.study.StudyFilterResponse;
 import com.example.swip.dto.user.SimpleUserProfileDto;
 import com.example.swip.entity.*;
 import com.example.swip.entity.enumtype.ExitStatus;
+import com.example.swip.entity.enumtype.JoinStatus;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.querydsl.core.Query;
 import com.querydsl.core.Tuple;
@@ -44,7 +45,7 @@ public class UserRepositoryCustom {
                 .select(study)
                 .from(joinRequest)
                 .join(joinRequest.study, study)
-                .where(joinRequest.user.id.eq(userId))
+                .where(joinRequest.user.id.eq(userId), joinRequest.join_status.ne(JoinStatus.Rejected))
                 .fetch();
     }
     public List<Study> processStudyList(Long userId) {   //InProgress 상태의 스터디 개수

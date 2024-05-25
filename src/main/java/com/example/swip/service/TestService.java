@@ -21,7 +21,7 @@ public class TestService {
     private final JwtIssuer jwtIssuer;
     public String getJWTByUserID(Long userId) {
         User user = userRepository.findById(userId).orElse(null);
-        if(user  == null)
+        if(user == null)
             return null;
         List<String> list = new LinkedList<>(Arrays.asList(user.getRole()));
 
