@@ -110,7 +110,8 @@ public class JoinRequestService {
     @Transactional
     public boolean cancelJoinRequest(Long userId, Long studyId) {
 
-        if(!userStudyService.getExitStatus(userId, studyId).equals(ExitStatus.None)){ //강퇴, 이탈 멤버는 취소 불가
+        ExitStatus exitStatus = userStudyService.getExitStatus(userId, studyId);
+        if(exitStatus != null && !userStudyService.getExitStatus(userId, studyId).equals(ExitStatus.None)){ //강퇴, 이탈 멤버는 취소 불가
             return false;
         }
 
@@ -127,14 +128,14 @@ public class JoinRequestService {
             userStudyService.deleteUserStudyById(userId, studyId);
             return true;
         }
-        else if(isJoin && findRequest != null){ // 스터디 참가자 (승인제 : 신청 수락이 된 경우)
+        if(isJoin && findRequest != null){ // 스터디 참가자 (승인제 : 신청 수락이 된 경우)
             // 1. 신청 테이블에서 삭제
             joinRequestRepository.deleteById(id);
             // 2. user_study 테이블에서 삭제
             userStudyService.deleteUserStudyById(userId, studyId);
             return true;
         }
-        else if(!isJoin && findRequest.getJoin_status() == JoinStatus.Waiting){ // 신청 수락 대기중인 경우
+        if(!isJoin && findRequest.getJoin_status() == JoinStatus.Waiting){ // 신청 수락 대기중인 경우
             // 1. join_request 테이블에서 삭제
             joinRequestRepository.deleteById(id);
             return true;
