@@ -5,6 +5,7 @@ import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.EvaluationRequest;
 import com.example.swip.dto.JoinRequest.JoinRequestResponse;
 import com.example.swip.dto.auth.AddUserRequest;
+import com.example.swip.dto.user.PostProfileDto;
 import com.example.swip.dto.user.UserMainProfileDto;
 import com.example.swip.entity.User;
 import com.example.swip.entity.enumtype.JoinStatus;
@@ -55,10 +56,16 @@ public class TesterApiController {
                             .message("exist Email")
                             .build()
             );
-        Long user_id = userService.saveTestUser(addUserRequest);
-        return ResponseEntity.status(200).body(
+        User user = userService.saveTestUser(addUserRequest);
+        PostProfileDto postProfileDto = PostProfileDto.builder()
+                .user_id(user.getId())
+                .profileImage(user.getProfile_image())
+                .nickname(user.getNickname())
+                .build();
+        Pair<String, Integer> response = chatServerService.postUser(postProfileDto);
+        return ResponseEntity.status(response.getSecond()).body(
                 DefaultResponse.builder()
-                        .message("user ID : " + user_id.toString())
+                        .message("user ID : " + user.getId().toString()+ " " + response.getFirst())
                         .build()
         );
     }
