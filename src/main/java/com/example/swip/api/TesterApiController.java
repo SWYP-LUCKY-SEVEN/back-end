@@ -100,15 +100,9 @@ public class TesterApiController {
                             .build()
             );
         }
-        Pair<String, Integer> response = chatServerService.deleteUser(result.getSecond());
+        int status = chatServerService.deleteUser(result.getSecond());
 
-        String status_text = "";
-        if(result.getFirst() == 201)
-            status_text = "Delete success!";
-
-        return ResponseEntity.status(result.getFirst()).body(DefaultResponse.builder()
-                .message(status_text +" chat server response : "+response.getFirst() + response.getSecond().toString())
-                .build());
+        return ResponseEntity.status(status).build();
     }
 
     //

@@ -43,9 +43,10 @@ public class UserApiController {
                 .build());
     }
 
-    @Operation(summary = "회원가입 시 프로필 등록", description = "회원가입 시 프로필을 등록하는 메소드입니다. 헤더 내 Authorization:Bearer ~ 형태의 JWT 토큰을 필요로 합니다.")
+    @Operation(summary = "회원가입 시 프로필 생성 메소드", description = "회원가입 시 프로필을 생성하는 메소드입니다. 헤더 내 Authorization:Bearer ~ 형태의 JWT 토큰을 필요로 합니다. " +
+            "우선 회원정보 변경시에도 해당 API를 사용 가능합니다. 회원 정보 변경은 Chat 서버의 고려사항을 파악 후 완성하려 합니다.")
     @PostMapping("/user/profile") // swagger를 위해 변형을 줌
-    public ResponseEntity<DefaultResponse> postUserProfile(
+    public ResponseEntity<PostProfileResponse> postUserProfile(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestBody @Validated PostProfileRequest postProfileRequest
     ) {
@@ -57,16 +58,15 @@ public class UserApiController {
         if (!check)
             return ResponseEntity.status(400).build();
 
-        Pair<String, Integer> response = chatServerService.postUser(postProfileDto);
+        PostProfileResponse postProfileResponse = chatServerService.postUser(postProfileDto);
 
-        return ResponseEntity.status(200).body(DefaultResponse.builder()
-                .message("chat server response : "+response.getFirst() + response.getSecond().toString())
-                .build());
+        return ResponseEntity.status(201).body(postProfileResponse);
     }
 
-    @Operation(summary = "프로필 수정", description = "회원가입 시 프로필을 수정하는 메소드입니다. 헤더 내 Authorization:Bearer ~ 형태의 JWT 토큰을 필요로 합니다.")
+    @Operation(summary = "회원가입 시 프로필 생성 메소드", description = "회원가입 시 프로필을 생성하는 메소드입니다. 헤더 내 Authorization:Bearer ~ 형태의 JWT 토큰을 필요로 합니다. " +
+            "우선 회원정보 변경시에도 해당 API를 사용 가능합니다. 회원 정보 변경은 Chat 서버의 고려사항을 파악 후 완성하려 합니다.")
     @PatchMapping("/user/profile") // swagger를 위해 변형을 줌
-    public ResponseEntity<DefaultResponse> patchUserProfile(
+    public ResponseEntity<PostProfileResponse> patchUserProfile(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestBody @Validated PostProfileRequest postProfileRequest
     ) {
@@ -78,11 +78,9 @@ public class UserApiController {
         if (!check)
             return ResponseEntity.status(400).build();
 
-        Pair<String, Integer> response = chatServerService.updateUser(postProfileDto);
+        PostProfileResponse postProfileResponse = chatServerService.postUser(postProfileDto);
 
-        return ResponseEntity.status(200).body(DefaultResponse.builder()
-                .message("chat server response : "+response.getFirst() + response.getSecond().toString())
-                .build());
+        return ResponseEntity.status(201).body(postProfileResponse);
     }
 
     @Operation(summary = "공유 프로필 정보 반환", description = "마이프로필 외 위치에서 사용자 프로필을 조회할 때, 사용됩니다.")
@@ -309,11 +307,9 @@ public class UserApiController {
                             .build()
             );
         }
-        Pair<String, Integer> response = chatServerService.deleteUser(result.getSecond());
+        int status = chatServerService.deleteUser(result.getSecond());
 
-        return ResponseEntity.status(result.getFirst()).body(DefaultResponse.builder()
-                        .message("chat server response : "+response.getFirst() + response.getSecond().toString())
-                .build());
+        return ResponseEntity.status(status).build();
     }
 
     @Operation(summary = "회원 탈퇴 진행 (운영중인 스터디 삭제)", description = "JWT 토큰 해당하는 계정에 탈퇴 과정을 진행합니다. 운영중인 스터디는 모두 사라집니다.")

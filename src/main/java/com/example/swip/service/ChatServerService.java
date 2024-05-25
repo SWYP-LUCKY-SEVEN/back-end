@@ -6,13 +6,11 @@ import com.example.swip.dto.study.PostStudyDeleteMemberRequest;
 import com.example.swip.dto.user.PostProfileDto;
 import com.example.swip.dto.user.PostProfileResponse;
 import com.example.swip.dto.study.PostStudyRequest;
-import com.mysema.commons.lang.Pair;
-import org.springframework.http.ResponseEntity;
 
 public interface ChatServerService {
-    Pair<String, Integer> postUser(PostProfileDto postProfileDto);
-    Pair<String, Integer> updateUser(PostProfileDto postProfileDto);
-    Pair<String, Integer> deleteUser(Long userId);
+    PostProfileResponse postUser(PostProfileDto postProfileDto);
+    PostProfileResponse updateUser(PostProfileDto postProfileDto);
+    int deleteUser(Long userId);
 
     DefaultResponse postStudy(PostStudyRequest postStudyRequest);
 
