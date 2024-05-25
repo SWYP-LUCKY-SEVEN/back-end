@@ -40,19 +40,8 @@ public class JoinRequestApiController {
 
         //방장이면 확인 가능하도록
         if(ownerId.equals(findStudyOwner)){
-            List<JoinRequest> findJoinRequests= joinRequestService.getAllByStudyId(studyId);
+            List<JoinRequestResponse> responses= joinRequestService.getAllByStudyId(studyId);
             //dto 변환 & return
-            List<JoinRequestResponse> responses = findJoinRequests.stream()
-                    .map(request -> {
-                        return JoinRequestResponse.builder()
-                                .study_id(request.getId().getStudyId())
-                                .user_id(request.getId().getUserId())
-                                .join_status(request.getJoin_status().toString())
-                                .request_date(request.getRequest_date())
-                                .nickname(request.getUser().getNickname())
-                                .profile_image(request.getUser().getProfile_image())
-                                .build();
-                    }).collect(Collectors.toList());
             return ResponseEntity.status(200).body(new Result(responses, "성공"));
         }
         return ResponseEntity.status(403).body(new Result(null, "방장이 아닙니다."));

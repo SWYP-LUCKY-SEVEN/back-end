@@ -1,26 +1,24 @@
 package com.example.swip.api;
 
-import com.example.swip.config.JwtIssuer;
 import com.example.swip.config.UserPrincipal;
 import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.EvaluationRequest;
+import com.example.swip.dto.JoinRequest.JoinRequestResponse;
 import com.example.swip.dto.auth.AddUserRequest;
-import com.example.swip.dto.todo.StudyMBOResponse;
 import com.example.swip.dto.user.UserMainProfileDto;
 import com.example.swip.entity.User;
+import com.example.swip.entity.enumtype.JoinStatus;
 import com.example.swip.service.*;
 import com.mysema.commons.lang.Pair;
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,7 +31,8 @@ public class TesterApiController {
     private final UserStudyService userStudyService;
     private final UserWithdrawalService userWithdrawalService;
     private final ChatServerService chatServerService;
-    private final JwtIssuer jwtIssuer;
+    private final JoinRequestService joinRequestService;
+    private final TestService testService;
     @Operation(summary = "모든 USER ID 및 정보 확인 (테스트용 API)", description = "가입된 모든 user의 Id 및 정보를 반환합니다.")
     @GetMapping("/test/user/all")
     public ResponseEntity<List<UserMainProfileDto>> getAllUserId(){  // Authorization 내 principal 없으면 null 값
@@ -63,19 +62,12 @@ public class TesterApiController {
                         .build()
         );
     }
-    @Operation(summary = "테스트 유저 JWT 발급", description = "테스트용 유저를 가입 시킨다.")
+    @Operation(summary = "유저 ID로 테스트용 JWT 발급 [테스트]", description = "테스트용 유저를 가입 시킨다.")
     @PostMapping("/test/jwt")
     public ResponseEntity<DefaultResponse> postJWT(
         @RequestParam Long user_id
-    ){  // Authorization 내 principal 없으면 null 값
-        User user = userService.findUserById(user_id);
-        if(user  == null)
-            return ResponseEntity.status(404).body(DefaultResponse.builder()
-                            .message("존재하지 않는 ID")
-                    .build());
-        List<String> list = new LinkedList<>(Arrays.asList(user.getRole()));
-
-        String jwt = jwtIssuer.issue(user.getId(),user.getEmail(),user.getValidate(),list);
+    ){
+        String jwt = testService.getJWTByUserID(user_id);
         return ResponseEntity.status(200).body(DefaultResponse.builder()
                 .message("Bearer "+jwt)
                 .build());
@@ -97,16 +89,14 @@ public class TesterApiController {
     }
     @Operation(summary = "회원 즉시 삭제 [테스트용] (운영중인 스터디 삭제)", description = "회원을 즉시 삭제합니다. 관련된 모든 스터디도 삭제됩니다.")
     @DeleteMapping("/test/user") // user id 반환
-    public ResponseEntity<DefaultResponse> deleteUserByUserId(@AuthenticationPrincipal UserPrincipal principal){  // Authorization 내 principal 없으면 null 값
-        if(principal == null)
-            return ResponseEntity.status(401).build();
-
-        Pair<Integer, Long> result = userWithdrawalService.deleteUser(principal.getUserId(), true);
-
+    public ResponseEntity<DefaultResponse> deleteUserByUserId(
+            @RequestParam Long userId
+    ){
+        Pair<Integer, Long> result = userWithdrawalService.deleteUser(userId, true);
         if(result.getSecond() == null) {
             return ResponseEntity.status(401).body(
                     DefaultResponse.builder()
-                            .message("등록되지 않은 JWT")
+                            .message("등록되지 않은 유저 ID")
                             .build()
             );
         }
@@ -121,40 +111,62 @@ public class TesterApiController {
                 .build());
     }
 
-    @Operation(summary = "회원 탈퇴 진행 (운영중인 스터디 삭제)", description = "JWT 토큰 해당하는 계정에 탈퇴 과정을 진행합니다. 운영중인 스터디는 모두 사라집니다.")
-    @PatchMapping("/user/withdrawal/forcing") //
-    public ResponseEntity<DefaultResponse> withdrawalUserWithDeleteStudy(@AuthenticationPrincipal UserPrincipal principal) {
-        if(principal == null)
-            return ResponseEntity.status(401).build();
-
-        Pair<Integer, Long> result = userWithdrawalService.withdrawal(principal.getUserId(), true);
-
-        if(result.getSecond() == null) {
-            return ResponseEntity.status(401).body(
-                    DefaultResponse.builder()
-                            .message("등록되지 않은 JWT")
-                            .build()
-            );
-        }
-        Pair<String, Integer> response = chatServerService.deleteUser(result.getSecond());
-
-        String status_text = "";
-        if(result.getFirst() == 201)
-            status_text = "Delete success!";
-
-        return ResponseEntity.status(result.getFirst()).body(DefaultResponse.builder()
-                .message(status_text +" chat server response : "+response.getFirst() + response.getSecond().toString())
-                .build());
-    }
-
+    //
+    // 스터디 요청 관련
+    //
     @Operation(summary = "특정 유저 스터디 참가/신청 (테스트용 API)",
             description = "유저 JWT 필요 ")
-    @PostMapping("/test/join/{study_id}")
-    public ResponseEntity testMatchStudy(
-            @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @PathVariable("study_id") Long studyId
+    @PostMapping("/test/joinRequest/{study_id}")
+    public ResponseEntity testJoinRequestStudy(
+            @PathVariable("study_id") Long studyId,
+            @RequestParam Long userId
     ) {
-        return studyService.joinStudy(studyId, userPrincipal.getUserId(), userPrincipal.getToken());
+        String jwt = testService.getJWTByUserID(userId);
+        return studyService.joinStudy(studyId, userId, jwt);
+    }
+
+    @Operation(summary = "특정 스터디 신청 내역 조회 [테스트]")
+    @GetMapping("/test/joinRequest/{study_id}")
+    public ResponseEntity<Result> getJoinRequestsByStudyId(
+            @PathVariable("study_id") Long studyId
+    )
+    {
+        Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
+        if (findStudyOwner == null)
+            return ResponseEntity.status(403).body(new Result(null, "스터디를 찾을 수 없음"));
+
+        //방장이면 확인 가능하도록
+        List<JoinRequestResponse> responses= joinRequestService.getAllByStudyId(studyId);
+        //dto 변환 & return
+        return ResponseEntity.status(200).body(new Result(responses, "성공"));
+    }
+
+    @Operation(summary = "신청 수락 (테스트용)")
+    @PostMapping("/test/joinRequest/accept")
+    private ResponseEntity<String> acceptJoinRequest(
+            @RequestParam Long studyId,
+            @RequestParam Long userId
+    )
+    {
+        //꽉찬 스터디의 경우 수락 불가
+        boolean isFull = studyService.isAlreadyFull(studyId);
+        if(isFull){
+            return ResponseEntity.status(200).body("참여 인원이 꽉 찼습니다.");
+        }
+        //이미 신청 수락/거부한 경우(더블체크)
+        JoinStatus joinStatus = joinRequestService.checkJoinStatusById(studyId, userId);
+        if(joinStatus != null) {
+            if (joinStatus.equals(JoinStatus.Approved)) {
+                return ResponseEntity.status(200).body("이미 수락된 사용자입니다.");
+            } else if (joinStatus.equals(JoinStatus.Rejected)) {
+                return ResponseEntity.status(200).body("이미 거부된 사용자입니다.");
+            }
+        }
+        Long admin_id = userStudyService.getOwnerbyStudyId(studyId);
+        String jwt = testService.getJWTByUserID(admin_id);
+
+        joinRequestService.acceptJoinRequest(studyId, userId, jwt);
+        return ResponseEntity.status(200).body("쇼터디에 가입했어요."); //신청 수락 성공
     }
 
     @Operation(summary = "스터디 상태 강제 변경 (테스트용 API)",
@@ -202,22 +214,17 @@ public class TesterApiController {
                         .build());
     }
 
-    @GetMapping("/study/localDataTime")
+    @GetMapping("/test/localDataTime")
     private LocalDateTime printServerTime(){
         LocalDateTime now = LocalDateTime.now();
         return now;
     }
 
-    @PostMapping("/study/token")
-    public String getTokenString(
-            @AuthenticationPrincipal UserPrincipal userPrincipal // 권한 인증
-    ) {
-        System.out.println("userPrincipal.getUserId() = " + userPrincipal.getUserId());
-        System.out.println("userPrincipal.getValidate() = " + userPrincipal.getValidate());
-        System.out.println("userPrincipal.getEmail() = " + userPrincipal.getEmail());
-        System.out.println("userPrincipal.getToken() = " + userPrincipal.getToken());
-        if(userPrincipal == null)
-            return null;
-        return userPrincipal.getToken();
+
+    @Data
+    @AllArgsConstructor
+    public static class Result<T>{
+        private T data;
+        private String message;
     }
 }
