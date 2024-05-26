@@ -5,13 +5,17 @@ import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.EvaluationRequest;
 import com.example.swip.dto.JoinRequest.JoinRequestResponse;
 import com.example.swip.dto.auth.AddUserRequest;
-import com.example.swip.dto.user.PostProfileDto;
+import com.example.swip.dto.chat.ChatProfileRequest;
 import com.example.swip.dto.user.UserMainProfileDto;
 import com.example.swip.entity.User;
+import com.example.swip.entity.enumtype.ChatStatus;
 import com.example.swip.entity.enumtype.JoinStatus;
 import com.example.swip.service.*;
 import com.mysema.commons.lang.Pair;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -57,18 +61,60 @@ public class TesterApiController {
                             .build()
             );
         User user = userService.saveTestUser(addUserRequest);
-        PostProfileDto postProfileDto = PostProfileDto.builder()
-                .user_id(user.getId())
-                .profileImage(user.getProfile_image())
+        ChatProfileRequest chatProfileRequest = ChatProfileRequest.builder()
+                .pk(user.getId().toString())
+                .pic(user.getProfile_image())
                 .nickname(user.getNickname())
                 .build();
-        Pair<String, Integer> response = chatServerService.postUser(postProfileDto);
+        Pair<String, Integer> response = chatServerService.postUser(chatProfileRequest);
+        if(response.getSecond() != 200)
+            userService.setChatStatus(user, response.getSecond(), ChatStatus.Need_create);
+
         return ResponseEntity.status(response.getSecond()).body(
                 DefaultResponse.builder()
                         .message("user ID : " + user.getId().toString()+ " " + response.getFirst())
                         .build()
         );
     }
+
+    @Operation(summary = "채팅 서버 미등록 유저 등록", description = "테스트용 유저를 가입 시킨다.")
+    @PostMapping("/test/chat/user") // user id 반환
+    public ResponseEntity<DefaultResponse> postUserChatServer(
+            @RequestParam Long user_id,
+            @Parameter(description = "사용 함수",
+                    in = ParameterIn.QUERY,
+                    schema = @Schema(defaultValue = "post",
+                            allowableValues = {"post", "update", "delete"}))
+            @RequestParam String action
+    ) {
+        User user = userService.findUserById(user_id);
+        if(user == null)
+            return ResponseEntity.status(404).build();
+        ChatProfileRequest chatProfileRequest = ChatProfileRequest.builder()
+                .pk(user.getId().toString())
+                .pic(user.getProfile_image())
+                .nickname(user.getNickname())
+                .build();
+
+        Pair<String, Integer> response = null;
+        switch (action) {
+            case "post":
+                response = chatServerService.postUser(chatProfileRequest);
+                break;
+            case "update":
+                response = chatServerService.updateUser(chatProfileRequest);
+                break;
+            case "delete":
+                response = chatServerService.deleteUser(user_id);
+                break;
+        }
+        return ResponseEntity.status(response.getSecond()).body(
+                DefaultResponse.builder()
+                        .message("user ID : " + user.getId().toString()+ " " + response.getFirst())
+                        .build()
+        );
+    }
+
     @Operation(summary = "유저 ID로 테스트용 JWT 발급 [테스트]", description = "테스트용 유저를 가입 시킨다.")
     @PostMapping("/test/jwt")
     public ResponseEntity<DefaultResponse> postJWT(
@@ -99,22 +145,24 @@ public class TesterApiController {
     public ResponseEntity<DefaultResponse> deleteUserByUserId(
             @RequestParam Long userId
     ){
-        Pair<Integer, Long> result = userWithdrawalService.deleteUser(userId, true);
-        if(result.getSecond() == null) {
+        if(!userService.existUserId(userId)) {
             return ResponseEntity.status(401).body(
                     DefaultResponse.builder()
                             .message("등록되지 않은 유저 ID")
                             .build()
             );
         }
-        Pair<String, Integer> response = chatServerService.deleteUser(result.getSecond());
-
-        String status_text = "";
-        if(result.getFirst() == 201)
-            status_text = "Delete success!";
+//        Pair<String, Integer> chatResponse = chatServerService.deleteUser(userId);
+//        if(chatResponse.getSecond() != 200)
+//            return ResponseEntity.status(chatResponse.getSecond()).body(
+//                    DefaultResponse.builder()
+//                            .message("Chat Server Res : " + chatResponse.getFirst())
+//                            .build()
+//            );
+        Pair<Integer, Long> result = userWithdrawalService.deleteUser(userId, true);
 
         return ResponseEntity.status(result.getFirst()).body(DefaultResponse.builder()
-                .message(status_text +" chat server response : "+response.getFirst() + response.getSecond().toString())
+                .message("delete user Id : "+result.getSecond())
                 .build());
     }
 

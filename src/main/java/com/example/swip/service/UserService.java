@@ -11,12 +11,15 @@ import com.example.swip.entity.Evaluation;
 import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
 import com.example.swip.entity.UserStudy;
+import com.example.swip.entity.enumtype.ChatStatus;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.example.swip.repository.EvaluationRepository;
 import com.example.swip.repository.UserRepository;
 import com.example.swip.repository.UserRepositoryCustom;
 import com.example.swip.repository.UserStudyRepository;
 import com.mysema.commons.lang.Pair;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
@@ -50,13 +53,13 @@ public class UserService {
     }
 
     @Transactional
-    public boolean updateProfile(PostProfileDto postProfileDto){
+    public User updateProfile(PostProfileDto postProfileDto){
         User findUser = userRepository.findById(postProfileDto.getUser_id()).orElse(null);
         String temp = postProfileDto.getNickname().replaceAll("[^가-힣a-zA-Z0-9]","");
         if(findUser == null || postProfileDto.getNickname().length() != temp.length())
-            return false;
+            return null;
         findUser.updateProfile(postProfileDto.getNickname(), postProfileDto.getProfileImage());
-        return true;
+        return findUser;
     }
     public UserMainProfileDto getMainProfileByNickname(String nickname) {
         User user = userRepository.findByNickname(nickname);
@@ -143,12 +146,6 @@ public class UserService {
 
     // 저장
     @Transactional
-    public Long saveUser(AddUserRequest addUserRequest){
-        User savedUser = userRepository.save(addUserRequest.toEntity());
-        return savedUser.getId();
-    }
-    // 저장
-    @Transactional
     public User saveTestUser(AddUserRequest addUserRequest){
         User savedUser = userRepository.save(addUserRequest.toTestEntity());
         return savedUser;
@@ -159,9 +156,27 @@ public class UserService {
         userRepositoryCustom.deleteExpiredUserData(time);
     }
 
+    @Transactional
+    public void setChatStatus(Object obj, Integer status_num, ChatStatus defaultStatus) {
+        if (status_num == 200)
+            setUserOrStudyChatStatus(obj, ChatStatus.Clear);
+        else
+            setUserOrStudyChatStatus(obj, defaultStatus);
+    }
+
+    private void setUserOrStudyChatStatus(Object obj, ChatStatus status) {
+        if(obj instanceof User)
+            ((User) obj).setChat_status(status);
+        else if (obj instanceof Study)
+            ((Study) obj).setChat_status(status);
+    }
+
     public String deleteUser(Long id) {
         if(userRepository.existsById(id))
             userRepository.deleteById(id);
         return "delete success";
+    }
+    public boolean existUserId(Long id) {
+        return userRepository.existsById(id);
     }
 }

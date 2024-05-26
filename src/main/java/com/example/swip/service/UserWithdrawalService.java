@@ -57,6 +57,15 @@ public class UserWithdrawalService {
         userStudy.getStudy().updateCurParticipants("-", 1);
         return true;
     }
+    public boolean isExistStudyOperation(Long userId) {
+        List<UserStudy> userStudyList = userStudyRepository.findStudyByUserId(userId);
+
+        for(UserStudy userStudy : userStudyList) {
+            if(userStudy.is_owner())
+                return true;
+        }
+        return false;
+    }
     @Transactional
     public Pair<Integer, Long> withdrawal(Long userId, Boolean isForce) {
         User user = userRepository.findById(userId).orElse(null);

@@ -13,6 +13,7 @@ import com.example.swip.dto.user.UserProfileGetResponse;
 import com.example.swip.dto.user.UserRelatedStudyCount;
 import com.example.swip.dto.userStudy.UserProgressStudyResponse;
 import com.example.swip.entity.User;
+import com.example.swip.entity.enumtype.ChatStatus;
 import com.example.swip.service.*;
 import com.mysema.commons.lang.Pair;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,11 +54,13 @@ public class UserApiController {
             return ResponseEntity.status(403).build();
 
         PostProfileDto postProfileDto = postProfileRequest.toPostProfileDto(principal.getUserId());
-        boolean check = userService.updateProfile(postProfileDto);
-        if (!check)
+        User user = userService.updateProfile(postProfileDto);
+        if (user == null)
             return ResponseEntity.status(400).build();
 
-        Pair<String, Integer> response = chatServerService.postUser(postProfileDto);
+        Pair<String, Integer> response = chatServerService.postUser(postProfileDto.toChatUserProfileDto());
+        if(response.getSecond() != 200)
+            userService.setChatStatus(user, response.getSecond(), ChatStatus.Need_create);
 
         return ResponseEntity.status(200).body(DefaultResponse.builder()
                 .message("chat server response : "+response.getFirst() + response.getSecond().toString())
@@ -74,11 +77,13 @@ public class UserApiController {
             return ResponseEntity.status(403).build();
 
         PostProfileDto postProfileDto = postProfileRequest.toPostProfileDto(principal.getUserId());
-        boolean check = userService.updateProfile(postProfileDto);
-        if (!check)
+        User user = userService.updateProfile(postProfileDto);
+        if (user == null)
             return ResponseEntity.status(400).build();
 
-        Pair<String, Integer> response = chatServerService.updateUser(postProfileDto);
+        Pair<String, Integer> response = chatServerService.updateUser(postProfileDto.toChatUserProfileDto());
+        if(response.getSecond() != 200)
+            userService.setChatStatus(user, response.getSecond(), ChatStatus.Need_update);
 
         return ResponseEntity.status(200).body(DefaultResponse.builder()
                 .message("chat server response : "+response.getFirst() + response.getSecond().toString())
@@ -296,23 +301,27 @@ public class UserApiController {
     @Operation(summary = "회원 탈퇴", description = "JWT 토큰 해당하는 계정에 탈퇴 과정을 진행합니다.")
     @PatchMapping("/user/withdrawal") //
     public ResponseEntity<DefaultResponse> withdrawalUser(@AuthenticationPrincipal UserPrincipal principal) {
-        if(principal == null)
+        if(principal == null || userService.existUserId(principal.getUserId()))
             return ResponseEntity.status(401).build();
+        if(userWithdrawalService.isExistStudyOperation(principal.getUserId()))
+            return ResponseEntity.status(403).body(
+                    DefaultResponse.builder()
+                            .message("운영중인 스터디가 있습니다.")
+                            .build());
+
+//        Pair<String, Integer> chatResponse = chatServerService.deleteUser(principal.getUserId());
+//
+//        if(chatResponse.getSecond() != 200)
+//            return ResponseEntity.status(chatResponse.getSecond()).body(
+//                    DefaultResponse.builder()
+//                            .message("Chat Server Res : " + chatResponse.getFirst())
+//                            .build()
+//            );
 
         Pair<Integer, Long> result = userWithdrawalService.withdrawal(principal.getUserId(), false);
 
-        if(result.getFirst() != 201) {
-            String massage = result.getSecond() == null ? "등록되지 않은 JWT" : "운영중인 스터디가 있습니다.";
-            return ResponseEntity.status(result.getFirst()).body(
-                    DefaultResponse.builder()
-                            .message(massage)
-                            .build()
-            );
-        }
-        Pair<String, Integer> response = chatServerService.deleteUser(result.getSecond());
-
         return ResponseEntity.status(result.getFirst()).body(DefaultResponse.builder()
-                        .message("chat server response : "+response.getFirst() + response.getSecond().toString())
+                .message("delete user Id : "+result.getSecond())
                 .build());
     }
 
@@ -322,23 +331,26 @@ public class UserApiController {
         if(principal == null)
             return ResponseEntity.status(401).build();
 
-        Pair<Integer, Long> result = userWithdrawalService.withdrawal(principal.getUserId(), true);
-
-        if(result.getSecond() == null) {
+        if(!userService.existUserId(principal.getUserId())) {
             return ResponseEntity.status(401).body(
                     DefaultResponse.builder()
-                            .message("등록되지 않은 JWT")
+                            .message("등록되지 않은 유저 ID")
                             .build()
             );
         }
-        Pair<String, Integer> response = chatServerService.deleteUser(result.getSecond());
+//        Pair<String, Integer> chatResponse = chatServerService.deleteUser(principal.getUserId());
+//
+//        if(chatResponse.getSecond() != 200)
+//            return ResponseEntity.status(chatResponse.getSecond()).body(
+//                    DefaultResponse.builder()
+//                            .message("Chat Server Res : " + chatResponse.getFirst())
+//                            .build()
+//            );
 
-        String status_text = "";
-        if(result.getFirst() == 201)
-            status_text = "Delete success!";
+        Pair<Integer, Long> result = userWithdrawalService.withdrawal(principal.getUserId(), true);
 
         return ResponseEntity.status(result.getFirst()).body(DefaultResponse.builder()
-                .message(status_text +" chat server response : "+response.getFirst() + response.getSecond().toString())
+                .message("delete user Id : "+result.getSecond())
                 .build());
     }
 }

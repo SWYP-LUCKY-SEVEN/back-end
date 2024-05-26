@@ -1,5 +1,6 @@
 package com.example.swip.entity;
 
+import com.example.swip.entity.enumtype.ChatStatus;
 import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.example.swip.entity.enumtype.Tendency;
@@ -45,6 +46,8 @@ public class Study {
     private MatchingType.Element matching_type;
 
     private int view_count; //조회수
+
+    private ChatStatus chat_status; //채팅 연결 상태
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false) //not null
     @JoinColumn(name = "category_id")
@@ -113,5 +116,8 @@ public class Study {
         ).collect(Collectors.toList());
 
         this.additionalInfos.addAll(additionalInfoList);
+    }
+    public void setChat_status(ChatStatus chat_status) {
+        this.chat_status = chat_status;
     }
 }
