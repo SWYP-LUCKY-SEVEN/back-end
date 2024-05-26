@@ -149,9 +149,9 @@ public class UserService {
     }
     // 저장
     @Transactional
-    public Long saveTestUser(AddUserRequest addUserRequest){
+    public User saveTestUser(AddUserRequest addUserRequest){
         User savedUser = userRepository.save(addUserRequest.toTestEntity());
-        return savedUser.getId();
+        return savedUser;
     }
 
     @Transactional
