@@ -88,11 +88,11 @@ public class JoinRequestService {
             if(userStudy != null) {
                 DefaultResponse defaultResponse = chatServerService.addStudyMember(
                         PostStudyAddMemberRequest.builder()
+                                .token(bearerToken)
                                 .studyId(studyId)
                                 .userId(userId)
                                 .type("accept") //방장이 허가 -> body userId 초대
-                                .build(),
-                        bearerToken
+                                .build()
                 );
             }
         }

@@ -14,7 +14,7 @@ public interface ChatServerService {
 
     DefaultResponse postStudy(PostStudyRequest postStudyRequest);
 
-    DefaultResponse addStudyMember(PostStudyAddMemberRequest postStudymemberRequest, String bearerToken);
+    DefaultResponse addStudyMember(PostStudyAddMemberRequest postStudymemberRequest);
 
-    DefaultResponse deleteStudyMember(PostStudyDeleteMemberRequest postStudymemberRequest, String bearerToken);
+    DefaultResponse deleteStudyMember(PostStudyDeleteMemberRequest postStudymemberRequest);
 }
