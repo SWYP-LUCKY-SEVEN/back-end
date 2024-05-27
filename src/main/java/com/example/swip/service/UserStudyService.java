@@ -117,10 +117,10 @@ public class UserStudyService {
             //채팅 서버에서 유저 삭제
             DefaultResponse defaultResponse = chatServerService.deleteStudyMember(
                     PostStudyDeleteMemberRequest.builder()
-                            .token(bearerToken)
                             .studyId(studyId)
                             .userId(userId)
-                            .build()
+                            .build(),
+                    bearerToken
             );
             System.out.println("defaultResponse = " + defaultResponse);
         }

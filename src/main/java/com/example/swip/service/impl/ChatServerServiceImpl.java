@@ -30,7 +30,6 @@ public class ChatServerServiceImpl implements ChatServerService {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             String jsonInputString = objectMapper.writeValueAsString(chatProfileRequest);
-            System.out.println(jsonInputString);
             result = sendHttpRequest(reqUserURL, "POST", jsonInputString, null);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -47,7 +46,6 @@ public class ChatServerServiceImpl implements ChatServerService {
             if (!reqUserURL.isEmpty())
                 reqUpdateUserURL = String.format("%s/%s", reqUserURL, chatProfileRequest.getPk());
             String jsonInputString = objectMapper.writeValueAsString(chatProfileRequest);
-            System.out.println(jsonInputString);
             result = sendHttpRequest(reqUpdateUserURL, "PATCH", jsonInputString, null);
         }catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -74,7 +72,6 @@ public class ChatServerServiceImpl implements ChatServerService {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             String jsonInputString = objectMapper.writeValueAsString(postStudyRequest);
-            System.out.println(jsonInputString);
             result = sendHttpRequest(studyReqURL, "POST", jsonInputString, null);
         }catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -94,7 +91,6 @@ public class ChatServerServiceImpl implements ChatServerService {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             String jsonInputString = objectMapper.writeValueAsString(postStudyAddmemberRequest);
-            System.out.println(jsonInputString);
             result = sendHttpRequest(studyAddMemberReqURL, "PUT", jsonInputString, bearerToken);
         }catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -109,16 +105,16 @@ public class ChatServerServiceImpl implements ChatServerService {
     @Value("${swyp.chat.server.study.delete.member.uri}")
     private String studyDeleteMemberReqURL;
     @Override
-    public DefaultResponse deleteStudyMember(PostStudyDeleteMemberRequest postStudymemberRequest) {
-        String bearerToken = postStudymemberRequest.getToken();
-
-        String jsonInputString = "{\"studyId\":\""+ postStudymemberRequest.getStudyId().toString()
-                +"\",\"userId\":\""+postStudymemberRequest.getUserId().toString() +"\"}";
-        Pair<String, Integer> result = sendHttpRequest(studyDeleteMemberReqURL, "PUT", jsonInputString, bearerToken);
-
-        System.out.println("jsonInputString = " + jsonInputString);
-        System.out.println("bearerToken = " + bearerToken);
-
+    public DefaultResponse deleteStudyMember(PostStudyDeleteMemberRequest postStudymemberRequest, String bearerToken) {
+        Pair<String, Integer> result;
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            String jsonInputString = objectMapper.writeValueAsString(postStudymemberRequest);
+            result = sendHttpRequest(studyDeleteMemberReqURL, "PUT", jsonInputString, bearerToken);
+        }catch (JsonProcessingException e) {
+            e.printStackTrace();
+            result = Pair.of("Failed to convert object to JSON", 500);
+        }
         return DefaultResponse.builder()
                 .message(result.getFirst())
                 .build();
