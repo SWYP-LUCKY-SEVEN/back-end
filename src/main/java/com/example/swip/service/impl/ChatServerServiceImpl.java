@@ -68,15 +68,10 @@ public class ChatServerServiceImpl implements ChatServerService {
     private String studyReqURL;
     @Override
     public DefaultResponse postStudy(PostStudyRequest postStudyRequest) {
-        Pair<String, Integer> result;
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            String jsonInputString = objectMapper.writeValueAsString(postStudyRequest);
-            result = sendHttpRequest(studyReqURL, "POST", jsonInputString, null);
-        }catch (JsonProcessingException e) {
-            e.printStackTrace();
-            result = Pair.of("Failed to convert object to JSON", 500);
-        }
+        String jsonInputString = "{\"studyId\":\""+ postStudyRequest.getStudyId().toString()
+                +"\",\"pk\":\""+postStudyRequest.getPk().toString()
+                +"\",\"name\":\""+postStudyRequest.getName()+"\"}";
+        Pair<String, Integer> result = sendHttpRequest(studyReqURL, "POST", jsonInputString, null);
 
         return DefaultResponse.builder()
                 .message(result.getFirst())
@@ -86,17 +81,14 @@ public class ChatServerServiceImpl implements ChatServerService {
     @Value("${swyp.chat.server.study.add.member.uri}")
     private String studyAddMemberReqURL;
     @Override
-    public DefaultResponse addStudyMember(PostStudyAddMemberRequest postStudyAddmemberRequest, String bearerToken) {
-        Pair<String, Integer> result;
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            String jsonInputString = objectMapper.writeValueAsString(postStudyAddmemberRequest);
-            result = sendHttpRequest(studyAddMemberReqURL, "PUT", jsonInputString, bearerToken);
-        }catch (JsonProcessingException e) {
-            e.printStackTrace();
-            result = Pair.of("Failed to convert object to JSON", 500);
-        }
+    public DefaultResponse addStudyMember(PostStudyAddMemberRequest postStudyAddmemberRequest) {
+        String bearerToken = postStudyAddmemberRequest.getToken();
 
+        String jsonInputString = "{\"studyId\":\""+ postStudyAddmemberRequest.getStudyId().toString()
+                +"\",\"userId\":\""+postStudyAddmemberRequest.getUserId().toString()
+                +"\",\"type\":\""+postStudyAddmemberRequest.getType()+"\"}";
+
+        Pair<String, Integer> result = sendHttpRequest(studyAddMemberReqURL, "PUT", jsonInputString, bearerToken);
         return DefaultResponse.builder()
                 .message(result.getFirst())
                 .build();
@@ -105,16 +97,16 @@ public class ChatServerServiceImpl implements ChatServerService {
     @Value("${swyp.chat.server.study.delete.member.uri}")
     private String studyDeleteMemberReqURL;
     @Override
-    public DefaultResponse deleteStudyMember(PostStudyDeleteMemberRequest postStudymemberRequest, String bearerToken) {
-        Pair<String, Integer> result;
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            String jsonInputString = objectMapper.writeValueAsString(postStudymemberRequest);
-            result = sendHttpRequest(studyDeleteMemberReqURL, "PUT", jsonInputString, bearerToken);
-        }catch (JsonProcessingException e) {
-            e.printStackTrace();
-            result = Pair.of("Failed to convert object to JSON", 500);
-        }
+    public DefaultResponse deleteStudyMember(PostStudyDeleteMemberRequest postStudymemberRequest) {
+        String bearerToken = postStudymemberRequest.getToken();
+
+        String jsonInputString = "{\"studyId\":\""+ postStudymemberRequest.getStudyId().toString()
+                +"\",\"userId\":\""+postStudymemberRequest.getUserId().toString() +"\"}";
+        Pair<String, Integer> result = sendHttpRequest(studyDeleteMemberReqURL, "PUT", jsonInputString, bearerToken);
+
+        System.out.println("jsonInputString = " + jsonInputString);
+        System.out.println("bearerToken = " + bearerToken);
+
         return DefaultResponse.builder()
                 .message(result.getFirst())
                 .build();
