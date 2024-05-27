@@ -144,11 +144,11 @@ public class StudyService {
             if (findUserStudy!=null) { //채팅 서버에 저장
                 DefaultResponse defaultResponse = chatServerService.addStudyMember(
                         PostStudyAddMemberRequest.builder()
-                                .token(bearerToken)
                                 .studyId(study.getId())
                                 .userId(user.getId())
                                 .type("join") //본인이 참가 => 토큰에 있는 유저 초대
-                                .build()
+                                .build(),
+                        bearerToken
                 );
                 System.out.println("postStudyResponse = " + defaultResponse.getMessage());
             }

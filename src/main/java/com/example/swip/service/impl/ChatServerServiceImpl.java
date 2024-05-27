@@ -1,16 +1,16 @@
 package com.example.swip.service.impl;
 
 import com.example.swip.dto.DefaultResponse;
+import com.example.swip.dto.chat.ChatProfileRequest;
 import com.example.swip.dto.study.PostStudyAddMemberRequest;
 import com.example.swip.dto.study.PostStudyDeleteMemberRequest;
-import com.example.swip.dto.user.PostProfileDto;
-import com.example.swip.dto.user.PostProfileResponse;
 import com.example.swip.dto.study.PostStudyRequest;
 import com.example.swip.service.ChatServerService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mysema.commons.lang.Pair;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -25,21 +25,32 @@ import java.util.Map;
 public class ChatServerServiceImpl implements ChatServerService {
     @Value("${swyp.chat.server.uri}")
     private String reqUserURL;
-    public Pair<String, Integer> postUser(PostProfileDto profileDto){
-        String jsonInputString = "{\"pk\":\""+profileDto.getUser_id().toString()
-                +"\",\"nickname\":\""+profileDto.getNickname()
-                +"\",\"pic\":\""+profileDto.getProfileImage()+"\"}";
-        Pair<String, Integer> result = sendHttpRequest(reqUserURL, "POST", jsonInputString, null);
+    public Pair<String, Integer> postUser(ChatProfileRequest chatProfileRequest){
+        Pair<String, Integer> result;
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            String jsonInputString = objectMapper.writeValueAsString(chatProfileRequest);
+            result = sendHttpRequest(reqUserURL, "POST", jsonInputString, null);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return Pair.of("Failed to convert object to JSON", 500);
+        }
         return result;
     }
 
-    public Pair<String, Integer> updateUser(PostProfileDto profileDto){
-        String reqDeleteUserURL = "";
-        if(!reqUserURL.isEmpty())
-            reqDeleteUserURL = String.format("%s/%s", reqUserURL, profileDto.getUser_id());
-        String jsonInputString = "{\"nickname\":\""+profileDto.getNickname()
-                +"\",\"pic\":\""+profileDto.getProfileImage()+"\"}";
-        Pair<String, Integer> result = sendHttpRequest(reqDeleteUserURL, "PATCH", jsonInputString, null);
+    public Pair<String, Integer> updateUser(ChatProfileRequest chatProfileRequest){
+        Pair<String, Integer> result;
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            String reqUpdateUserURL = "";
+            if (!reqUserURL.isEmpty())
+                reqUpdateUserURL = String.format("%s/%s", reqUserURL, chatProfileRequest.getPk());
+            String jsonInputString = objectMapper.writeValueAsString(chatProfileRequest);
+            result = sendHttpRequest(reqUpdateUserURL, "PATCH", jsonInputString, null);
+        }catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return Pair.of("Failed to convert object to JSON", 500);
+        }
         return result;
     }
     public Pair<String, Integer> deleteUser(Long userId){
@@ -57,10 +68,15 @@ public class ChatServerServiceImpl implements ChatServerService {
     private String studyReqURL;
     @Override
     public DefaultResponse postStudy(PostStudyRequest postStudyRequest) {
-        String jsonInputString = "{\"studyId\":\""+ postStudyRequest.getStudyId().toString()
-                +"\",\"pk\":\""+postStudyRequest.getPk().toString()
-                +"\",\"name\":\""+postStudyRequest.getName()+"\"}";
-        Pair<String, Integer> result = sendHttpRequest(studyReqURL, "POST", jsonInputString, null);
+        Pair<String, Integer> result;
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            String jsonInputString = objectMapper.writeValueAsString(postStudyRequest);
+            result = sendHttpRequest(studyReqURL, "POST", jsonInputString, null);
+        }catch (JsonProcessingException e) {
+            e.printStackTrace();
+            result = Pair.of("Failed to convert object to JSON", 500);
+        }
 
         return DefaultResponse.builder()
                 .message(result.getFirst())
@@ -70,13 +86,16 @@ public class ChatServerServiceImpl implements ChatServerService {
     @Value("${swyp.chat.server.study.add.member.uri}")
     private String studyAddMemberReqURL;
     @Override
-    public DefaultResponse addStudyMember(PostStudyAddMemberRequest postStudyAddmemberRequest) {
-        String bearerToken = postStudyAddmemberRequest.getToken();
-
-        String jsonInputString = "{\"studyId\":\""+ postStudyAddmemberRequest.getStudyId().toString()
-                +"\",\"userId\":\""+postStudyAddmemberRequest.getUserId().toString()
-                +"\",\"type\":\""+postStudyAddmemberRequest.getType()+"\"}";
-        Pair<String, Integer> result = sendHttpRequest(studyAddMemberReqURL, "PUT", jsonInputString, bearerToken);
+    public DefaultResponse addStudyMember(PostStudyAddMemberRequest postStudyAddmemberRequest, String bearerToken) {
+        Pair<String, Integer> result;
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            String jsonInputString = objectMapper.writeValueAsString(postStudyAddmemberRequest);
+            result = sendHttpRequest(studyAddMemberReqURL, "PUT", jsonInputString, bearerToken);
+        }catch (JsonProcessingException e) {
+            e.printStackTrace();
+            result = Pair.of("Failed to convert object to JSON", 500);
+        }
 
         return DefaultResponse.builder()
                 .message(result.getFirst())
@@ -86,16 +105,16 @@ public class ChatServerServiceImpl implements ChatServerService {
     @Value("${swyp.chat.server.study.delete.member.uri}")
     private String studyDeleteMemberReqURL;
     @Override
-    public DefaultResponse deleteStudyMember(PostStudyDeleteMemberRequest postStudymemberRequest) {
-        String bearerToken = postStudymemberRequest.getToken();
-
-        String jsonInputString = "{\"studyId\":\""+ postStudymemberRequest.getStudyId().toString()
-                +"\",\"userId\":\""+postStudymemberRequest.getUserId().toString() +"\"}";
-        Pair<String, Integer> result = sendHttpRequest(studyDeleteMemberReqURL, "PUT", jsonInputString, bearerToken);
-
-        System.out.println("jsonInputString = " + jsonInputString);
-        System.out.println("bearerToken = " + bearerToken);
-
+    public DefaultResponse deleteStudyMember(PostStudyDeleteMemberRequest postStudymemberRequest, String bearerToken) {
+        Pair<String, Integer> result;
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            String jsonInputString = objectMapper.writeValueAsString(postStudymemberRequest);
+            result = sendHttpRequest(studyDeleteMemberReqURL, "PUT", jsonInputString, bearerToken);
+        }catch (JsonProcessingException e) {
+            e.printStackTrace();
+            result = Pair.of("Failed to convert object to JSON", 500);
+        }
         return DefaultResponse.builder()
                 .message(result.getFirst())
                 .build();
@@ -116,8 +135,8 @@ public class ChatServerServiceImpl implements ChatServerService {
                 conn.setRequestProperty("Authorization", "Bearer " + bearerToken); //Bearer Token 추가
             }
             conn.setDoOutput(true);
-            conn.setConnectTimeout(1000); // 1초
-            conn.setReadTimeout(1000);
+            conn.setConnectTimeout(3000); // 1초
+            conn.setReadTimeout(3000);
 
             if ("POST".equals(method) || "PUT".equals(method)) {
                 try (OutputStream os = conn.getOutputStream()) {
@@ -141,11 +160,12 @@ public class ChatServerServiceImpl implements ChatServerService {
                 }
             }
             System.out.println("response body : " + response);
+            return Pair.of("success!", 200);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return Pair.of("success!", 200);
+        return Pair.of("time out", 408);
     }
     public static Pair<String, Integer> sendRequestUserQueryParam(String reqURL, String method, Map<String, String> queryParams, String bearerToken) {
         String jsonInputString = null; // GET 요청에는 body가 없으므로 null 처리

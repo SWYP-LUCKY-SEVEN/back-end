@@ -1,5 +1,6 @@
 package com.example.swip.entity;
 
+import com.example.swip.entity.enumtype.ChatStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -34,10 +35,15 @@ public class User {
   
     private LocalDateTime withdrawal_date;
 
+    private ChatStatus chat_status; //채팅 연결 상태
     public void updateProfile(String nickname, String profile_image){
         this.profile_image = profile_image;
         this.nickname = nickname;
         this.join_date = LocalDateTime.now();
+    }
+
+    public void setChat_status(ChatStatus chat_status) {
+        this.chat_status = chat_status;
     }
 
     @OneToMany(mappedBy = "to_user", cascade = CascadeType.REMOVE)

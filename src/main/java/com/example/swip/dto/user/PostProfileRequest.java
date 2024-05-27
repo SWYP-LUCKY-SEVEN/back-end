@@ -1,6 +1,5 @@
 package com.example.swip.dto.user;
 
-import com.example.swip.dto.user.PostProfileDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
