@@ -256,10 +256,6 @@ public class StudyService {
         List<StudyFilterResponse> list =
                 studyListToStudyFilterResponse(userService.getProposerStudyList(userId));
 
-        List<StudyFilterResponse> responses = userService.getRegisteredStudyList(userId,
-                        StudyProgressStatus.Element.BeforeStart);
-
-        list.addAll(responses);
         list.sort(Comparator.comparing(StudyFilterResponse::getCreated_time));
         return list;
     }

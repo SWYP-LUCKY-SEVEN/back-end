@@ -166,7 +166,7 @@ public class UserApiController {
     }
 
 
-    @Operation(summary = "내 스터디 신청 목록 확인(참가 신청 & 시작 전)",
+    @Operation(summary = "내 스터디 신청 목록 확인(참가 신청)",
             description = "내 스터디 신청 목록 확인")
     @GetMapping("/user/proposer/study")
     public ResponseEntity getProposerStudy(
@@ -209,6 +209,8 @@ public class UserApiController {
     @Operation(summary = "참가 스터디 목록 확인",
             description = "status (null 허용): before, progress, done.\n" +
                     "- null일 경우: 진행 중이며, 참여 중인 스터디 출력.\n" +
+                    "- before : 진행 전, 참여 중인 스터디 출력.\n" +
+                    "- progress : 진행 중, 참여 중인 스터디 출력"+
                     "- done : 완료한 스터디 출력")
     @GetMapping("/user/registered/study")
     public ResponseEntity getRegisteredStudy(

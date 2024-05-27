@@ -20,7 +20,8 @@ public class DailyCleanupTask {
     private final JoinRequestService joinRequestService;
 
 
-    @Scheduled(cron = "0 0 0 * * *")
+    //@Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(fixedRate = 5000)
     public void cleanupActive() {
         LocalDateTime now = LocalDateTime.now();
         LocalDate today = LocalDate.now();
