@@ -123,12 +123,12 @@ public class UserService {
 
     public UserRelatedStudyCount getRelatedStudyNum(Long user_id) {
         UserRelatedStudyCount urscount = new UserRelatedStudyCount();
-        urscount.setIn_progress(userRepositoryCustom.countInUserStudy(user_id, StudyProgressStatus.Element.InProgress));
+        urscount.setIn_progress(
+                userRepositoryCustom.countInUserStudy(user_id, StudyProgressStatus.Element.InProgress)
+                + userRepositoryCustom.countInUserStudy(user_id,StudyProgressStatus.Element.BeforeStart));
         urscount.setIn_complete(userRepositoryCustom.countInUserStudy(user_id, StudyProgressStatus.Element.Done));
         urscount.setIn_favorite(userRepositoryCustom.countFavorite(user_id));
-        Long countProposal = userRepositoryCustom.countProposer(user_id)
-                + userRepositoryCustom.countInUserStudy(user_id,StudyProgressStatus.Element.BeforeStart);
-        urscount.setIn_proposal(countProposal);
+        urscount.setIn_proposal(userRepositoryCustom.countProposer(user_id));
         return urscount;
     }
     public UserRelatedStudyCount getPublicRelatedStudyNum(Long user_id) {
