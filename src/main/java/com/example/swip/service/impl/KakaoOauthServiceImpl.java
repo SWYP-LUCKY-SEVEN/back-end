@@ -148,6 +148,9 @@ public class KakaoOauthServiceImpl implements KakaoOauthService {
         String email = "";
         String nickname = "";
         //JAVA HTTP POST 작성
+        if(adminKey == null){
+            throw new IllegalArgumentException("The admin key cannot be null");
+        }
         try {
             URL url = new URL("https://kapi.kakao.com/v1/user/logout");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
