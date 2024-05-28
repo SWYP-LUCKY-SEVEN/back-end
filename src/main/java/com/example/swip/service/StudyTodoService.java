@@ -73,7 +73,7 @@ public class StudyTodoService {
     public StudyMBOResponse getMemberTodoList(Long studyId, String nickname, LocalDate date) {
         User user = userRepository.findByNickname(nickname);
 
-        if(!userStudyService.getAlreadyJoin(studyId, user.getId())) //멤버가 아닐경우 null 반환
+        if(!userStudyService.getAlreadyJoin(user.getId(), studyId)) //멤버가 아닐경우 null 반환
             return null;
         //해당 날짜 스터디 멤버의 모든 todo를 가져옴.
         List<StudyTodo> memberTodoList = studyTodoRepositoryCustom.getMemberTodolist(studyId, user.getId(), date);
