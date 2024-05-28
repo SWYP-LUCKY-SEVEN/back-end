@@ -46,8 +46,9 @@ public class StudyTodoApiController {
             return ResponseEntity.status(403).build();
 
         int status = studyTodoService.postGroupTodo(studyId, userPrincipal.getUserId(), request_todo);
+        String message = getResponseMessage(status);
         return ResponseEntity.status(status).body(DefaultResponse.builder()
-                .message("테스트 문구입니다.")
+                .message(message)
                 .build());
     }
 
@@ -62,8 +63,9 @@ public class StudyTodoApiController {
             return ResponseEntity.status(403).build();
 
         int status = studyTodoService.deleteGroupTodo(studyId, userPrincipal.getUserId(), parent_todo_id);
+        String message = getResponseMessage(status);
         return ResponseEntity.status(status).body(DefaultResponse.builder()
-                .message("테스트 문구입니다.")
+                .message(message)
                 .build());
     }
 
