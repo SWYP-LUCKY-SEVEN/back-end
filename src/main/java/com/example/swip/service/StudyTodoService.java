@@ -84,7 +84,7 @@ public class StudyTodoService {
         List<TodoDto> public_todos = new ArrayList<>();
         List<TodoDto> personal_todos = new ArrayList<>();
         for(StudyTodo studyTodo : memberTodoList) {
-            if(studyTodo.getStudy_todo_public() == null){
+            if(studyTodo.getStudy_todo_public() != null){
                 public_todos.add(
                         TodoDto.builder()
                                 .id(studyTodo.getId())
