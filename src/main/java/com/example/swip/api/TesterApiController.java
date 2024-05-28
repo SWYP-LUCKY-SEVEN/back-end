@@ -5,7 +5,7 @@ import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.EvaluationRequest;
 import com.example.swip.dto.JoinRequest.JoinRequestResponse;
 import com.example.swip.dto.auth.AddUserRequest;
-import com.example.swip.dto.chat.ChatProfileRequest;
+import com.example.swip.dto.user.PostProfileDto;
 import com.example.swip.dto.user.UserMainProfileDto;
 import com.example.swip.entity.User;
 import com.example.swip.entity.enumtype.ChatStatus;
