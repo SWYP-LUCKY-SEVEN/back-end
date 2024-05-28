@@ -120,9 +120,13 @@ public class StudyTodoService {
         List<UserStudy> allUsersByStudyId = userStudyService.getAllUsersByStudyId(studyId);
 
         //개인 달성률 => 개인 Todo의 완료율
-        int personal_percent = (mem_todo_comple_size*100)/mem_todo_total_size;
+        int personal_percent = 0;
+        if(mem_todo_total_size != 0)
+            personal_percent = (mem_todo_comple_size*100)/ mem_todo_total_size;
         //그룹 달성률 => 전체 Todo의 완료율
-        int group_percent = (group_complete_size.intValue()*100)/group_todo_size.intValue();
+        int group_percent = 0;
+        if(group_todo_size != 0)
+            group_percent = (group_complete_size.intValue()*100)/ group_todo_size.intValue();
 
         //합쳐서 반환
         return StudyMBOResponse.builder()
