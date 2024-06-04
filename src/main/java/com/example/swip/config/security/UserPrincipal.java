@@ -1,4 +1,4 @@
-package com.example.swip.config;
+package com.example.swip.config.security;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;

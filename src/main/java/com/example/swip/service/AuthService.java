@@ -1,6 +1,5 @@
 package com.example.swip.service;
 
-import com.example.swip.config.UserPrincipal;
 import com.example.swip.dto.auth.ValidateTokenResponse;
 import com.example.swip.dto.oauth.KakaoRegisterDto;
 import com.example.swip.dto.auth.LoginResponse;

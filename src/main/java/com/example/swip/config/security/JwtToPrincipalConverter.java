@@ -1,4 +1,4 @@
-package com.example.swip.config;
+package com.example.swip.config.security;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

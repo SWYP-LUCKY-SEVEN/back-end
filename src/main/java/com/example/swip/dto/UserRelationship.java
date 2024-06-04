@@ -12,7 +12,6 @@ public class UserRelationship {
     private Boolean is_member;
     private Boolean is_favorite;
 
-
     @QueryProjection
     public UserRelationship(Boolean is_owner, Boolean is_member, Boolean is_favorite) {
         this.is_owner = is_owner;

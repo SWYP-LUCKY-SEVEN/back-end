@@ -1,8 +1,7 @@
 package com.example.swip.api;
 
-import com.example.swip.config.UserPrincipal;
+import com.example.swip.config.security.UserPrincipal;
 import com.example.swip.dto.JoinRequest.JoinRequestResponse;
-import com.example.swip.entity.JoinRequest;
 import com.example.swip.entity.enumtype.JoinStatus;
 import com.example.swip.service.JoinRequestService;
 import com.example.swip.service.StudyService;
@@ -16,7 +15,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor

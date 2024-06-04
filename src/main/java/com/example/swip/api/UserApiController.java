@@ -1,11 +1,10 @@
 package com.example.swip.api;
 
-import com.example.swip.config.UserPrincipal;
+import com.example.swip.config.security.UserPrincipal;
 import com.example.swip.dto.*;
 import com.example.swip.dto.auth.GetNicknameDupleResponse;
 import com.example.swip.dto.user.PostProfileDto;
 import com.example.swip.dto.user.PostProfileRequest;
-import com.example.swip.dto.user.PostProfileResponse;
 import com.example.swip.dto.study.StudyFilterResponse;
 import com.example.swip.dto.user.UserEvaluationRequest;
 import com.example.swip.dto.user.UserMainProfileDto;

@@ -1,6 +1,6 @@
 package com.example.swip.api;
 
-import com.example.swip.config.UserPrincipal;
+import com.example.swip.config.security.UserPrincipal;
 import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.EvaluationRequest;
 import com.example.swip.dto.JoinRequest.JoinRequestResponse;

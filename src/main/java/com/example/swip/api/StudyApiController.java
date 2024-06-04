@@ -1,6 +1,6 @@
 package com.example.swip.api;
 
-import com.example.swip.config.UserPrincipal;
+import com.example.swip.config.security.UserPrincipal;
 import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.quick_match.QuickMatchFilter;
 import com.example.swip.dto.quick_match.QuickMatchResponse;
@@ -333,7 +333,7 @@ public class StudyApiController {
                     "- 200 : 이미 참가 신청 혹은 참가" +
                     "- 200 : 꽉 찬 스터디")
     @PostMapping("/study/join/{study_id}")
-    public ResponseEntity matchStudy(
+    public ResponseEntity joinStudy(
             @AuthenticationPrincipal UserPrincipal userPrincipal, // 권한 인증
             @PathVariable("study_id") Long studyId
     ) {
@@ -344,14 +344,11 @@ public class StudyApiController {
                             .build());
 
         return studyService.joinStudy(studyId, userPrincipal.getUserId(), userPrincipal.getToken());
-        
-        
     }
 
     /**
      * 조회 - 스터디 상세
      */
-
     @Operation(summary = "스터디 상세 정보 조회 API")
     @GetMapping("/study/{study_id}")
     public StudyDetailResponse showBoardDetail(@PathVariable("study_id") Long studyId){
@@ -362,7 +359,6 @@ public class StudyApiController {
 
 
     //수정
-
     @Operation(summary = "스터디 조회 API (수정용) - 수정 시에 스터디 내용 불러오기")
     @GetMapping("/study/{study_id}/edit")
     public ResponseEntity<Result2> getStudyEditPage(
