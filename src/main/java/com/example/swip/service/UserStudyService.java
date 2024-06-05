@@ -118,8 +118,8 @@ public class UserStudyService {
             DefaultResponse defaultResponse = chatServerService.deleteStudyMember(
                     PostStudyDeleteMemberRequest.builder()
                             .token(bearerToken)
-                            .studyId(studyId)
-                            .userId(userId)
+                            .studyId(studyId.toString())
+                            .userId(userId.toString())
                             .build()
             );
             System.out.println("defaultResponse = " + defaultResponse);

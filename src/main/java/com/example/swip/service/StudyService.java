@@ -145,8 +145,8 @@ public class StudyService {
                 DefaultResponse defaultResponse = chatServerService.addStudyMember(
                         PostStudyAddMemberRequest.builder()
                                 .token(bearerToken)
-                                .studyId(study.getId())
-                                .userId(user.getId())
+                                .studyId(study.getId().toString())
+                                .userId(user.getId().toString())
                                 .type("join") //본인이 참가 => 토큰에 있는 유저 초대
                                 .build()
                 );

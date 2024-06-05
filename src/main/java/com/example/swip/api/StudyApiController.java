@@ -56,8 +56,8 @@ public class StudyApiController {
         if (findStudy!=null){ //채팅 서버에 저장
             DefaultResponse defaultResponse = chatServerService.postStudy(
                     PostStudyRequest.builder()
-                            .studyId(findStudy.getId())
-                            .pk(writerId)
+                            .studyId(findStudy.getId().toString())
+                            .pk(writerId.toString())
                             .name(findStudy.getTitle())
                             .build()
             );

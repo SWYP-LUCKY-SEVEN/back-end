@@ -89,8 +89,8 @@ public class JoinRequestService {
                 DefaultResponse defaultResponse = chatServerService.addStudyMember(
                         PostStudyAddMemberRequest.builder()
                                 .token(bearerToken)
-                                .studyId(studyId)
-                                .userId(userId)
+                                .studyId(studyId.toString())
+                                .userId(userId.toString())
                                 .type("accept") //방장이 허가 -> body userId 초대
                                 .build()
                 );
