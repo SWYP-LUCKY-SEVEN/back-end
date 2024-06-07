@@ -1,6 +1,6 @@
 package com.example.swip.api;
 
-import com.example.swip.config.UserPrincipal;
+import com.example.swip.config.security.UserPrincipal;
 import com.example.swip.dto.search.deletedSearchResponse;
 import com.example.swip.dto.search.popularSearchReponse;
 import com.example.swip.dto.search.recentSearchResponse;

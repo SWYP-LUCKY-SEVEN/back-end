@@ -1,8 +1,7 @@
 package com.example.swip.api;
 
-import com.example.swip.config.UserPrincipal;
+import com.example.swip.config.security.UserPrincipal;
 import com.example.swip.dto.DefaultResponse;
-import com.example.swip.dto.auth.GetNicknameDupleResponse;
 import com.example.swip.dto.auth.GetUserIDResponse;
 import com.example.swip.dto.auth.ValidateTokenResponse;
 import com.example.swip.service.AuthService;
@@ -11,8 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor

@@ -7,6 +7,6 @@ import lombok.Getter;
 @Builder
 public class PostStudyDeleteMemberRequest {
     private String token;
-    private Long studyId;
-    private Long userId;
+    private String studyId;
+    private String userId;
 }

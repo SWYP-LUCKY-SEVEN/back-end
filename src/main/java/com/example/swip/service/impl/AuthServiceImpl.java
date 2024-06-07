@@ -1,8 +1,10 @@
 package com.example.swip.service.impl;
 
-import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.example.swip.config.*;
+import com.example.swip.config.security.JwtDecoder;
+import com.example.swip.config.security.JwtIssuer;
+import com.example.swip.config.security.JwtToPrincipalConverter;
+import com.example.swip.config.security.UserPrincipal;
 import com.example.swip.dto.auth.ValidateTokenResponse;
 import com.example.swip.dto.oauth.KakaoRegisterDto;
 import com.example.swip.dto.auth.LoginResponse;
@@ -49,7 +51,7 @@ public class AuthServiceImpl implements AuthService {
                 new UsernamePasswordAuthenticationToken(email, password)
         );
 
-        // 출력 : authentication : com.example.swip.config.UserPrincipal@21c76df1 UserPrincipal이 이미 사용되고 있다.
+        // 출력 : authentication : com.example.swip.config.security.UserPrincipal@21c76df1 UserPrincipal이 이미 사용되고 있다.
         System.out.println("authentication : " + authentication.getPrincipal()); //인증 중인 주체 혹은 인증 후 인증된 주체 반환
 
         // 해당 부분에서 Security 허용

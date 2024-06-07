@@ -1,11 +1,9 @@
 package com.example.swip.service;
 
-import com.example.swip.config.JwtIssuer;
-import com.example.swip.dto.DefaultResponse;
+import com.example.swip.config.security.JwtIssuer;
 import com.example.swip.entity.User;
 import com.example.swip.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
