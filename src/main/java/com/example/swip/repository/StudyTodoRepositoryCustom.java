@@ -70,4 +70,13 @@ public class StudyTodoRepositoryCustom {
                 .execute();
     }
 
+    //해당 그룹 목표 관련 개인 목표 삭제
+    public Long updateAllByGroupTodo(Long parent_id, String new_text) {
+        return queryFactory
+                .update(studyTodo)
+                .set(studyTodo.content, new_text)
+                .where(studyTodo.study_todo_public.id.eq(parent_id))
+                .execute();
+    }
+
 }
