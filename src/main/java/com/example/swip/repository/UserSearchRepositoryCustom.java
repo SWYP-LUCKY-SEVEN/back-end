@@ -9,9 +9,5 @@ public interface UserSearchRepositoryCustom {
 
     long deleteAllByUserId(Long userId);
 
-    List<UserSearch> findSearchById(Long userId);
-
-    void deleteExpiredSearch(LocalDateTime time);
-
-    List<UserSearch> findExpiredSearch(LocalDateTime time);
+    List<UserSearch> findRecent10SearchById(Long userId);
 }

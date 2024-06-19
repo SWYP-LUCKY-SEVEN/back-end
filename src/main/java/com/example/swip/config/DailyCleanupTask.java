@@ -28,8 +28,6 @@ public class DailyCleanupTask {
         userService.deleteExpiredUserData(now);
         studyService.progressStartStudy(today);
         studyService.completeExpiredStudy(today);
-        //검색어 - 7일 후 만료
-        userSearchService.deleteExpiredSearch(now);
         //스터디 참가 신청 - 3일 후 만료
         joinRequestService.deleteExpiredJoinRequest(now);
 

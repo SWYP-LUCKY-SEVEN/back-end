@@ -27,33 +27,15 @@ public class UserSearchRepositoryImpl implements UserSearchRepositoryCustom{
     }
 
     @Override
-    public List<UserSearch> findSearchById(Long userId) {
-        //("SELECT us FROM UserSearch us JOIN FETCH us.search s WHERE us.id.userId = :userId ORDER BY us.update_time DESC ") // default: 최근 검색순 정렬.
+    public List<UserSearch> findRecent10SearchById(Long userId) {
         List<UserSearch> response = queryFactory
                 .selectFrom(userSearch)
                 .leftJoin(userSearch.search, search).fetchJoin()
                 .where(userSearch.id.userId.eq(userId))
                 .orderBy(userSearch.update_time.desc())
+                .limit(10)
                 .fetch();
         return response;
     }
-
-    @Override
-    public List<UserSearch> findExpiredSearch(LocalDateTime time) {
-        List<UserSearch> userSearchList = queryFactory
-                .selectFrom(userSearch)
-                .where(userSearch.update_time.before(time.minusDays(7)))
-                .fetch();
-        return userSearchList;
-    }
-
-    @Override
-    public void deleteExpiredSearch(LocalDateTime time) {
-        queryFactory
-                .delete(userSearch)
-                .where(userSearch.update_time.before(time.minusDays(7)))
-                .execute();
-    }
-
 
 }
