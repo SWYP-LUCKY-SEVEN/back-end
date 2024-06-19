@@ -1,8 +1,7 @@
-package com.example.swip.repository;
-import com.example.swip.entity.QStudy;
-import com.example.swip.entity.Study;
+package com.example.swip.repository.impl;
 import com.example.swip.entity.UserStudy;
 import com.example.swip.entity.enumtype.ExitStatus;
+import com.example.swip.repository.custom.UserStudyRepositoryCustom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 

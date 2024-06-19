@@ -6,7 +6,7 @@ import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
 import com.example.swip.entity.compositeKey.UserStudyId;
 import com.example.swip.repository.FavoriteStudyRepository;
-import com.example.swip.repository.UserRepositoryCustom;
+import com.example.swip.repository.custom.UserRepositoryCustom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

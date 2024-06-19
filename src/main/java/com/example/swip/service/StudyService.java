@@ -13,7 +13,7 @@ import com.example.swip.entity.User;
 import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.example.swip.repository.StudyRepository;
-import com.example.swip.repository.StudyTodoRepositoryCustom;
+import com.example.swip.repository.custom.StudyTodoRepositoryCustom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;

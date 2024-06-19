@@ -1,4 +1,4 @@
-package com.example.swip.repository;
+package com.example.swip.repository.impl;
 
 import com.example.swip.dto.UserRelationship;
 import com.example.swip.dto.quick_match.QuickMatchFilter;
@@ -9,6 +9,7 @@ import com.example.swip.entity.*;
 import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.example.swip.entity.enumtype.Tendency;
+import com.example.swip.repository.custom.StudyFilterRepositoryCustom;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Ops;
@@ -23,7 +24,6 @@ import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
-import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 import static com.example.swip.entity.QStudy.study;
 
 
-public class StudyFilterRepositoryImpl implements StudyFilterRepository {
+public class StudyFilterRepositoryImpl implements StudyFilterRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
