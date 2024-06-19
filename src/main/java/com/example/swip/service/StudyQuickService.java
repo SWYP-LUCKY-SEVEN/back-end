@@ -4,21 +4,15 @@ import com.example.swip.dto.quick_match.QuickMatchFilter;
 import com.example.swip.dto.quick_match.QuickMatchResponse;
 import com.example.swip.entity.Category;
 import com.example.swip.entity.SavedQuickMatchFilter;
-import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
-import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.Tendency;
 import com.example.swip.repository.QuickFilterRepository;
-import com.example.swip.repository.StudyFilterRepository;
 import com.example.swip.repository.StudyRepository;
-import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)

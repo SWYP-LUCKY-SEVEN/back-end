@@ -1,4 +1,4 @@
-package com.example.swip.repository;
+package com.example.swip.repository.custom;
 
 import com.example.swip.entity.JoinRequest;
 import com.example.swip.entity.compositeKey.JoinRequestId;

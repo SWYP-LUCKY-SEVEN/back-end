@@ -1,4 +1,4 @@
-package com.example.swip.repository;
+package com.example.swip.repository.custom;
 
 import com.example.swip.entity.Study;
 import com.querydsl.core.Tuple;

@@ -1,6 +1,7 @@
-package com.example.swip.repository;
+package com.example.swip.repository.impl;
 
 import com.example.swip.entity.UserSearch;
+import com.example.swip.repository.custom.UserSearchRepositoryCustom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 
@@ -10,7 +11,7 @@ import java.util.List;
 import static com.example.swip.entity.QSearch.search;
 import static com.example.swip.entity.QUserSearch.userSearch;
 
-public class UserSearchRepositoryImpl implements UserSearchRepositoryCustom{
+public class UserSearchRepositoryImpl implements UserSearchRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     public UserSearchRepositoryImpl(EntityManager em){

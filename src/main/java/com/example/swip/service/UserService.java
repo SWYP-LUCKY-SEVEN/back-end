@@ -10,23 +10,16 @@ import com.example.swip.dto.user.PostProfileDto;
 import com.example.swip.entity.Evaluation;
 import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
-import com.example.swip.entity.UserStudy;
 import com.example.swip.entity.enumtype.ChatStatus;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.example.swip.repository.EvaluationRepository;
 import com.example.swip.repository.UserRepository;
-import com.example.swip.repository.UserRepositoryCustom;
-import com.example.swip.repository.UserStudyRepository;
-import com.mysema.commons.lang.Pair;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import com.example.swip.repository.custom.UserRepositoryCustom;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 
 @Service

@@ -1,4 +1,4 @@
-package com.example.swip.repository;
+package com.example.swip.repository.custom;
 
 import com.example.swip.dto.UserRelationship;
 import com.example.swip.dto.study.StudyFilterResponse;

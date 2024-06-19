@@ -8,14 +8,13 @@ import com.example.swip.dto.todo.TodoDto;
 import com.example.swip.entity.*;
 import com.example.swip.repository.StudyTodoPublicRepository;
 import com.example.swip.repository.StudyTodoRepository;
-import com.example.swip.repository.StudyTodoRepositoryCustom;
+import com.example.swip.repository.custom.StudyTodoRepositoryCustom;
 import com.example.swip.repository.UserRepository;
 import com.mysema.commons.lang.Pair;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Member;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +42,6 @@ public class StudyTodoService {
             return new Pair<>(null, 403); //해당 목표에 권한이 없음
         return new Pair<>(todo, 200);
     }
-
 
     //////////////////
     // 목표 공통 기능 //
