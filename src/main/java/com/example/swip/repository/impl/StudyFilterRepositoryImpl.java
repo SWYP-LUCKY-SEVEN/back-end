@@ -9,7 +9,7 @@ import com.example.swip.entity.*;
 import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.example.swip.entity.enumtype.Tendency;
-import com.example.swip.repository.custom.StudyFilterRepositoryCustom;
+import com.example.swip.repository.StudyFilterRepository;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Ops;
@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 import static com.example.swip.entity.QStudy.study;
 
 
-public class StudyFilterRepositoryImpl implements StudyFilterRepositoryCustom {
+public class StudyFilterRepositoryImpl implements StudyFilterRepository {
 
     private final JPAQueryFactory queryFactory;
 
