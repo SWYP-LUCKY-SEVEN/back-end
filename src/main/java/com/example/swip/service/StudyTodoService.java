@@ -208,7 +208,27 @@ public class StudyTodoService {
         studyTodoPublicRepository.deleteById(parent_id);
         return 200;
     }
+    //그룹 공용 목표 수정 (방장만 사용가능) (todo_parent_id가 필수)
+    @Transactional
+    public int patchGroupTodo(Long study_id, Long user_id, Long parent_id, String new_text) {
+        User user = userRepository.findById(user_id).orElse(null);
+        if(user == null)
+            return 401; //정상적인 유저가 아닙니다.
+        //권한 확인.
+        if(!userStudyService.isStudyOwner(study_id, user.getId()))
+            return 403; //스터디의 관리자가 아닙니다.
+        //공용 todo목록에서 id 가져옴.
 
+        StudyTodoPublic group_todo = studyTodoPublicRepository.findById(parent_id).orElse(null);
+        if(group_todo == null)
+            return 404; //존재하는 그룹 todo가 아닙니다.
+
+        group_todo.setContent(new_text);
+        //해당 부모 id를 가진 목표 전부 수정
+        Long status = studyTodoRepositoryCustom.updateAllByGroupTodo(parent_id, new_text);
+        System.out.println(status);
+        return 200;
+    }
 
     ///////////////////////
     // 그룹 개인 목표 관련  //
@@ -238,6 +258,22 @@ public class StudyTodoService {
             return 403;
         //해당 studytodo id의 목표 제거
         studyTodoRepository.deleteById(todo_id);
+        return 200;
+    }
+
+    //개인 목표 수정
+    @Transactional
+    public int patchPersonalTodo(Long study_id, Long user_id, Long todo_id, String new_text) {
+        Pair<StudyTodo, Integer> pair = isPermitted(study_id, user_id, todo_id);
+        if (pair.getSecond() != 200)
+            return pair.getSecond();
+        if(pair.getFirst().getStudy_todo_public() != null)  //공용 ToDo는 개인이 수정할 수 없음.
+            return 403;
+        //해당 studytodo id의 목표 수정
+        pair.getFirst().setContent(new_text);
+
+        System.out.println(pair.getFirst().getContent());
+
         return 200;
     }
 }

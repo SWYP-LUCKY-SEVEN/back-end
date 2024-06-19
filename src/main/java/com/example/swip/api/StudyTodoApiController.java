@@ -2,9 +2,7 @@ package com.example.swip.api;
 
 import com.example.swip.config.security.UserPrincipal;
 import com.example.swip.dto.DefaultResponse;
-import com.example.swip.dto.todo.CompleteTodoRequest;
-import com.example.swip.dto.todo.PostTodoRequest;
-import com.example.swip.dto.todo.StudyMBOResponse;
+import com.example.swip.dto.todo.*;
 import com.example.swip.service.StudyTodoService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -69,6 +67,29 @@ public class StudyTodoApiController {
                 .build());
     }
 
+    @Operation(summary = "공용 목표 내용 수정", description = "목표리스트를 반환할때 제공된 parent_todo_id가 반드시 필요함.")
+    @PatchMapping("/study/{study_id}/group_todo/{todo_id}/content") // user id 반환
+    public ResponseEntity<DefaultResponse> patchGroupTodo(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable("study_id") Long studyId,
+            @PathVariable("todo_id") Long todoId,
+            @RequestBody PatchGroupTodoRequest todoRequest
+            ){
+        if(userPrincipal == null)
+            return ResponseEntity.status(403).build();
+
+        int status = studyTodoService.patchGroupTodo(
+                        studyId,
+                        userPrincipal.getUserId(),
+                        todoId,
+                        todoRequest.getContent()
+                );
+        String message = getResponseMessage(status);
+        return ResponseEntity.status(status).body(DefaultResponse.builder()
+                .message(message)
+                .build());
+    }
+
     @Operation(summary = "개인 목표 생성", description = "개인 목표 생성. content에 목표를 입력하고, date에 생성할 날짜를 선택 (기본값 : 오늘)")
     @PostMapping("/study/{study_id}/todo") // user id 반환
     public ResponseEntity<DefaultResponse> postPersonalTodo(
@@ -103,9 +124,9 @@ public class StudyTodoApiController {
                 .build());
     }
 
-    @Operation(summary = "목표 상태 변경", description = "목표 완료 상태를 수정하는 API 입니다. 수정할 목표의 ID 값이 필요합니다.")
+    @Operation(summary = "목표 완료 상태 변경", description = "목표 완료 상태를 수정하는 API 입니다. 수정할 목표의 ID 값이 필요합니다.")
     @PatchMapping("/study/{study_id}/todo") // user id 반환
-    public ResponseEntity<DefaultResponse> patchPersonalTodo(
+    public ResponseEntity<DefaultResponse> patchPersonalTodoComplete(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable("study_id") Long studyId,
             @RequestBody CompleteTodoRequest todoRequest
@@ -119,6 +140,28 @@ public class StudyTodoApiController {
         }else {
             status = studyTodoService.inCompleteTodo(studyId, userPrincipal.getUserId(), todoRequest.getTodo_id());
         }
+        String message = getResponseMessage(status);
+        return ResponseEntity.status(status).body(DefaultResponse.builder()
+                .message(message)
+                .build());
+    }
+    @Operation(summary = "개인 목표 내용 변경", description = "목표 내용을 수정하는 API 입니다. 수정할 목표의 ID 값이 필요합니다.")
+    @PatchMapping("/study/{study_id}/todo/{todo_id}/content") // user id 반환
+    public ResponseEntity<DefaultResponse> patchPersonalTodo(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable("study_id") Long studyId,
+            @PathVariable("todo_id") Long todoId,
+            @RequestBody PatchPersonalTodoRequest todoRequest
+    ){
+        if(userPrincipal == null)
+            return ResponseEntity.status(403).build();
+
+        int status = studyTodoService.patchPersonalTodo(
+                studyId,
+                userPrincipal.getUserId(),
+                todoId,
+                todoRequest.getContent()
+        );
         String message = getResponseMessage(status);
         return ResponseEntity.status(status).body(DefaultResponse.builder()
                 .message(message)
