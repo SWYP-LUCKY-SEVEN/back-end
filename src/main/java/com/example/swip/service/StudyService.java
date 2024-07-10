@@ -1,6 +1,8 @@
 package com.example.swip.service;
 
 
+import com.example.swip.dto.chat.DeleteStudyRequest;
+import com.example.swip.dto.chat.UpdateStudyRequest;
 import com.example.swip.dto.study.*;
 import com.example.swip.dto.todo.MemberTodoResponse;
 import com.example.swip.dto.userStudy.UserProgressStudyResponse;
@@ -14,6 +16,7 @@ import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.example.swip.repository.StudyRepository;
 import com.example.swip.repository.custom.StudyTodoRepositoryCustom;
+import com.mysema.commons.lang.Pair;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -142,7 +145,7 @@ public class StudyService {
             UserStudy findUserStudy = userStudyService.saveUserStudy(user, study, false);
             //채팅방 멤버 추가 (chat server 연동)
             if (findUserStudy!=null) { //채팅 서버에 저장
-                DefaultResponse defaultResponse = chatServerService.addStudyMember(
+                Pair<String, Integer> response = chatServerService.addStudyMember(
                         PostStudyAddMemberRequest.builder()
                                 .token(bearerToken)
                                 .studyId(study.getId().toString())
@@ -150,7 +153,7 @@ public class StudyService {
                                 .type("join") //본인이 참가 => 토큰에 있는 유저 초대
                                 .build()
                 );
-                System.out.println("postStudyResponse = " + defaultResponse.getMessage());
+                System.out.println("postStudyResponse = " + response.getFirst());
             }
             return ResponseEntity.status(200).body(DefaultResponse.builder()
                     .message("쇼터디에 가입했어요.")
@@ -320,10 +323,19 @@ public class StudyService {
 
     //삭제
     @Transactional
-    public boolean deleteStudy(Long studyId){
+    public boolean deleteStudy(String token, Long studyId){
         Optional<Study> findStudy = studyRepository.findById(studyId);
         if(findStudy.isPresent()) {
             studyRepository.deleteById(studyId);
+
+            //채팅 데이터 연동
+            Pair<String, Integer> response = chatServerService.deleteStudy(
+                    DeleteStudyRequest.builder()
+                            .groupId(studyId.toString())
+                            .token(token)
+                            .build()
+            );
+            System.out.println("data sync - study update response = " + response);
             return true;
         }
         return false;
@@ -344,11 +356,21 @@ public class StudyService {
     }
 
     @Transactional
-    public Boolean updateStudy(Long studyId, StudyUpdateRequest studyUpdateRequest) {
+    public Boolean updateStudy(String bearerToken, Long studyId, StudyUpdateRequest studyUpdateRequest) {
         Study findStudy = studyRepository.findById(studyId).orElse(null);
 
         if(findStudy != null){
-            findStudy.updateStudy(findStudy, studyUpdateRequest.getTitle(), studyUpdateRequest.getDescription(), studyUpdateRequest.getTags());
+            String title = studyUpdateRequest.getTitle();
+            findStudy.updateStudy(findStudy, title, studyUpdateRequest.getDescription(), studyUpdateRequest.getTags());
+            //채팅 서버에 저장
+            Pair<String, Integer> pair = chatServerService.updateStudy(
+                    UpdateStudyRequest.builder()
+                            .token(bearerToken)
+                            .chatId(studyId.toString())
+                            .chatName(title)
+                            .build()
+            );
+            System.out.println("updateStudyResponse = " + pair.getSecond());
             return true;
         }
         return false;
