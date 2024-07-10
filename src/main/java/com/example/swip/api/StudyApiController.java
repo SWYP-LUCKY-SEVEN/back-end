@@ -7,6 +7,7 @@ import com.example.swip.dto.quick_match.QuickMatchResponse;
 import com.example.swip.dto.study.*;
 import com.example.swip.entity.Study;
 import com.example.swip.service.*;
+import com.mysema.commons.lang.Pair;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -54,14 +55,14 @@ public class StudyApiController {
 
         Study findStudy = studyService.findStudyById(saveStudy);
         if (findStudy!=null){ //채팅 서버에 저장
-            DefaultResponse defaultResponse = chatServerService.postStudy(
+            Pair<String, Integer> response = chatServerService.postStudy(
                     PostStudyRequest.builder()
                             .studyId(findStudy.getId().toString())
                             .pk(writerId.toString())
                             .name(findStudy.getTitle())
                             .build()
             );
-            System.out.println("postStudyResponse = " + defaultResponse.getMessage());
+            System.out.println("postStudyResponse = " + response.getSecond());
             //TODO: 채팅 서버에 저장되었는지 여부 확인 후 조치
         }
 
@@ -386,7 +387,7 @@ public class StudyApiController {
         if(!ownerId.equals(findStudyOwner)) {
             return ResponseEntity.status(403).body("스터디를 수정할 권한이 없습니다.");
         }
-        Boolean updateStatus = studyService.updateStudy(studyId, studyUpdateRequest);
+        Boolean updateStatus = studyService.updateStudy(userPrincipal.getToken(), studyId, studyUpdateRequest);
         if(updateStatus){
             return ResponseEntity.status(200).body("스터디 수정 완료!");
         }
@@ -406,7 +407,7 @@ public class StudyApiController {
             return ResponseEntity.status(403).body("스터디를 삭제할 권한이 없습니다.");
         }
 
-        boolean deletedStatus = studyService.deleteStudy(studyId);
+        boolean deletedStatus = studyService.deleteStudy(userPrincipal.getToken(), studyId);
         if(deletedStatus){
             return ResponseEntity.status(200).body("삭제 성공!");
         }

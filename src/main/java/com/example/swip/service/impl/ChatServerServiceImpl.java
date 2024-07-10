@@ -1,7 +1,8 @@
 package com.example.swip.service.impl;
 
-import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.chat.ChatProfileRequest;
+import com.example.swip.dto.chat.DeleteStudyRequest;
+import com.example.swip.dto.chat.UpdateStudyRequest;
 import com.example.swip.dto.study.PostStudyAddMemberRequest;
 import com.example.swip.dto.study.PostStudyDeleteMemberRequest;
 import com.example.swip.dto.study.PostStudyRequest;
@@ -68,69 +69,116 @@ public class ChatServerServiceImpl implements ChatServerService {
     /**
      * 스터디 생성/수정/삭제 -> 채팅 생성/수정/삭제
      */
-    @Value("${swyp.chat.server.study.uri}")
-    private String studyReqURL;
+    @Value("${swyp.chat.sever.chatRoom.url}")
+    private String reqStudyURL;
     @Override
-    public DefaultResponse postStudy(PostStudyRequest postStudyRequest) {
+    public Pair<String, Integer> postStudy(PostStudyRequest postStudyRequest) {
         Pair<String, Integer> result;
         ObjectMapper objectMapper = new ObjectMapper();
         try {
+            String reqSaveStudyURL = "";
+            if (!reqStudyURL.isEmpty())
+                reqSaveStudyURL = String.format("%s/%s", reqStudyURL, "study");
             String jsonInputString = objectMapper.writeValueAsString(postStudyRequest);
-            result = sendHttpRequest(studyReqURL, "POST", jsonInputString, null);
-
-            return DefaultResponse.builder()
-                    .message(result.getFirst())
-                    .build();
+            result = sendHttpRequest(reqSaveStudyURL, "POST", jsonInputString, null);
         }catch (JsonProcessingException e) {
             e.printStackTrace();
-            return DefaultResponse.builder()
-                    .message("Failed to convert object to JSON")
-                    .build();
+            return Pair.of("Failed to convert object to JSON", 500);
         }
+        return result;
     }
 
-    @Value("${swyp.chat.server.study.add.member.uri}")
-    private String studyAddMemberReqURL;
+    // TODO: 스터디 수정
+
     @Override
-    public DefaultResponse addStudyMember(PostStudyAddMemberRequest postStudyAddmemberRequest) {
+    public Pair<String, Integer> updateStudy(UpdateStudyRequest updateStudyRequest) {
         Pair<String, Integer> result;
         ObjectMapper objectMapper = new ObjectMapper();
         try {
+            String reqUpdateStudyURL = "";
+            if (!reqStudyURL.isEmpty())
+                reqUpdateStudyURL = String.format("%s/%s", reqStudyURL, "group/name");
+            String jsonInputString = objectMapper.writeValueAsString(updateStudyRequest);
+            result = sendHttpRequest(reqUpdateStudyURL, "PUT", jsonInputString,  updateStudyRequest.getToken());
+        }catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return Pair.of("Failed to convert object to JSON", 500);
+        }
+        return result;
+    }
+
+
+    // TODO : 스터디 삭제
+    @Override
+    public Pair<String, Integer> deleteStudy(DeleteStudyRequest deleteStudyRequest) {
+        Pair<String, Integer> result;
+        ObjectMapper objectMapper = new ObjectMapper();
+        String reqDeleteStudyURL = "";
+
+        if (!reqStudyURL.isEmpty())
+            reqDeleteStudyURL = String.format("%s/%s/%s", reqStudyURL, "group", deleteStudyRequest.getGroupId());
+
+        result = sendHttpRequest(reqDeleteStudyURL, "PUT", null,  deleteStudyRequest.getToken());
+        return result;
+    }
+
+    @Override
+    public Pair<String, Integer> addStudyMember(PostStudyAddMemberRequest postStudyAddmemberRequest) {
+        Pair<String, Integer> result;
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            String studyAddMemberReqURL = "";
+            if (!reqStudyURL.isEmpty())
+                studyAddMemberReqURL = String.format("%s/%s", reqStudyURL, "group/add");
             String jsonInputString = objectMapper.writeValueAsString(postStudyAddmemberRequest);
-            String bearerToken = postStudyAddmemberRequest.getToken();
+            result = sendHttpRequest(studyAddMemberReqURL, "PUT", jsonInputString,  postStudyAddmemberRequest.getToken());
 
-            result = sendHttpRequest(studyAddMemberReqURL, "PUT", jsonInputString, bearerToken);
-            return DefaultResponse.builder()
-                    .message(result.getFirst())
-                    .build();
+            System.out.println("studyAddMemberSelfReqURL = " + studyAddMemberReqURL);
+            System.out.println("jsonInputString = " + jsonInputString);
         }catch (JsonProcessingException e) {
             e.printStackTrace();
-            return DefaultResponse.builder()
-                    .message("Failed to convert object to JSON")
-                    .build();
+            return Pair.of("Failed to convert object to JSON", 500);
         }
+        return result;
     }
 
-    @Value("${swyp.chat.server.study.delete.member.uri}")
-    private String studyDeleteMemberReqURL;
     @Override
-    public DefaultResponse deleteStudyMember(PostStudyDeleteMemberRequest postStudymemberRequest) {
+    public Pair<String, Integer> deleteStudyMember(PostStudyDeleteMemberRequest postStudymemberRequest) {
         Pair<String, Integer> result;
         ObjectMapper objectMapper = new ObjectMapper();
         try {
+            String studyDeleteMemberReqURL = "";
+            if (!reqStudyURL.isEmpty())
+                studyDeleteMemberReqURL = String.format("%s/%s", reqStudyURL, "group/remove");
             String jsonInputString = objectMapper.writeValueAsString(postStudymemberRequest);
-            String bearerToken = postStudymemberRequest.getToken();
-
-            result = sendHttpRequest(studyDeleteMemberReqURL, "PUT", jsonInputString, bearerToken);
-            return DefaultResponse.builder()
-                    .message(result.getFirst())
-                    .build();
+            result = sendHttpRequest(studyDeleteMemberReqURL, "PUT", jsonInputString,  postStudymemberRequest.getToken());
         }catch (JsonProcessingException e) {
             e.printStackTrace();
-            return DefaultResponse.builder()
-                    .message("Failed to convert object to JSON")
-                    .build();
+            return Pair.of("Failed to convert object to JSON", 500);
         }
+        return result;
+    }
+
+    //TODO : 스터디 유저 (스스로) 삭제
+    @Override
+    public Pair<String, Integer> deleteStudyMemberSelf(PostStudyDeleteMemberRequest postStudyDeleteMemberRequest) {
+        Pair<String, Integer> result;
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        try {
+            String studyDeleteMemberSelfReqURL = "";
+            if (!reqStudyURL.isEmpty())
+                studyDeleteMemberSelfReqURL = String.format("%s/%s/%s", reqStudyURL, "group/user", postStudyDeleteMemberRequest.getUserId());
+            String jsonInputString = objectMapper.writeValueAsString(postStudyDeleteMemberRequest);
+            result = sendHttpRequest(studyDeleteMemberSelfReqURL, "DELETE", jsonInputString,  null);
+
+            System.out.println("studyDeleteMemberSelfReqURL = " + studyDeleteMemberSelfReqURL);
+            System.out.println("jsonInputString = " + jsonInputString);
+        }catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return Pair.of("Failed to convert object to JSON", 500);
+        }
+        return result;
     }
 
     public static Pair<String, Integer> sendHttpRequest(String reqURL, String method, String jsonInputString, String bearerToken) {
@@ -151,10 +199,12 @@ public class ChatServerServiceImpl implements ChatServerService {
             conn.setConnectTimeout(3000); // 1초
             conn.setReadTimeout(3000);
 
-            if ("POST".equals(method) || "PUT".equals(method)) {
+            if ("POST".equals(method) || "PUT".equals(method) || "DELETE".equals(method)) {
                 try (OutputStream os = conn.getOutputStream()) {
-                    byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8); // JSON 문자열을 바이트 배열로 변환
-                    os.write(input, 0, input.length); // 변환된 바이트 배열을 출력 스트림을 통해 전송
+                    if(jsonInputString != null) {
+                        byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8); // JSON 문자열을 바이트 배열로 변환
+                        os.write(input, 0, input.length); // 변환된 바이트 배열을 출력 스트림을 통해 전송
+                    }
                 }
             }
 

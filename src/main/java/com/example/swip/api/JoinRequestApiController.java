@@ -137,7 +137,7 @@ public class JoinRequestApiController {
     ) {
         if (userPrincipal != null) {
             Long userId = userPrincipal.getUserId();
-            boolean cancleStatus = joinRequestService.cancelJoinRequest(userId, studyId);
+            boolean cancleStatus = joinRequestService.cancelJoinRequest(userPrincipal.getToken(), userId, studyId);
             if (cancleStatus) {
                 return ResponseEntity.status(200).body("스터디 취소 성공!");
             } else {
