@@ -1,7 +1,8 @@
 package com.example.swip.service;
 
-import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.chat.ChatProfileRequest;
+import com.example.swip.dto.chat.DeleteStudyRequest;
+import com.example.swip.dto.chat.UpdateStudyRequest;
 import com.example.swip.dto.study.PostStudyAddMemberRequest;
 import com.example.swip.dto.study.PostStudyDeleteMemberRequest;
 import com.example.swip.dto.study.PostStudyRequest;
@@ -12,9 +13,11 @@ public interface ChatServerService {
     Pair<String, Integer> updateUser(ChatProfileRequest chatProfileRequest);
     Pair<String, Integer> deleteUser(Long userId);
 
-    DefaultResponse postStudy(PostStudyRequest postStudyRequest);
+    Pair<String, Integer> postStudy(PostStudyRequest postStudyRequest);
+    Pair<String, Integer> updateStudy(UpdateStudyRequest postStudyRequest);
+    Pair<String, Integer> deleteStudy(DeleteStudyRequest deleteStudyRequest);
 
-    DefaultResponse addStudyMember(PostStudyAddMemberRequest postStudymemberRequest);
-
-    DefaultResponse deleteStudyMember(PostStudyDeleteMemberRequest postStudymemberRequest);
+    Pair<String, Integer> addStudyMember(PostStudyAddMemberRequest postStudymemberRequest);
+    Pair<String, Integer> deleteStudyMember(PostStudyDeleteMemberRequest postStudymemberRequest);
+    Pair<String, Integer> deleteStudyMemberSelf(PostStudyDeleteMemberRequest postStudymemberRequest);
 }

@@ -8,6 +8,7 @@ import com.example.swip.entity.compositeKey.UserStudyId;
 import com.example.swip.entity.enumtype.ExitReason;
 import com.example.swip.entity.enumtype.ExitStatus;
 import com.example.swip.repository.*;
+import com.mysema.commons.lang.Pair;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -115,14 +116,14 @@ public class UserStudyService {
                     });
 
             //채팅 서버에서 유저 삭제
-            DefaultResponse defaultResponse = chatServerService.deleteStudyMember(
+            Pair<String, Integer> response = chatServerService.deleteStudyMember(
                     PostStudyDeleteMemberRequest.builder()
                             .token(bearerToken)
                             .studyId(studyId.toString())
                             .userId(userId.toString())
                             .build()
             );
-            System.out.println("defaultResponse = " + defaultResponse);
+            System.out.println("response = " + response);
         }
         return ResponseEntity.status(200).body("스터디 멤버 내보내기 성공");
     }
