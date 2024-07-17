@@ -6,12 +6,25 @@ import com.example.swip.dto.chat.UpdateStudyRequest;
 import com.example.swip.dto.study.PostStudyAddMemberRequest;
 import com.example.swip.dto.study.PostStudyDeleteMemberRequest;
 import com.example.swip.dto.study.PostStudyRequest;
+import com.example.swip.dto.user.PostProfileDto;
+import com.example.swip.entity.Study;
+import com.example.swip.entity.User;
+import com.example.swip.entity.UserStudy;
+import com.example.swip.entity.compositeKey.UserStudyId;
+import com.example.swip.entity.enumtype.ChatStatus;
+import com.example.swip.repository.StudyRepository;
+import com.example.swip.repository.UserRepository;
+import com.example.swip.repository.UserStudyRepository;
 import com.example.swip.service.ChatServerService;
+import com.example.swip.service.StudyService;
+import com.example.swip.service.UserService;
+import com.example.swip.service.UserStudyService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mysema.commons.lang.Pair;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -23,11 +36,18 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class ChatServerServiceImpl implements ChatServerService {
 
+    private final StudyRepository studyRepository;
+    private final UserRepository userRepository;
+    private final StudyService studyService;
+    private final UserService userService;
+    private final UserStudyRepository userStudyRepository;
+    private final UserStudyService userStudyService;
     @Value("${swyp.chat.server.uri}")
     private String reqUserURL;
     public Pair<String, Integer> postUser(ChatProfileRequest chatProfileRequest){
@@ -40,10 +60,24 @@ public class ChatServerServiceImpl implements ChatServerService {
             e.printStackTrace();
             return Pair.of("Failed to convert object to JSON", 500);
         }
+
+        if(result.getSecond() != 200)
+            return setUserStatusAndReturnPair(Long.valueOf(chatProfileRequest.getPk()), result.getSecond(), ChatStatus.Need_create);
+
         return result;
     }
 
     public Pair<String, Integer> updateUser(ChatProfileRequest chatProfileRequest){
+        Long userId = Long.valueOf(chatProfileRequest.getPk());
+
+        ChatStatus chatStatus = userRepository.findChat_statusById(userId);
+        if (chatStatus == ChatStatus.Need_create) {
+            Pair<String, Integer> response = syncUserData(userId, null);
+            if(response.getSecond() != 200) {
+                return response;
+            }
+        }
+
         Pair<String, Integer> result;
         ObjectMapper objectMapper = new ObjectMapper();
         try {
@@ -56,6 +90,10 @@ public class ChatServerServiceImpl implements ChatServerService {
             e.printStackTrace();
             return Pair.of("Failed to convert object to JSON", 500);
         }
+
+        if(result.getSecond() != 200)
+            return setUserStatusAndReturnPair(Long.valueOf(chatProfileRequest.getPk()), result.getSecond(), ChatStatus.Need_update);
+
         return result;
     }
     public Pair<String, Integer> deleteUser(Long userId){
@@ -73,6 +111,18 @@ public class ChatServerServiceImpl implements ChatServerService {
     private String reqStudyURL;
     @Override
     public Pair<String, Integer> postStudy(PostStudyRequest postStudyRequest) {
+
+        Long studyId = Long.valueOf(postStudyRequest.getStudyId());
+        Long userId = Long.valueOf(postStudyRequest.getPk());
+
+        ChatStatus chatStatus = userRepository.findChat_statusById(userId);
+        if (chatStatus == ChatStatus.Need_create) {
+            Pair<String, Integer> response = syncUserData(userId, studyId);
+            if(response.getSecond() != 200) {
+                return response;
+            }
+        }
+
         Pair<String, Integer> result;
         ObjectMapper objectMapper = new ObjectMapper();
         try {
@@ -85,13 +135,28 @@ public class ChatServerServiceImpl implements ChatServerService {
             e.printStackTrace();
             return Pair.of("Failed to convert object to JSON", 500);
         }
+
+        if(result.getSecond() != 200) {
+            return setStudyStatusAndReturnPair(studyId, result.getSecond(), ChatStatus.Need_create);
+        }
         return result;
     }
 
     // TODO: 스터디 수정
 
     @Override
-    public Pair<String, Integer> updateStudy(UpdateStudyRequest updateStudyRequest) {
+    public Pair<String, Integer> updateStudy(UpdateStudyRequest updateStudyRequest, Long userId) {
+
+        Long studyId = Long.valueOf(updateStudyRequest.getChatId());
+
+        ChatStatus chatStatus = studyRepository.findChat_statusById(studyId);
+        if(chatStatus == ChatStatus.Need_create) {
+            Pair<String, Integer> response = syncStudyData(userId, studyId);
+            if(response.getSecond() != 200) {
+                return response;
+            }
+        }
+
         Pair<String, Integer> result;
         ObjectMapper objectMapper = new ObjectMapper();
         try {
@@ -103,6 +168,10 @@ public class ChatServerServiceImpl implements ChatServerService {
         }catch (JsonProcessingException e) {
             e.printStackTrace();
             return Pair.of("Failed to convert object to JSON", 500);
+        }
+
+        if(result.getSecond() != 200) {
+            return setStudyStatusAndReturnPair(studyId, result.getSecond(), ChatStatus.Need_update);
         }
         return result;
     }
@@ -124,6 +193,24 @@ public class ChatServerServiceImpl implements ChatServerService {
 
     @Override
     public Pair<String, Integer> addStudyMember(PostStudyAddMemberRequest postStudyAddmemberRequest) {
+        Long studyId = Long.valueOf(postStudyAddmemberRequest.getStudyId());
+        Long userId = Long.valueOf(postStudyAddmemberRequest.getUserId());
+
+        ChatStatus chatStatus = studyRepository.findChat_statusById(studyId);
+        if(chatStatus == ChatStatus.Need_create) {
+            Pair<String, Integer> response = syncStudyData(userId, studyId);
+            if(response.getSecond() != 200) {
+                return response;
+            }
+        }
+
+        ChatStatus chatStatus2 = userStudyRepository.findChat_statusById(new UserStudyId(userId, studyId));
+        UserStudy userStudy = userStudyRepository.findUserStudyById(new UserStudyId(userId, studyId));
+        if(chatStatus2 == ChatStatus.Need_delete) {
+            userStudy.setChat_status(ChatStatus.Clear);
+            return Pair.of("complete to Add Member", 200);
+        }
+
         Pair<String, Integer> result;
         ObjectMapper objectMapper = new ObjectMapper();
         try {
@@ -139,11 +226,34 @@ public class ChatServerServiceImpl implements ChatServerService {
             e.printStackTrace();
             return Pair.of("Failed to convert object to JSON", 500);
         }
+
+        if(result.getSecond() != 200) {
+            return setUserStudyStatusAndReturnPair(studyId, userId, result.getSecond(), ChatStatus.Need_add);
+        }
+
         return result;
     }
 
     @Override
     public Pair<String, Integer> deleteStudyMember(PostStudyDeleteMemberRequest postStudymemberRequest) {
+        Long studyId = Long.valueOf(postStudymemberRequest.getStudyId());
+        Long userId = Long.valueOf(postStudymemberRequest.getUserId());
+
+        ChatStatus chatStatus = studyRepository.findChat_statusById(studyId);
+        if(chatStatus == ChatStatus.Need_create) {
+            Pair<String, Integer> response = syncStudyData(userId, studyId);
+            if(response.getSecond() != 200) {
+                return response;
+            }
+        }
+
+        ChatStatus chatStatus2 = userStudyRepository.findChat_statusById(new UserStudyId(userId, studyId));
+        UserStudy userStudy = userStudyRepository.findUserStudyById(new UserStudyId(userId, studyId));
+        if(chatStatus2 == ChatStatus.Need_add) {
+            userStudy.setChat_status(ChatStatus.Clear);
+            return Pair.of("complete to Add Member", 200);
+        }
+
         Pair<String, Integer> result;
         ObjectMapper objectMapper = new ObjectMapper();
         try {
@@ -156,12 +266,35 @@ public class ChatServerServiceImpl implements ChatServerService {
             e.printStackTrace();
             return Pair.of("Failed to convert object to JSON", 500);
         }
+
+        if(result.getSecond() != 200) {
+            return setUserStudyStatusAndReturnPair(studyId, userId, result.getSecond(), ChatStatus.Need_delete);
+        }
+
         return result;
     }
 
     //TODO : 스터디 유저 (스스로) 삭제
     @Override
     public Pair<String, Integer> deleteStudyMemberSelf(PostStudyDeleteMemberRequest postStudyDeleteMemberRequest) {
+        Long studyId = Long.valueOf(postStudyDeleteMemberRequest.getStudyId());
+        Long userId = Long.valueOf(postStudyDeleteMemberRequest.getUserId());
+
+        ChatStatus chatStatus = studyRepository.findChat_statusById(studyId);
+        if(chatStatus == ChatStatus.Need_create) {
+            Pair<String, Integer> response = syncStudyData(userId, studyId);
+            if(response.getSecond() != 200) {
+                return response;
+            }
+        }
+
+        ChatStatus chatStatus2 = userStudyRepository.findChat_statusById(new UserStudyId(userId, studyId));
+        UserStudy userStudy = userStudyRepository.findUserStudyById(new UserStudyId(userId, studyId));
+        if(chatStatus2 == ChatStatus.Need_add) {
+            userStudy.setChat_status(ChatStatus.Clear);
+            return Pair.of("complete to Add Member", 200);
+        }
+
         Pair<String, Integer> result;
         ObjectMapper objectMapper = new ObjectMapper();
 
@@ -178,6 +311,11 @@ public class ChatServerServiceImpl implements ChatServerService {
             e.printStackTrace();
             return Pair.of("Failed to convert object to JSON", 500);
         }
+
+        if(result.getSecond() != 200) {
+            return setUserStudyStatusAndReturnPair(studyId, userId, result.getSecond(), ChatStatus.Need_delete);
+        }
+
         return result;
     }
 
@@ -245,5 +383,91 @@ public class ChatServerServiceImpl implements ChatServerService {
             reqURL += "?" + query.toString();
         }
         return sendHttpRequest(reqURL, method, null, bearerToken);
+    }
+
+    private Pair<String, Integer> syncUserData(Long userId, Long studyId) {
+        Optional<User> user = userRepository.findById(userId);
+        if(user.isPresent()) {
+            PostProfileDto postProfileDto = PostProfileDto.builder()
+                    .user_id(user.get().getId())
+                    .nickname(user.get().getNickname())
+                    .profileImage(user.get().getProfile_image())
+                    .build();
+
+            Pair<String, Integer> response = postUser(postProfileDto.toChatUserProfileDto());
+            Integer status = response.getSecond();
+
+            if(status == 200){
+                return setUserStatusAndReturnPair(userId, status, ChatStatus.Clear);
+            }
+            else if(studyId == null){
+                return setUserStatusAndReturnPair(userId, status, ChatStatus.Need_create);
+            }
+            else{
+                return setStudyStatusAndReturnPair(studyId, status, ChatStatus.Need_create);
+            }
+        }
+        return null;
+    }
+
+    private Pair<String, Integer> syncStudyData(Long studyId, Long userId){
+        Optional<Study> study = studyRepository.findById(studyId);
+        Optional<User> user = userRepository.findById(userId);
+        if(study.isPresent()) {
+            PostStudyRequest postStudyRequest = PostStudyRequest.builder()
+                    .studyId(studyId.toString())
+                    .pk(userId.toString())
+                    .name(user.get().getNickname())
+                    .build();
+
+            Pair<String, Integer> response = postStudy(postStudyRequest);
+            Integer status = response.getSecond();
+            if(status == 200){
+                return setStudyStatusAndReturnPair(userId, status, ChatStatus.Clear);
+            }else{
+                return setStudyStatusAndReturnPair(studyId, status, ChatStatus.Need_create);
+            }
+        }
+        return null;
+    }
+
+    private Pair<String, Integer> syncUserStudyData(Long studyId, Long userId){
+        return null;
+    }
+
+    private Pair<String, Integer> setUserStatusAndReturnPair(Long userId, Integer status_num, ChatStatus chatStatus) {
+
+        User user = userService.findUserById(userId);
+        if(chatStatus==ChatStatus.Need_create || chatStatus==ChatStatus.Need_update) {
+            userService.setChatStatus(user, status_num, chatStatus);
+            return Pair.of("Failed to sync user data", 500);
+        } else{
+            userService.setChatStatus(user, status_num, chatStatus);
+            return Pair.of("Complete to sync user data", 200);
+        }
+    }
+
+    private Pair<String, Integer> setStudyStatusAndReturnPair(Long studyId, Integer status_num, ChatStatus chatStatus) {
+
+        Study study = studyService.findStudyById(studyId);
+        if(chatStatus==ChatStatus.Need_create || chatStatus==ChatStatus.Need_update) {
+            studyService.setChatStatus(study, status_num, chatStatus);
+            return Pair.of("Failed to sync study-chat data", 500);
+        } else{
+            studyService.setChatStatus(study, status_num, chatStatus);
+            return Pair.of("Complete to sync study-chat data", 200);
+        }
+    }
+
+    private Pair<String, Integer> setUserStudyStatusAndReturnPair(Long studyId, Long userId, Integer status_num, ChatStatus chatStatus) {
+
+        UserStudy userStudy = userStudyRepository.findUserStudyById(new UserStudyId(userId, studyId));
+        if(chatStatus==ChatStatus.Need_add || chatStatus==ChatStatus.Need_update) {
+            userStudyService.setChatStatus(userStudy, status_num, chatStatus);
+            return Pair.of("Failed to sync chat-Member data", 500);
+        } else{
+            userStudyService.setChatStatus(userStudy, status_num, chatStatus);
+            return Pair.of("Complete to sync chat-Member data", 200);
+        }
     }
 }
