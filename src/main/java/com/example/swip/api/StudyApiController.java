@@ -53,19 +53,6 @@ public class StudyApiController {
         System.out.println("writerId = " + writerId);
         Long saveStudy = studyService.saveStudy(dto, writerId);
 
-        Study findStudy = studyService.findStudyById(saveStudy);
-        if (findStudy!=null){ //채팅 서버에 저장
-            Pair<String, Integer> response = chatServerService.postStudy(
-                    PostStudyRequest.builder()
-                            .studyId(findStudy.getId().toString())
-                            .pk(writerId.toString())
-                            .name(findStudy.getTitle())
-                            .build()
-            );
-            System.out.println("postStudyResponse = " + response.getSecond());
-            //TODO: 채팅 서버에 저장되었는지 여부 확인 후 조치
-        }
-
         return saveStudy;
     }
 
@@ -387,7 +374,7 @@ public class StudyApiController {
         if(!ownerId.equals(findStudyOwner)) {
             return ResponseEntity.status(403).body("스터디를 수정할 권한이 없습니다.");
         }
-        Boolean updateStatus = studyService.updateStudy(userPrincipal.getToken(), studyId, studyUpdateRequest);
+        Boolean updateStatus = studyService.updateStudy(ownerId, userPrincipal.getToken(), studyId, studyUpdateRequest);
         if(updateStatus){
             return ResponseEntity.status(200).body("스터디 수정 완료!");
         }

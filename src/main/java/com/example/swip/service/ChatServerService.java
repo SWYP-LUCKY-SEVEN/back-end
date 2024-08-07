@@ -14,7 +14,7 @@ public interface ChatServerService {
     Pair<String, Integer> deleteUser(Long userId);
 
     Pair<String, Integer> postStudy(PostStudyRequest postStudyRequest);
-    Pair<String, Integer> updateStudy(UpdateStudyRequest postStudyRequest);
+    Pair<String, Integer> updateStudy(UpdateStudyRequest postStudyRequest, Long userId);
     Pair<String, Integer> deleteStudy(DeleteStudyRequest deleteStudyRequest);
 
     Pair<String, Integer> addStudyMember(PostStudyAddMemberRequest postStudymemberRequest);

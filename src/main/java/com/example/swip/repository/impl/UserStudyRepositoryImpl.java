@@ -1,5 +1,7 @@
 package com.example.swip.repository.impl;
 import com.example.swip.entity.UserStudy;
+import com.example.swip.entity.compositeKey.UserStudyId;
+import com.example.swip.entity.enumtype.ChatStatus;
 import com.example.swip.entity.enumtype.ExitStatus;
 import com.example.swip.repository.custom.UserStudyRepositoryCustom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -75,5 +77,14 @@ public class UserStudyRepositoryImpl implements UserStudyRepositoryCustom {
                 .fetch();
 
         return findAllUsers;
+    }
+
+    @Override
+    public UserStudy findUserStudyById(UserStudyId userStudyId) {
+        return queryFactory
+                .select(userStudy)
+                .from(userStudy)
+                .where(userStudy.id.eq(userStudyId))
+                .fetchOne();
     }
 }
