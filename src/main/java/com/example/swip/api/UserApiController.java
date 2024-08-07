@@ -58,8 +58,6 @@ public class UserApiController {
             return ResponseEntity.status(400).build();
 
         Pair<String, Integer> response = chatServerService.postUser(postProfileDto.toChatUserProfileDto());
-        if(response.getSecond() != 200)
-            userService.setChatStatus(user, response.getSecond(), ChatStatus.Need_create);
 
         return ResponseEntity.status(200).body(DefaultResponse.builder()
                 .message("chat server response : "+response.getFirst() + response.getSecond().toString())
@@ -81,8 +79,6 @@ public class UserApiController {
             return ResponseEntity.status(400).build();
 
         Pair<String, Integer> response = chatServerService.updateUser(postProfileDto.toChatUserProfileDto());
-        if(response.getSecond() != 200)
-            userService.setChatStatus(user, response.getSecond(), ChatStatus.Need_update);
 
         return ResponseEntity.status(200).body(DefaultResponse.builder()
                 .message("chat server response : "+response.getFirst() + response.getSecond().toString())

@@ -5,6 +5,7 @@ import com.example.swip.dto.study.PostStudyDeleteMemberRequest;
 import com.example.swip.entity.*;
 import com.example.swip.entity.compositeKey.UserStudyExitId;
 import com.example.swip.entity.compositeKey.UserStudyId;
+import com.example.swip.entity.enumtype.ChatStatus;
 import com.example.swip.entity.enumtype.ExitReason;
 import com.example.swip.entity.enumtype.ExitStatus;
 import com.example.swip.repository.*;
@@ -27,7 +28,6 @@ public class UserStudyService {
     private final UserStudyRepository userStudyRepository;
     private final ExitReasonsRepository exitReasonsRepository;
     private final UserStudyExitRepository userStudyExitRepository;
-    private final UserRepository userRepository;
     private final StudyRepository studyRepository;
     private final ChatServerService chatServerService;
 
@@ -144,5 +144,16 @@ public class UserStudyService {
             return findUserStudy.get().getExit_status();
         }
         return null;
+    }
+
+    public void updateExitStatus(Long userId, Long studyId, ExitStatus exitStatus) {
+        Optional<UserStudy> findUserStudy = userStudyRepository.findById(new UserStudyId(userId, studyId));
+        if (findUserStudy.isPresent()){
+            findUserStudy.get().updateExitStatus(exitStatus);
+        }
+        if(exitStatus == ExitStatus.Leave || exitStatus == ExitStatus.Forced_leave){
+            Optional<Study> findStudy = studyRepository.findById(studyId);
+            findStudy.get().updateCurParticipants("-", 1);
+        }
     }
 }
