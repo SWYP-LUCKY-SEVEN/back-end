@@ -28,7 +28,6 @@ public class UserStudyService {
     private final UserStudyRepository userStudyRepository;
     private final ExitReasonsRepository exitReasonsRepository;
     private final UserStudyExitRepository userStudyExitRepository;
-    private final UserRepository userRepository;
     private final StudyRepository studyRepository;
     private final ChatServerService chatServerService;
 
@@ -156,13 +155,5 @@ public class UserStudyService {
             Optional<Study> findStudy = studyRepository.findById(studyId);
             findStudy.get().updateCurParticipants("-", 1);
         }
-    }
-
-    @Transactional
-    public void setChatStatus(UserStudy userStudy, Integer status_num, ChatStatus defaultStatus) {
-        if (status_num == 200)
-            userStudy.setChat_status(ChatStatus.Clear);
-        else
-            userStudy.setChat_status(defaultStatus);
     }
 }

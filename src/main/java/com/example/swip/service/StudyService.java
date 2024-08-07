@@ -1,6 +1,4 @@
 package com.example.swip.service;
-
-
 import com.example.swip.dto.chat.DeleteStudyRequest;
 import com.example.swip.dto.chat.UpdateStudyRequest;
 import com.example.swip.dto.study.*;
@@ -12,7 +10,6 @@ import com.example.swip.entity.Category;
 import com.example.swip.entity.Search;
 import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
-import com.example.swip.entity.enumtype.ChatStatus;
 import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.example.swip.repository.StudyRepository;
@@ -369,14 +366,6 @@ public class StudyService {
         }else{
             return false;
         }
-    }
-
-    @Transactional
-    public void setChatStatus(Study study, Integer status_num, ChatStatus defaultStatus) {
-        if (status_num == 200)
-            study.setChat_status(ChatStatus.Clear);
-        else
-            study.setChat_status(defaultStatus);
     }
 
     private void ChatPostStudyDataSync(Long writerId, Study savedStudy) {

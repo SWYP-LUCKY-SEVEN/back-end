@@ -16,15 +16,12 @@ import com.example.swip.repository.StudyRepository;
 import com.example.swip.repository.UserRepository;
 import com.example.swip.repository.UserStudyRepository;
 import com.example.swip.service.ChatServerService;
-import com.example.swip.service.StudyService;
 import com.example.swip.service.UserService;
-import com.example.swip.service.UserStudyService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mysema.commons.lang.Pair;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -44,10 +41,8 @@ public class ChatServerServiceImpl implements ChatServerService {
 
     private final StudyRepository studyRepository;
     private final UserRepository userRepository;
-    private final StudyService studyService;
     private final UserService userService;
     private final UserStudyRepository userStudyRepository;
-    private final UserStudyService userStudyService;
     @Value("${swyp.chat.server.uri}")
     private String reqUserURL;
     public Pair<String, Integer> postUser(ChatProfileRequest chatProfileRequest){
@@ -449,12 +444,12 @@ public class ChatServerServiceImpl implements ChatServerService {
 
     private Pair<String, Integer> setStudyStatusAndReturnPair(Long studyId, Integer status_num, ChatStatus chatStatus) {
 
-        Study study = studyService.findStudyById(studyId);
+        Study study = studyRepository.findById(studyId).orElse(null);
         if(chatStatus==ChatStatus.Need_create || chatStatus==ChatStatus.Need_update) {
-            studyService.setChatStatus(study, status_num, chatStatus);
+            study.setChat_status(chatStatus);
             return Pair.of("Failed to sync study-chat data", 500);
         } else{
-            studyService.setChatStatus(study, status_num, chatStatus);
+            study.setChat_status(chatStatus);
             return Pair.of("Complete to sync study-chat data", 200);
         }
     }
@@ -463,10 +458,10 @@ public class ChatServerServiceImpl implements ChatServerService {
 
         UserStudy userStudy = userStudyRepository.findUserStudyById(new UserStudyId(userId, studyId));
         if(chatStatus==ChatStatus.Need_add || chatStatus==ChatStatus.Need_update) {
-            userStudyService.setChatStatus(userStudy, status_num, chatStatus);
+            userStudy.setChat_status(chatStatus);
             return Pair.of("Failed to sync chat-Member data", 500);
         } else{
-            userStudyService.setChatStatus(userStudy, status_num, chatStatus);
+            userStudy.setChat_status(chatStatus);
             return Pair.of("Complete to sync chat-Member data", 200);
         }
     }
