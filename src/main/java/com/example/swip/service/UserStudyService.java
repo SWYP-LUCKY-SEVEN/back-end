@@ -9,6 +9,7 @@ import com.example.swip.entity.enumtype.ChatStatus;
 import com.example.swip.entity.enumtype.ExitReason;
 import com.example.swip.entity.enumtype.ExitStatus;
 import com.example.swip.repository.*;
+import com.example.swip.repository.custom.StudyTodoRepositoryCustom;
 import com.mysema.commons.lang.Pair;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,6 @@ public class UserStudyService {
     private final ExitReasonsRepository exitReasonsRepository;
     private final UserStudyExitRepository userStudyExitRepository;
     private final StudyRepository studyRepository;
-    private final ChatServerService chatServerService;
 
 
     //저장
@@ -114,16 +114,16 @@ public class UserStudyService {
                             userStudyExitRepository.save(userStudyExit);
                         }
                     });
-
-            //채팅 서버에서 유저 삭제
-            Pair<String, Integer> response = chatServerService.deleteStudyMember(
-                    PostStudyDeleteMemberRequest.builder()
-                            .token(bearerToken)
-                            .studyId(studyId.toString())
-                            .userId(userId.toString())
-                            .build()
-            );
-            System.out.println("response = " + response);
+//
+//            //채팅 서버에서 유저 삭제
+//            Pair<String, Integer> response = chatServerService.deleteStudyMember(
+//                    PostStudyDeleteMemberRequest.builder()
+//                            .token(bearerToken)
+//                            .studyId(studyId.toString())
+//                            .userId(userId.toString())
+//                            .build()
+//            );
+//            System.out.println("response = " + response);
         }
         return ResponseEntity.status(200).body("스터디 멤버 내보내기 성공");
     }

@@ -39,7 +39,7 @@ public class StudyService {
     private final SearchService searchService;
     private final UserSearchService userSearchService;
     private final JoinRequestService joinRequestService;
-    private final ChatServerService chatServerService;
+    //private final ChatServerService chatServerService;
     private final StudyTodoRepositoryCustom studyTodoRepositoryCustom;
 
     //저장
@@ -65,7 +65,7 @@ public class StudyService {
 
 
         if (savedStudy!=null){ //채팅 서버에 저장
-            ChatPostStudyDataSync(writerId, savedStudy);
+            //ChatPostStudyDataSync(writerId, savedStudy);
         }
         //return
         return savedStudy.getId();
@@ -146,7 +146,7 @@ public class StudyService {
             UserStudy findUserStudy = userStudyService.saveUserStudy(user, study, false);
             //채팅방 멤버 추가 (chat server 연동)
             if (findUserStudy!=null) { //채팅 서버에 저장
-                ChatAddMemberDataSync(bearerToken, study, user);
+                //ChatAddMemberDataSync(bearerToken, study, user);
             }
             return ResponseEntity.status(200).body(DefaultResponse.builder()
                     .message("쇼터디에 가입했어요.")
@@ -323,7 +323,7 @@ public class StudyService {
             studyRepository.deleteById(studyId);
 
             //채팅 데이터 연동
-            ChatDeleteStudyDataSync(token, studyId);
+            //ChatDeleteStudyDataSync(token, studyId);
             return true;
         }
         return false;
@@ -351,7 +351,7 @@ public class StudyService {
             String title = studyUpdateRequest.getTitle();
             findStudy.updateStudy(findStudy, title, studyUpdateRequest.getDescription(), studyUpdateRequest.getTags());
             //채팅 서버에 저장
-            ChatUpdateStudyDataSync(userId, bearerToken, studyId, title);
+            //ChatUpdateStudyDataSync(userId, bearerToken, studyId, title);
             return true;
         }
         return false;
@@ -368,50 +368,50 @@ public class StudyService {
         }
     }
 
-    private void ChatPostStudyDataSync(Long writerId, Study savedStudy) {
-        Pair<String, Integer> response = chatServerService.postStudy(
-                PostStudyRequest.builder()
-                        .studyId(savedStudy.getId().toString())
-                        .pk(writerId.toString())
-                        .name(savedStudy.getTitle())
-                        .build()
-        );
-        System.out.println("postStudyResponse = " + response.getSecond());
-    }
-
-    private void ChatAddMemberDataSync(String bearerToken, Study study, User user) {
-        Pair<String, Integer> response = chatServerService.addStudyMember(
-                PostStudyAddMemberRequest.builder()
-                        .token(bearerToken)
-                        .studyId(study.getId().toString())
-                        .userId(user.getId().toString())
-                        .type("join") //본인이 참가 => 토큰에 있는 유저 초대
-                        .build()
-        );
-        System.out.println("postStudyResponse = " + response.getFirst());
-    }
-
-    private void ChatDeleteStudyDataSync(String token, Long studyId) {
-        Pair<String, Integer> response = chatServerService.deleteStudy(
-                DeleteStudyRequest.builder()
-                        .groupId(studyId.toString())
-                        .token(token)
-                        .build()
-        );
-        System.out.println("data sync - study update response = " + response);
-    }
-
-    private void ChatUpdateStudyDataSync(Long userId, String bearerToken, Long studyId, String title) {
-        Pair<String, Integer> pair = chatServerService.updateStudy(
-                UpdateStudyRequest.builder()
-                        .token(bearerToken)
-                        .chatId(studyId.toString())
-                        .chatName(title)
-                        .build()
-                , userId
-        );
-        System.out.println("updateStudyResponse = " + pair.getSecond());
-    }
+//    private void ChatPostStudyDataSync(Long writerId, Study savedStudy) {
+//        Pair<String, Integer> response = chatServerService.postStudy(
+//                PostStudyRequest.builder()
+//                        .studyId(savedStudy.getId().toString())
+//                        .pk(writerId.toString())
+//                        .name(savedStudy.getTitle())
+//                        .build()
+//        );
+//        System.out.println("postStudyResponse = " + response.getSecond());
+//    }
+//
+//    private void ChatAddMemberDataSync(String bearerToken, Study study, User user) {
+//        Pair<String, Integer> response = chatServerService.addStudyMember(
+//                PostStudyAddMemberRequest.builder()
+//                        .token(bearerToken)
+//                        .studyId(study.getId().toString())
+//                        .userId(user.getId().toString())
+//                        .type("join") //본인이 참가 => 토큰에 있는 유저 초대
+//                        .build()
+//        );
+//        System.out.println("postStudyResponse = " + response.getFirst());
+//    }
+//
+//    private void ChatDeleteStudyDataSync(String token, Long studyId) {
+//        Pair<String, Integer> response = chatServerService.deleteStudy(
+//                DeleteStudyRequest.builder()
+//                        .groupId(studyId.toString())
+//                        .token(token)
+//                        .build()
+//        );
+//        System.out.println("data sync - study update response = " + response);
+//    }
+//
+//    private void ChatUpdateStudyDataSync(Long userId, String bearerToken, Long studyId, String title) {
+//        Pair<String, Integer> pair = chatServerService.updateStudy(
+//                UpdateStudyRequest.builder()
+//                        .token(bearerToken)
+//                        .chatId(studyId.toString())
+//                        .chatName(title)
+//                        .build()
+//                , userId
+//        );
+//        System.out.println("updateStudyResponse = " + pair.getSecond());
+//    }
 
 }
 

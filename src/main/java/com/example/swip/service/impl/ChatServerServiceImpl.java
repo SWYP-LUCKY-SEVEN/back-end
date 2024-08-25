@@ -45,6 +45,9 @@ public class ChatServerServiceImpl implements ChatServerService {
     private final UserStudyRepository userStudyRepository;
     @Value("${swyp.chat.server.uri}")
     private String reqUserURL;
+    @Value("${swyp.chat.server.chatRoom.url}")
+    private String reqStudyURL;
+
     public Pair<String, Integer> postUser(ChatProfileRequest chatProfileRequest){
         Pair<String, Integer> result;
         ObjectMapper objectMapper = new ObjectMapper();
@@ -102,8 +105,6 @@ public class ChatServerServiceImpl implements ChatServerService {
     /**
      * 스터디 생성/수정/삭제 -> 채팅 생성/수정/삭제
      */
-    @Value("${swyp.chat.sever.chatRoom.url}")
-    private String reqStudyURL;
     @Override
     public Pair<String, Integer> postStudy(PostStudyRequest postStudyRequest) {
 

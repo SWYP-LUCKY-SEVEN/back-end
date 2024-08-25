@@ -31,7 +31,7 @@ public class JoinRequestService {
     private final UserStudyService userStudyService;
     private final UserRepository userRepository;
     private final StudyRepository studyRepository;
-    private final ChatServerService chatServerService;
+    //private final ChatServerService chatServerService;
 
     public boolean getAlreadyRequest(Long userId, Long studyId) {
         return joinRequestRepository.existsById(new JoinRequestId(userId, studyId));
@@ -87,7 +87,7 @@ public class JoinRequestService {
 
             //채팅방 멤버 추가 (chat server 연동)
             if(userStudy != null) {
-                ChatAdddMemberDataSync(studyId, userId, bearerToken);
+                //ChatAdddMemberDataSync(studyId, userId, bearerToken);
             }
         }
     }
@@ -122,7 +122,7 @@ public class JoinRequestService {
         if(isJoin && findRequest == null){ // 스터디 참가자 (빠른매칭)
             // 1. user_study 테이블에서 삭제
             userStudyService.updateExitStatus(userId, studyId, ExitStatus.Leave);
-            ChatDeleteMemberDataSync(token, userId, studyId);
+            //ChatDeleteMemberDataSync(token, userId, studyId);
             return true;
         }
         if(isJoin && findRequest != null){ // 스터디 참가자 (승인제 : 신청 수락이 된 경우)
@@ -130,7 +130,7 @@ public class JoinRequestService {
             joinRequestRepository.deleteById(id);
             // 2. user_study 테이블에서 삭제
             userStudyService.updateExitStatus(userId, studyId, ExitStatus.Leave);
-            ChatDeleteMemberDataSync(token, userId, studyId);
+            //ChatDeleteMemberDataSync(token, userId, studyId);
             return true;
         }
         if(!isJoin && findRequest.getJoin_status() == JoinStatus.Waiting){ // 신청 수락 대기중인 경우
@@ -152,25 +152,25 @@ public class JoinRequestService {
 
     //==서비스 내부 로직==//
 
-    private void ChatAdddMemberDataSync(Long studyId, Long userId, String token) {
-        chatServerService.addStudyMember(
-                PostStudyAddMemberRequest.builder()
-                        .token(token)
-                        .studyId(studyId.toString())
-                        .userId(userId.toString())
-                        .type("accept") //방장이 허가 -> body userId 초대
-                        .build()
-        );
-    }
-
-    private void ChatDeleteMemberDataSync(String token, Long userId, Long studyId) {
-        Pair<String, Integer> response = chatServerService.deleteStudyMemberSelf(
-                PostStudyDeleteMemberRequest.builder()
-                        .token(token)
-                        .studyId(studyId.toString())
-                        .userId(userId.toString())
-                        .build()
-        );
-        System.out.println("chat data sync - member self deleted response = " + response);
-    }
+//    private void ChatAdddMemberDataSync(Long studyId, Long userId, String token) {
+//        chatServerService.addStudyMember(
+//                PostStudyAddMemberRequest.builder()
+//                        .token(token)
+//                        .studyId(studyId.toString())
+//                        .userId(userId.toString())
+//                        .type("accept") //방장이 허가 -> body userId 초대
+//                        .build()
+//        );
+//    }
+//
+//    private void ChatDeleteMemberDataSync(String token, Long userId, Long studyId) {
+//        Pair<String, Integer> response = chatServerService.deleteStudyMemberSelf(
+//                PostStudyDeleteMemberRequest.builder()
+//                        .token(token)
+//                        .studyId(studyId.toString())
+//                        .userId(userId.toString())
+//                        .build()
+//        );
+//        System.out.println("chat data sync - member self deleted response = " + response);
+//    }
 }
