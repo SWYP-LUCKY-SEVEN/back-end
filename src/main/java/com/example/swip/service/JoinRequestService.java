@@ -28,27 +28,11 @@ import java.util.stream.Collectors;
 public class JoinRequestService {
 
     private final JoinRequestRepository joinRequestRepository;
-    private final UserStudyService userStudyService;
     private final UserRepository userRepository;
     private final StudyRepository studyRepository;
+
+    private final UserStudyService userStudyService;
     private final ChatServerService chatServerService;
-
-    public boolean getAlreadyRequest(Long userId, Long studyId) {
-        return joinRequestRepository.existsById(new JoinRequestId(userId, studyId));
-    }
-
-    @Transactional
-    public void saveJoinRequest(User user, Study study) {
-        joinRequestRepository.save(
-                JoinRequest.builder()
-                        .id(new JoinRequestId(user.getId(), study.getId()))
-                        .user(user)
-                        .study(study)
-                        .request_date(LocalDateTime.now())
-                        .join_status(JoinStatus.Waiting) //대기중
-                        .build()
-        );
-    }
 
     public List<JoinRequestResponse> getAllByStudyId(Long studyId) {
         List<JoinRequest> findJoinRequests = joinRequestRepository.findAllByStudyId(studyId);
@@ -87,7 +71,7 @@ public class JoinRequestService {
 
             //채팅방 멤버 추가 (chat server 연동)
             if(userStudy != null) {
-                ChatAdddMemberDataSync(studyId, userId, bearerToken);
+                ChatAddMemberDataSync(studyId, userId, bearerToken);
             }
         }
     }
@@ -152,7 +136,7 @@ public class JoinRequestService {
 
     //==서비스 내부 로직==//
 
-    private void ChatAdddMemberDataSync(Long studyId, Long userId, String token) {
+    private void ChatAddMemberDataSync(Long studyId, Long userId, String token) {
         chatServerService.addStudyMember(
                 PostStudyAddMemberRequest.builder()
                         .token(token)

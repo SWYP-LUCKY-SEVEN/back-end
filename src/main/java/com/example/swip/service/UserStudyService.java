@@ -29,6 +29,7 @@ public class UserStudyService {
     private final ExitReasonsRepository exitReasonsRepository;
     private final UserStudyExitRepository userStudyExitRepository;
     private final StudyRepository studyRepository;
+
     private final ChatServerService chatServerService;
 
 
@@ -63,6 +64,7 @@ public class UserStudyService {
     public Long getOwnerbyStudyId(Long studyId) {
         return userStudyRepository.findOwnerByStudyId(studyId);
     }
+
     public boolean isStudyOwner(Long studyId, Long userId) {
         return userId.equals(getOwnerbyStudyId(studyId));
     }

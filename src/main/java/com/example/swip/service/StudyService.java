@@ -10,10 +10,15 @@ import com.example.swip.entity.Category;
 import com.example.swip.entity.Search;
 import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
+import com.example.swip.entity.compositeKey.JoinRequestId;
+import com.example.swip.entity.enumtype.JoinStatus;
 import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
+import com.example.swip.repository.JoinRequestRepository;
 import com.example.swip.repository.StudyRepository;
+import com.example.swip.repository.UserRepository;
 import com.example.swip.repository.custom.StudyTodoRepositoryCustom;
+import com.example.swip.repository.custom.UserRepositoryCustom;
 import com.mysema.commons.lang.Pair;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -32,21 +38,24 @@ import java.util.stream.Collectors;
 public class StudyService {
 
     private final StudyRepository studyRepository;
-    private final UserService userService;
+    private final UserRepository userRepository;
+    private final UserRepositoryCustom userRepositoryCustom;
+    private final JoinRequestRepository joinRequestRepository;
+    private final StudyTodoRepositoryCustom studyTodoRepositoryCustom;
+
     private final CategoryService categoryService;
     private final AdditionalInfoService additionalInfoService;
     private final UserStudyService userStudyService;
     private final SearchService searchService;
     private final UserSearchService userSearchService;
-    private final JoinRequestService joinRequestService;
+
     private final ChatServerService chatServerService;
-    private final StudyTodoRepositoryCustom studyTodoRepositoryCustom;
 
     //저장
     @Transactional
     public Long saveStudy(StudySaveRequest studySaveRequest, Long writerId){
         //작성자 정보 조회
-        User writer = userService.findUserById(writerId); //작성자 정보 조회
+        User writer = userRepository.findById(writerId).orElse(null); //작성자 정보 조회
 
         //category id 조회
         Category findCategory = categoryService.findCategoryIdByName(studySaveRequest.getCategory());
@@ -101,13 +110,19 @@ public class StudyService {
             String queryString = filterCondition.getQuery_string();
             Boolean isExist = searchService.KeywordIsExist(queryString);
             if (!isExist) { //검색어가 없으면, 검색어 table에 저장 & search_user table에 저장
-                User user = userService.findUserById(writerId); //작성자 정보 조회
+                User user = userRepository.findById(writerId).orElse(null); //작성자 정보 조회
+                if(user == null) {
+                    throw new RuntimeException("검색하는 유저가 존재하지 않습니다.");
+                }
 
                 searchService.saveKeyword(queryString);
                 Search findKeyword = searchService.findByKeyword(queryString);
                 userSearchService.saveSearchLog(findKeyword, user);
             } else if (isExist) { //검색어가 있으면, user_search에 있는지 조회/ 없으면 search_user table에만 저장 / 있으면 count 증가, updatetime 갱신
-                User user = userService.findUserById(writerId); //작성자 정보 조회
+                User user = userRepository.findById(writerId).orElse(null); //작성자 정보 조회
+                if(user == null) {
+                    throw new RuntimeException("검색하는 유저가 존재하지 않습니다.");
+                }
 
                 Search findKeyword = searchService.findByKeyword(queryString); //검색어 조회
 
@@ -128,7 +143,7 @@ public class StudyService {
     @Transactional
     public ResponseEntity joinStudy(Long studyId, Long userId, String bearerToken) {
         Study study = studyRepository.findById(studyId).orElse(null);
-        User user = userService.findUserById(userId);
+        User user = userRepository.findById(userId).orElse(null);
         if(study==null || user==null)
             return ResponseEntity.status(404).body(DefaultResponse.builder()
                     .message("존재하지 않는 식별자입니다.")
@@ -153,13 +168,21 @@ public class StudyService {
                     .build());
         } else { //approval
             //이미 스터디 참가 신청한 경우
-            if(joinRequestService.getAlreadyRequest(userId, studyId)){
+            if(joinRequestRepository.existsById(new JoinRequestId(userId, studyId))){
                 return ResponseEntity.status(200).body(DefaultResponse.builder()
                         .message("이미 가입 신청한 사용자입니다.")
                         .build());
             }
             else { //처음 참가 신청하는 경우
-                joinRequestService.saveJoinRequest(user, study);
+                joinRequestRepository.save(
+                        JoinRequest.builder()
+                                .id(new JoinRequestId(user.getId(), study.getId()))
+                                .user(user)
+                                .study(study)
+                                .request_date(LocalDateTime.now())
+                                .join_status(JoinStatus.Waiting) //대기중
+                                .build()
+                );
                 return ResponseEntity.status(200).body(DefaultResponse.builder()
                         .message("스터디 가입신청을 요청했어요.")
                         .build());
@@ -251,7 +274,7 @@ public class StudyService {
 
     public List<StudyFilterResponse> getProposerStudyList(Long userId) {
         List<StudyFilterResponse> list =
-                studyListToStudyFilterResponse(userService.getProposerStudyList(userId));
+                studyListToStudyFilterResponse(userRepositoryCustom.proposerStudyList(userId));
 
         list.sort(Comparator.comparing(StudyFilterResponse::getCreated_time));
         return list;
@@ -260,7 +283,7 @@ public class StudyService {
         StudyProgressStatus.Element statusEnum = status != null?
                 StudyProgressStatus.toStudyProgressStatusType(status)
                 :StudyProgressStatus.Element.InProgress;
-        List<StudyFilterResponse> responses = userService.getRegisteredStudyList(userId, statusEnum);
+        List<StudyFilterResponse> responses = userRepositoryCustom.registeredStudyList(userId, statusEnum);
         return responses;
     }
     public MemberTodoResponse getProgressTodo(Long studyId, Long userId, LocalDate date) {
@@ -277,7 +300,7 @@ public class StudyService {
                 .build();
     }
     public List<UserProgressStudyResponse> getProgressStudyList(Long userId) {
-        List<Study> studyList = userService.getProgressStudyList(userId);
+        List<Study> studyList = userRepositoryCustom.processStudyList(userId);
         LocalDate now = LocalDate.now();
 
         List<UserProgressStudyResponse> result = studyList.stream()

@@ -104,16 +104,6 @@ public class UserService {
                 .build();
     }
 
-    public List<Study> getProposerStudyList(Long userId) {
-        return userRepositoryCustom.proposerStudyList(userId);
-    }
-    public List<Study> getProgressStudyList(Long userId) {
-        return userRepositoryCustom.processStudyList(userId);
-    }
-    public List<StudyFilterResponse> getRegisteredStudyList(Long userId, StudyProgressStatus.Element status) {
-        return userRepositoryCustom.registeredStudyList(userId, status);
-    }
-
     public UserRelatedStudyCount getRelatedStudyNum(Long user_id) {
         UserRelatedStudyCount urscount = new UserRelatedStudyCount();
         urscount.setIn_progress(
@@ -149,20 +139,6 @@ public class UserService {
         userRepositoryCustom.deleteExpiredUserData(time);
     }
 
-    @Transactional
-    public void setChatStatus(Object obj, Integer status_num, ChatStatus defaultStatus) {
-        if (status_num == 200)
-            setUserOrStudyChatStatus(obj, ChatStatus.Clear);
-        else
-            setUserOrStudyChatStatus(obj, defaultStatus);
-    }
-
-    private void setUserOrStudyChatStatus(Object obj, ChatStatus status) {
-        if(obj instanceof User)
-            ((User) obj).setChat_status(status);
-        else if (obj instanceof Study)
-            ((Study) obj).setChat_status(status);
-    }
 
     public String deleteUser(Long id) {
         if(userRepository.existsById(id))
