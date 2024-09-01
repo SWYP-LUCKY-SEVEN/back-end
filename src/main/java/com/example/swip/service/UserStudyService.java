@@ -1,6 +1,7 @@
 package com.example.swip.service;
 
 import com.example.swip.dto.DefaultResponse;
+import com.example.swip.dto.study.PostStudyAddMemberRequest;
 import com.example.swip.dto.study.PostStudyDeleteMemberRequest;
 import com.example.swip.entity.*;
 import com.example.swip.entity.compositeKey.UserStudyExitId;
@@ -29,6 +30,7 @@ public class UserStudyService {
     private final ExitReasonsRepository exitReasonsRepository;
     private final UserStudyExitRepository userStudyExitRepository;
     private final StudyRepository studyRepository;
+
     private final ChatServerService chatServerService;
 
 
@@ -62,9 +64,6 @@ public class UserStudyService {
 
     public Long getOwnerbyStudyId(Long studyId) {
         return userStudyRepository.findOwnerByStudyId(studyId);
-    }
-    public boolean isStudyOwner(Long studyId, Long userId) {
-        return userId.equals(getOwnerbyStudyId(studyId));
     }
 
     public List<UserStudy> getAllNotExitedUsersByStudyId(Long studyId){
@@ -138,22 +137,26 @@ public class UserStudyService {
 
     }
 
-    public ExitStatus getExitStatus(Long userId, Long studyId) {
-        Optional<UserStudy> findUserStudy = userStudyRepository.findById(new UserStudyId(userId, studyId));
-        if (findUserStudy.isPresent()){
-            return findUserStudy.get().getExit_status();
-        }
-        return null;
+    public void ChatAddMemberDataSync(Long studyId, Long userId, String token) {
+        chatServerService.addStudyMember(
+                PostStudyAddMemberRequest.builder()
+                        .token(token)
+                        .studyId(studyId.toString())
+                        .userId(userId.toString())
+                        .type("accept") //방장이 허가 -> body userId 초대
+                        .build()
+        );
     }
 
-    public void updateExitStatus(Long userId, Long studyId, ExitStatus exitStatus) {
-        Optional<UserStudy> findUserStudy = userStudyRepository.findById(new UserStudyId(userId, studyId));
-        if (findUserStudy.isPresent()){
-            findUserStudy.get().updateExitStatus(exitStatus);
-        }
-        if(exitStatus == ExitStatus.Leave || exitStatus == ExitStatus.Forced_leave){
-            Optional<Study> findStudy = studyRepository.findById(studyId);
-            findStudy.get().updateCurParticipants("-", 1);
-        }
+    public void ChatDeleteMemberDataSync(String token, Long userId, Long studyId) {
+        Pair<String, Integer> response = chatServerService.deleteStudyMemberSelf(
+                PostStudyDeleteMemberRequest.builder()
+                        .token(token)
+                        .studyId(studyId.toString())
+                        .userId(userId.toString())
+                        .build()
+        );
+        System.out.println("chat data sync - member self deleted response = " + response);
     }
+
 }

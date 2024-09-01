@@ -4,8 +4,6 @@ import com.example.swip.config.security.UserPrincipal;
 import com.example.swip.dto.JoinRequest.JoinRequestResponse;
 import com.example.swip.entity.enumtype.JoinStatus;
 import com.example.swip.service.JoinRequestService;
-import com.example.swip.service.StudyService;
-import com.example.swip.service.UserStudyService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,8 +18,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JoinRequestApiController {
     private final JoinRequestService joinRequestService;
-    private final UserStudyService userStudyService;
-    private final StudyService studyService;
 
     @Operation(summary = "스터디 신청 내역 조회 (방장용)")
     @GetMapping("/joinRequest/{study_id}")
@@ -34,7 +30,7 @@ public class JoinRequestApiController {
             return ResponseEntity.status(401).body(new Result<>(null, "로그인이 필요합니다."));
         }
         Long ownerId = userPrincipal.getUserId();
-        Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
+        Long findStudyOwner = joinRequestService.getOwnerbyStudyId(studyId);
 
         //방장이면 확인 가능하도록
         if(ownerId.equals(findStudyOwner)){
@@ -52,7 +48,7 @@ public class JoinRequestApiController {
             @PathVariable("study_id") Long studyId
     ){
         Long ownerId = userPrincipal.getUserId();
-        Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
+        Long findStudyOwner = joinRequestService.getOwnerbyStudyId(studyId);
         //방장이면 확인 가능하도록
         if(userPrincipal == null){
             return ResponseEntity.status(401).body(new Result(null,"로그인이 필요합니다."));
@@ -76,12 +72,12 @@ public class JoinRequestApiController {
             return ResponseEntity.status(401).body("로그인이 필요합니다.");
         }
         Long ownerId = userPrincipal.getUserId();
-        Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
+        Long findStudyOwner = joinRequestService.getOwnerbyStudyId(studyId);
         if(!ownerId.equals(findStudyOwner)) {
             return ResponseEntity.status(403).body("방장이 아닙니다.");
         }
         //꽉찬 스터디의 경우 수락 불가
-        boolean isFull = studyService.isAlreadyFull(studyId);
+        boolean isFull = joinRequestService.isAlreadyFull(studyId);
         if(isFull){
             return ResponseEntity.status(200).body("참여 인원이 꽉 찼습니다.");
         }
@@ -111,7 +107,7 @@ public class JoinRequestApiController {
             return ResponseEntity.status(401).body("로그인이 필요합니다.");
         }
         Long ownerId = userPrincipal.getUserId();
-        Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
+        Long findStudyOwner = joinRequestService.getOwnerbyStudyId(studyId);
         if(!ownerId.equals(findStudyOwner)) {
             return ResponseEntity.status(403).body("방장이 아닙니다.");
         }

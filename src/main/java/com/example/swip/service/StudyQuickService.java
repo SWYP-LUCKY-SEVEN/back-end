@@ -8,6 +8,7 @@ import com.example.swip.entity.User;
 import com.example.swip.entity.enumtype.Tendency;
 import com.example.swip.repository.QuickFilterRepository;
 import com.example.swip.repository.StudyRepository;
+import com.example.swip.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,8 +21,9 @@ import java.util.List;
 public class StudyQuickService {
 
     private final StudyRepository studyRepository;
+    private final UserRepository userRepository;
     private final QuickFilterRepository quickFilterRepository;
-    private final UserService userService;
+
     private final CategoryService categoryService;
 
     @Transactional
@@ -47,7 +49,7 @@ public class StudyQuickService {
     @Transactional
     public Long saveQuickMatchFilter(QuickMatchFilter quickMatchFilter, Long userId){
         //작성자 정보 조회
-        User user = userService.findUserById(userId); //작성자 정보 조회
+        User user = userRepository.findById(userId).orElse(null); //작성자 정보 조회
         if(user == null)
             return 0L;
 

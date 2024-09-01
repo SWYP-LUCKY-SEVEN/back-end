@@ -31,8 +31,7 @@ public class StudyApiController {
 
     private final StudyService studyService;
     private final StudyQuickService studyQuickService;
-    private final FavoriteStudyService favoriteStudyService;
-    private final ChatServerService chatServerService;
+
     private final UserStudyService userStudyService;
 
     //저장
@@ -277,7 +276,7 @@ public class StudyApiController {
                             .message("로그인이 필요합니다.")
                             .build());
 
-        boolean status = favoriteStudyService.postFavoriteStudy( userPrincipal.getUserId(), studyId);
+        boolean status = studyService.postFavoriteStudy( userPrincipal.getUserId(), studyId);
         if(status)
             return ResponseEntity.status(200).body(
                     DefaultResponse.builder()
@@ -302,7 +301,7 @@ public class StudyApiController {
                             .message("로그인이 필요합니다.")
                             .build());
 
-        boolean status = favoriteStudyService.deleteFavoriteStudy(userPrincipal.getUserId(), studyId);
+        boolean status = studyService.deleteFavoriteStudy(userPrincipal.getUserId(), studyId);
         if(status)
             return ResponseEntity.status(200).body(
                     DefaultResponse.builder()
