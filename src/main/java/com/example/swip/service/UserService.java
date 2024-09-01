@@ -78,6 +78,7 @@ public class UserService {
             return null;
         return getUserRating(user.getId());
     }
+
     public Integer getUserRating(Long userId) {
         List<Integer> evalList =userRepositoryCustom.getUserEvalList(userId);
         if (evalList == null || evalList.isEmpty())

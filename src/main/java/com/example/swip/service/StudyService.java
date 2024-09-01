@@ -11,9 +11,11 @@ import com.example.swip.entity.Search;
 import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
 import com.example.swip.entity.compositeKey.JoinRequestId;
+import com.example.swip.entity.compositeKey.UserStudyId;
 import com.example.swip.entity.enumtype.JoinStatus;
 import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
+import com.example.swip.repository.FavoriteStudyRepository;
 import com.example.swip.repository.JoinRequestRepository;
 import com.example.swip.repository.StudyRepository;
 import com.example.swip.repository.UserRepository;
@@ -42,6 +44,7 @@ public class StudyService {
     private final UserRepositoryCustom userRepositoryCustom;
     private final JoinRequestRepository joinRequestRepository;
     private final StudyTodoRepositoryCustom studyTodoRepositoryCustom;
+    private final FavoriteStudyRepository favoriteStudyRepository;
 
     private final CategoryService categoryService;
     private final AdditionalInfoService additionalInfoService;
@@ -236,10 +239,6 @@ public class StudyService {
                 .build();
     }
 
-    public Study findStudyById(Long id){
-        return studyRepository.findById(id).orElse(null);
-    }
-
     public List<StudyFilterResponse> studyListToStudyFilterResponse(List<Study> studyList) {
         List<StudyFilterResponse> responses = studyList.stream()
                 .map(study -> new StudyFilterResponse(
@@ -380,17 +379,6 @@ public class StudyService {
         return false;
     }
 
-    public boolean isAlreadyFull(Long studyId) {
-        Study findStudy = studyRepository.findById(studyId).orElse(null);
-        int curNum = findStudy.getCur_participants_num();
-        int maxNum = findStudy.getMax_participants_num();
-        if(curNum==maxNum){
-            return true;
-        }else{
-            return false;
-        }
-    }
-
     private void ChatPostStudyDataSync(Long writerId, Study savedStudy) {
         Pair<String, Integer> response = chatServerService.postStudy(
                 PostStudyRequest.builder()
@@ -436,6 +424,38 @@ public class StudyService {
         System.out.println("updateStudyResponse = " + pair.getSecond());
     }
 
+    public List<StudyFilterResponse> getFavoriteStudyList(Long userId) {
+        List<Study> list = userRepositoryCustom.favoriteStudyList(userId);
+        return studyListToStudyFilterResponse(list);
+    }
+
+    @Transactional
+    public boolean postFavoriteStudy(Long userId, Long studyId) {
+        User user = userRepository.findById(userId).orElse(null);
+        Study study = studyRepository.findById(studyId).orElse(null);
+        if(user == null || study == null)
+            return false;
+        FavoriteStudy favoriteStudy = FavoriteStudy.builder()
+                .id(new UserStudyId(userId, studyId))
+                .user(user)
+                .study(study)
+                .build();
+        favoriteStudyRepository.save(favoriteStudy);
+        return true;
+    }
+
+    @Transactional
+    public boolean deleteFavoriteStudy(Long userId, Long studyId) {
+        User user = userRepository.findById(userId).orElse(null);
+        Study study = studyRepository.findById(studyId).orElse(null);
+        if(user == null || study == null)
+            return false;
+        FavoriteStudy favoriteStudy = favoriteStudyRepository.findByUserIdAndStudyId(userId, studyId);
+        if(favoriteStudy == null)
+            return false;
+        favoriteStudyRepository.delete(favoriteStudy);
+        return true;
+    }
 }
 
 

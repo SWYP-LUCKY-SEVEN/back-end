@@ -103,7 +103,7 @@ public class ChatServerServiceImpl implements ChatServerService {
     /**
      * 스터디 생성/수정/삭제 -> 채팅 생성/수정/삭제
      */
-    @Value("${swyp.chat.sever.chatRoom.url}")
+    @Value("${swyp.chat.server.chatRoom.url}")
     private String reqStudyURL;
     @Override
     public Pair<String, Integer> postStudy(PostStudyRequest postStudyRequest) {

@@ -8,11 +8,13 @@ import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
 import com.example.swip.entity.UserStudy;
 import com.example.swip.entity.compositeKey.JoinRequestId;
+import com.example.swip.entity.compositeKey.UserStudyId;
 import com.example.swip.entity.enumtype.ExitStatus;
 import com.example.swip.entity.enumtype.JoinStatus;
 import com.example.swip.repository.JoinRequestRepository;
 import com.example.swip.repository.StudyRepository;
 import com.example.swip.repository.UserRepository;
+import com.example.swip.repository.UserStudyRepository;
 import com.mysema.commons.lang.Pair;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,9 +33,9 @@ public class JoinRequestService {
     private final JoinRequestRepository joinRequestRepository;
     private final UserRepository userRepository;
     private final StudyRepository studyRepository;
+    private final UserStudyRepository userStudyRepository;
 
     private final UserStudyService userStudyService;
-    private final ChatServerService chatServerService;
 
     public List<JoinRequestResponse> getAllByStudyId(Long studyId) {
         List<JoinRequest> findJoinRequests = joinRequestRepository.findAllByStudyId(studyId);
@@ -71,7 +74,7 @@ public class JoinRequestService {
 
             //채팅방 멤버 추가 (chat server 연동)
             if(userStudy != null) {
-                ChatAddMemberDataSync(studyId, userId, bearerToken);
+                userStudyService.ChatAddMemberDataSync(studyId, userId, bearerToken);
             }
         }
     }
@@ -90,12 +93,12 @@ public class JoinRequestService {
     @Transactional
     public boolean cancelJoinRequest(String token, Long userId, Long studyId) {
 
-        ExitStatus exitStatus = userStudyService.getExitStatus(userId, studyId);
-        if(exitStatus != null && !userStudyService.getExitStatus(userId, studyId).equals(ExitStatus.None)){ //강퇴, 이탈 멤버는 취소 불가
+        ExitStatus exitStatus = getExitStatus(userId, studyId);
+        if(exitStatus != null && !getExitStatus(userId, studyId).equals(ExitStatus.None)){ //강퇴, 이탈 멤버는 취소 불가
             return false;
         }
 
-        if(userStudyService.isStudyOwner(studyId, userId)){ //방장은 취소 불가
+        if(isStudyOwner(studyId, userId)){ //방장은 취소 불가
             return false;
         }
 
@@ -105,16 +108,16 @@ public class JoinRequestService {
 
         if(isJoin && findRequest == null){ // 스터디 참가자 (빠른매칭)
             // 1. user_study 테이블에서 삭제
-            userStudyService.updateExitStatus(userId, studyId, ExitStatus.Leave);
-            ChatDeleteMemberDataSync(token, userId, studyId);
+            updateExitStatusByUserAndStudyId(userId, studyId, ExitStatus.Leave);
+            userStudyService.ChatDeleteMemberDataSync(token, userId, studyId);
             return true;
         }
         if(isJoin && findRequest != null){ // 스터디 참가자 (승인제 : 신청 수락이 된 경우)
             // 1. join_request 테이블에서 삭제
             joinRequestRepository.deleteById(id);
             // 2. user_study 테이블에서 삭제
-            userStudyService.updateExitStatus(userId, studyId, ExitStatus.Leave);
-            ChatDeleteMemberDataSync(token, userId, studyId);
+            updateExitStatusByUserAndStudyId(userId, studyId, ExitStatus.Leave);
+            userStudyService.ChatDeleteMemberDataSync(token, userId, studyId);
             return true;
         }
         if(!isJoin && findRequest.getJoin_status() == JoinStatus.Waiting){ // 신청 수락 대기중인 경우
@@ -134,27 +137,42 @@ public class JoinRequestService {
         return joinRequestRepository.findJoinStatusById(new JoinRequestId(userId, studyId));
     }
 
-    //==서비스 내부 로직==//
-
-    private void ChatAddMemberDataSync(Long studyId, Long userId, String token) {
-        chatServerService.addStudyMember(
-                PostStudyAddMemberRequest.builder()
-                        .token(token)
-                        .studyId(studyId.toString())
-                        .userId(userId.toString())
-                        .type("accept") //방장이 허가 -> body userId 초대
-                        .build()
-        );
+    public Long getOwnerbyStudyId(Long studyId) {
+        return userStudyRepository.findOwnerByStudyId(studyId);
     }
 
-    private void ChatDeleteMemberDataSync(String token, Long userId, Long studyId) {
-        Pair<String, Integer> response = chatServerService.deleteStudyMemberSelf(
-                PostStudyDeleteMemberRequest.builder()
-                        .token(token)
-                        .studyId(studyId.toString())
-                        .userId(userId.toString())
-                        .build()
-        );
-        System.out.println("chat data sync - member self deleted response = " + response);
+    public boolean isStudyOwner(Long studyId, Long userId) {
+        return userId.equals(getOwnerbyStudyId(studyId));
+    }
+
+    public boolean isAlreadyFull(Long studyId) {
+        Study findStudy = studyRepository.findById(studyId).orElse(null);
+        int curNum = findStudy.getCur_participants_num();
+        int maxNum = findStudy.getMax_participants_num();
+        if(curNum==maxNum){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    //==서비스 내부 로직==//
+    private ExitStatus getExitStatus(Long userId, Long studyId) {
+        Optional<UserStudy> findUserStudy = userStudyRepository.findById(new UserStudyId(userId, studyId));
+        if (findUserStudy.isPresent()){
+            return findUserStudy.get().getExit_status();
+        }
+        return null;
+    }
+
+    private void updateExitStatusByUserAndStudyId(Long userId, Long studyId, ExitStatus exitStatus) {
+        Optional<UserStudy> findUserStudy = userStudyRepository.findById(new UserStudyId(userId, studyId));
+        if (findUserStudy.isPresent()){
+            findUserStudy.get().updateExitStatus(exitStatus);
+        }
+        if(exitStatus == ExitStatus.Leave || exitStatus == ExitStatus.Forced_leave){
+            Optional<Study> findStudy = studyRepository.findById(studyId);
+            findStudy.get().updateCurParticipants("-", 1);
+        }
     }
 }
