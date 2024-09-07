@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 public class DailyCleanupTask {
     private final UserService userService;
     private final StudyService studyService;
-    private final UserSearchService userSearchService;
     private final JoinRequestService joinRequestService;
 
 

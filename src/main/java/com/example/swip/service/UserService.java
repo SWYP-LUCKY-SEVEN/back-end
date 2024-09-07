@@ -78,6 +78,7 @@ public class UserService {
             return null;
         return getUserRating(user.getId());
     }
+
     public Integer getUserRating(Long userId) {
         List<Integer> evalList =userRepositoryCustom.getUserEvalList(userId);
         if (evalList == null || evalList.isEmpty())
@@ -102,16 +103,6 @@ public class UserService {
                 .user_id(user.getId())
                 .rating(rating)
                 .build();
-    }
-
-    public List<Study> getProposerStudyList(Long userId) {
-        return userRepositoryCustom.proposerStudyList(userId);
-    }
-    public List<Study> getProgressStudyList(Long userId) {
-        return userRepositoryCustom.processStudyList(userId);
-    }
-    public List<StudyFilterResponse> getRegisteredStudyList(Long userId, StudyProgressStatus.Element status) {
-        return userRepositoryCustom.registeredStudyList(userId, status);
     }
 
     public UserRelatedStudyCount getRelatedStudyNum(Long user_id) {
@@ -149,20 +140,6 @@ public class UserService {
         userRepositoryCustom.deleteExpiredUserData(time);
     }
 
-    @Transactional
-    public void setChatStatus(Object obj, Integer status_num, ChatStatus defaultStatus) {
-        if (status_num == 200)
-            setUserOrStudyChatStatus(obj, ChatStatus.Clear);
-        else
-            setUserOrStudyChatStatus(obj, defaultStatus);
-    }
-
-    private void setUserOrStudyChatStatus(Object obj, ChatStatus status) {
-        if(obj instanceof User)
-            ((User) obj).setChat_status(status);
-        else if (obj instanceof Study)
-            ((Study) obj).setChat_status(status);
-    }
 
     public String deleteUser(Long id) {
         if(userRepository.existsById(id))

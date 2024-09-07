@@ -27,7 +27,6 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 public class UserApiController {
-    private final FavoriteStudyService favoriteStudyService;
     private final ChatServerService chatServerService;
     private final UserService userService;
     private final StudyService studyService;
@@ -152,7 +151,7 @@ public class UserApiController {
 
 
         List<StudyFilterResponse> filteredStudy =
-                favoriteStudyService.getFavoriteStudyList(userPrincipal.getUserId());
+                studyService.getFavoriteStudyList(userPrincipal.getUserId());
         int totalCount = filteredStudy.size(); //전체 리스트 개수
 
         return ResponseEntity.status(200).body(
