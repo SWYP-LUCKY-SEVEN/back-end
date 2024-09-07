@@ -5,6 +5,7 @@ import com.example.swip.config.security.JwtDecoder;
 import com.example.swip.config.security.JwtIssuer;
 import com.example.swip.config.security.JwtToPrincipalConverter;
 import com.example.swip.config.security.UserPrincipal;
+import com.example.swip.dto.auth.JwtRefreshResponse;
 import com.example.swip.dto.auth.ValidateTokenResponse;
 import com.example.swip.dto.oauth.KakaoRegisterDto;
 import com.example.swip.dto.auth.LoginResponse;
@@ -12,6 +13,7 @@ import com.example.swip.dto.oauth.OauthKakaoResponse;
 import com.example.swip.entity.User;
 import com.example.swip.repository.UserRepository;
 import com.example.swip.service.AuthService;
+import com.example.swip.service.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final JwtDecoder jwtDecoder;
     private final JwtToPrincipalConverter jwtToPrincipalConverter;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -113,6 +117,28 @@ public class AuthServiceImpl implements AuthService {
             user = userRepository.save(kakaoRegisterDto.toEntity());
         }
         return user;
+    }
+
+    public JwtRefreshResponse JwtRefresh(UserPrincipal principal) {
+        if(!principal.getIsRefreshToken())
+            return null;
+
+        if(tokenBlacklistService.isTokenBlacklisted(principal.getToken()))
+            return null;
+
+        List<String> list = principal.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        var accessToken = jwtIssuer.issueAT(principal.getUserId(), principal.getEmail(), principal.getValidate(), list);
+        var refreshToken = jwtIssuer.issueRT(principal.getUserId(), principal.getEmail(), principal.getValidate(), list);
+
+        tokenBlacklistService.addTokenToBlacklist(principal.getToken());
+
+        return JwtRefreshResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 
     public ValidateTokenResponse compareJWTWithId(String jwt, long user_id) {
