@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class OauthKakaoResponse {
     private String accessToken;
+    private String refreshToken;
     private String nickname;
     private String email;
     private Long userId;

@@ -175,4 +175,3 @@ public class JoinRequestService {
             findStudy.get().updateCurParticipants("-", 1);
         }
     }
-}

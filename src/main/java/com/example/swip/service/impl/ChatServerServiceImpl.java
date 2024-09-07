@@ -46,6 +46,9 @@ public class ChatServerServiceImpl implements ChatServerService {
 
     @Value("${swyp.chat.server.uri}")
     private String reqUserURL;
+    @Value("${swyp.chat.server.chatRoom.url}")
+    private String reqStudyURL;
+
     public Pair<String, Integer> postUser(ChatProfileRequest chatProfileRequest){
         Pair<String, Integer> result;
         ObjectMapper objectMapper = new ObjectMapper();

@@ -65,7 +65,7 @@ public class AuthServiceImpl implements AuthService {
                 .toList();
         System.out.println("roles : " + roles);
 
-        var token = jwtIssuer.issue(principal.getUserId(), principal.getEmail(), principal.getValidate(), roles);
+        var token = jwtIssuer.issueAT(principal.getUserId(), principal.getEmail(), principal.getValidate(), roles);
         return LoginResponse.builder()
                 .accessToken(token)
                 .build();
@@ -90,14 +90,16 @@ public class AuthServiceImpl implements AuthService {
 
         List<String> list = new LinkedList<>(Arrays.asList(user.getRole()));
 
-        var token = jwtIssuer.issue(user.getId(), user.getEmail(), user.getValidate(), list);
+        var accessToken = jwtIssuer.issueAT(user.getId(), user.getEmail(), user.getValidate(), list);
+        var refreshToken = jwtIssuer.issueRT(user.getId(), user.getEmail(), user.getValidate(), list);
 
         String date = "";
         if (user.getJoin_date() != null)
             date = user.getJoin_date().format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
 
         return OauthKakaoResponse.builder()
-                .accessToken(token)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .nickname(user.getNickname())
                 .email(user.getEmail())
                 .userId(user.getId())
