@@ -17,11 +17,13 @@ public class JwtIssuer {
     private final JwtProperties properties;
     @Value("${security.jwt.refresh-token.expire.ttl-hours}")
     private long refreshTokenTtlHours;
+    @Value("${security.jwt.access-token.expire.ttl-minute}")
+    private long accessTokenTtlMinutes;
 
     public String issueAT(long userId, String email, String validate, List<String> roles) {
         return JWT.create()
                 .withSubject(String.valueOf(userId))
-                .withExpiresAt(Instant.now().plus(Duration.of(1, ChronoUnit.MINUTES))) // 보통 duration 짧게 하는데 튜토리얼이니까 1day
+                .withExpiresAt(Instant.now().plus(Duration.of(accessTokenTtlMinutes, ChronoUnit.MINUTES))) // 보통 duration 짧게 하는데 튜토리얼이니까 1day
                 .withClaim("e", email)
                 .withClaim("v", validate)
                 .withClaim("a", roles)
