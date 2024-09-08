@@ -15,6 +15,7 @@ public class JwtToPrincipalConverter {
                 .validate(jwt.getClaim("v").asString())
                 .authorities(extractAuthoritiesFromClaim(jwt))
                 .token(jwt.getToken()) //토큰 설정
+                .isRefreshToken(jwt.getClaim("isRT").asBoolean())
                 .build();
     }
 

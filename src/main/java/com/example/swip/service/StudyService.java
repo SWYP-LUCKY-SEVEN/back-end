@@ -51,7 +51,7 @@ public class StudyService {
     private final UserStudyService userStudyService;
     private final SearchService searchService;
     private final UserSearchService userSearchService;
-
+  
     private final ChatServerService chatServerService;
 
     //저장
@@ -77,7 +77,7 @@ public class StudyService {
 
 
         if (savedStudy!=null){ //채팅 서버에 저장
-            ChatPostStudyDataSync(writerId, savedStudy);
+            //ChatPostStudyDataSync(writerId, savedStudy);
         }
         //return
         return savedStudy.getId();
@@ -164,7 +164,7 @@ public class StudyService {
             UserStudy findUserStudy = userStudyService.saveUserStudy(user, study, false);
             //채팅방 멤버 추가 (chat server 연동)
             if (findUserStudy!=null) { //채팅 서버에 저장
-                ChatAddMemberDataSync(bearerToken, study, user);
+                //ChatAddMemberDataSync(bearerToken, study, user);
             }
             return ResponseEntity.status(200).body(DefaultResponse.builder()
                     .message("쇼터디에 가입했어요.")
@@ -345,7 +345,7 @@ public class StudyService {
             studyRepository.deleteById(studyId);
 
             //채팅 데이터 연동
-            ChatDeleteStudyDataSync(token, studyId);
+            //ChatDeleteStudyDataSync(token, studyId);
             return true;
         }
         return false;
@@ -373,7 +373,7 @@ public class StudyService {
             String title = studyUpdateRequest.getTitle();
             findStudy.updateStudy(findStudy, title, studyUpdateRequest.getDescription(), studyUpdateRequest.getTags());
             //채팅 서버에 저장
-            ChatUpdateStudyDataSync(userId, bearerToken, studyId, title);
+            //ChatUpdateStudyDataSync(userId, bearerToken, studyId, title);
             return true;
         }
         return false;

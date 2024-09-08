@@ -5,6 +5,7 @@ import com.example.swip.config.security.JwtDecoder;
 import com.example.swip.config.security.JwtIssuer;
 import com.example.swip.config.security.JwtToPrincipalConverter;
 import com.example.swip.config.security.UserPrincipal;
+import com.example.swip.dto.auth.JwtRefreshResponse;
 import com.example.swip.dto.auth.ValidateTokenResponse;
 import com.example.swip.dto.oauth.KakaoRegisterDto;
 import com.example.swip.dto.auth.LoginResponse;
@@ -12,6 +13,7 @@ import com.example.swip.dto.oauth.OauthKakaoResponse;
 import com.example.swip.entity.User;
 import com.example.swip.repository.UserRepository;
 import com.example.swip.service.AuthService;
+import com.example.swip.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final JwtDecoder jwtDecoder;
     private final JwtToPrincipalConverter jwtToPrincipalConverter;
+    private final RefreshTokenService refreshTokenService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -65,7 +69,7 @@ public class AuthServiceImpl implements AuthService {
                 .toList();
         System.out.println("roles : " + roles);
 
-        var token = jwtIssuer.issue(principal.getUserId(), principal.getEmail(), principal.getValidate(), roles);
+        var token = jwtIssuer.issueAT(principal.getUserId(), principal.getEmail(), principal.getValidate(), roles);
         return LoginResponse.builder()
                 .accessToken(token)
                 .build();
@@ -90,18 +94,16 @@ public class AuthServiceImpl implements AuthService {
 
         List<String> list = new LinkedList<>(Arrays.asList(user.getRole()));
 
-        var token = jwtIssuer.issue(user.getId(), user.getEmail(), user.getValidate(), list);
+        var accessToken = jwtIssuer.issueAT(user.getId(), user.getEmail(), user.getValidate(), list);
+        var refreshToken = jwtIssuer.issueRT(user.getId(), user.getEmail(), user.getValidate(), list);
+        refreshTokenService.addToken(refreshToken);
 
-        String date = "";
-        if (user.getJoin_date() != null)
-            date = user.getJoin_date().format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
+        Boolean isNewUser = (user.getJoin_date() == null)? true : false;
 
         return OauthKakaoResponse.builder()
-                .accessToken(token)
-                .nickname(user.getNickname())
-                .email(user.getEmail())
-                .userId(user.getId())
-                .joinDate(date)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .isNewUser(isNewUser)
                 .build();
     }
 
@@ -111,6 +113,29 @@ public class AuthServiceImpl implements AuthService {
             user = userRepository.save(kakaoRegisterDto.toEntity());
         }
         return user;
+    }
+
+    public JwtRefreshResponse JwtRefresh(UserPrincipal principal) {
+        if(!principal.getIsRefreshToken())
+            return null;
+
+        if(!refreshTokenService.isTokenValid(principal.getToken()))
+            return null;
+
+        List<String> list = principal.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        var accessToken = jwtIssuer.issueAT(principal.getUserId(), principal.getEmail(), principal.getValidate(), list);
+        var refreshToken = jwtIssuer.issueRT(principal.getUserId(), principal.getEmail(), principal.getValidate(), list);
+
+        refreshTokenService.addToken(refreshToken);
+        refreshTokenService.removeToken(principal.getToken());
+
+        return JwtRefreshResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 
     public ValidateTokenResponse compareJWTWithId(String jwt, long user_id) {

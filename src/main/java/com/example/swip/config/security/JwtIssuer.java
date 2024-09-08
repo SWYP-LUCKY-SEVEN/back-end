@@ -15,13 +15,25 @@ import java.util.List;
 public class JwtIssuer {
     private final JwtProperties properties;
 
-    public String issue(long userId, String email, String validate, List<String> roles) {
+    public String issueAT(long userId, String email, String validate, List<String> roles) {
         return JWT.create()
                 .withSubject(String.valueOf(userId))
-                .withExpiresAt(Instant.now().plus(Duration.of(7, ChronoUnit.DAYS))) // 보통 duration 짧게 하는데 튜토리얼이니까 1day
+                .withExpiresAt(Instant.now().plus(Duration.of(1, ChronoUnit.MINUTES))) // 보통 duration 짧게 하는데 튜토리얼이니까 1day
                 .withClaim("e", email)
                 .withClaim("v", validate)
                 .withClaim("a", roles)
+                .withClaim("isRT", false)
+                .sign(Algorithm.HMAC256(properties.getSecretKey()));
+    }
+
+    public String issueRT(long userId, String email, String validate, List<String> roles) {
+        return JWT.create()
+                .withSubject(String.valueOf(userId))
+                .withExpiresAt(Instant.now().plus(Duration.of(4, ChronoUnit.HOURS)))
+                .withClaim("e", email)
+                .withClaim("v", validate)
+                .withClaim("a", roles)
+                .withClaim("isRT", true)
                 .sign(Algorithm.HMAC256(properties.getSecretKey()));
     }
 }
