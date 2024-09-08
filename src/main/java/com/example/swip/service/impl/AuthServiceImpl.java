@@ -13,7 +13,7 @@ import com.example.swip.dto.oauth.OauthKakaoResponse;
 import com.example.swip.entity.User;
 import com.example.swip.repository.UserRepository;
 import com.example.swip.service.AuthService;
-import com.example.swip.service.TokenBlacklistService;
+import com.example.swip.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -38,7 +38,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final JwtDecoder jwtDecoder;
     private final JwtToPrincipalConverter jwtToPrincipalConverter;
-    private final TokenBlacklistService tokenBlacklistService;
+    private final RefreshTokenService refreshTokenService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -96,18 +96,14 @@ public class AuthServiceImpl implements AuthService {
 
         var accessToken = jwtIssuer.issueAT(user.getId(), user.getEmail(), user.getValidate(), list);
         var refreshToken = jwtIssuer.issueRT(user.getId(), user.getEmail(), user.getValidate(), list);
+        refreshTokenService.addToken(refreshToken);
 
-        String date = "";
-        if (user.getJoin_date() != null)
-            date = user.getJoin_date().format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
+        Boolean isNewUser = (user.getJoin_date() == null)? true : false;
 
         return OauthKakaoResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .nickname(user.getNickname())
-                .email(user.getEmail())
-                .userId(user.getId())
-                .joinDate(date)
+                .isNewUser(isNewUser)
                 .build();
     }
 
@@ -123,7 +119,7 @@ public class AuthServiceImpl implements AuthService {
         if(!principal.getIsRefreshToken())
             return null;
 
-        if(tokenBlacklistService.isTokenBlacklisted(principal.getToken()))
+        if(!refreshTokenService.isTokenValid(principal.getToken()))
             return null;
 
         List<String> list = principal.getAuthorities().stream()
@@ -133,7 +129,8 @@ public class AuthServiceImpl implements AuthService {
         var accessToken = jwtIssuer.issueAT(principal.getUserId(), principal.getEmail(), principal.getValidate(), list);
         var refreshToken = jwtIssuer.issueRT(principal.getUserId(), principal.getEmail(), principal.getValidate(), list);
 
-        tokenBlacklistService.addTokenToBlacklist(principal.getToken());
+        refreshTokenService.addToken(refreshToken);
+        refreshTokenService.removeToken(principal.getToken());
 
         return JwtRefreshResponse.builder()
                 .accessToken(accessToken)

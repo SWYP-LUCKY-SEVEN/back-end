@@ -22,6 +22,7 @@ public class JwtIssuer {
                 .withClaim("e", email)
                 .withClaim("v", validate)
                 .withClaim("a", roles)
+                .withClaim("isRT", false)
                 .sign(Algorithm.HMAC256(properties.getSecretKey()));
     }
 
@@ -32,6 +33,7 @@ public class JwtIssuer {
                 .withClaim("e", email)
                 .withClaim("v", validate)
                 .withClaim("a", roles)
+                .withClaim("isRT", true)
                 .sign(Algorithm.HMAC256(properties.getSecretKey()));
     }
 }

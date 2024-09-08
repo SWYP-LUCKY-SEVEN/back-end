@@ -12,10 +12,7 @@ import java.time.LocalDateTime;
 public class OauthKakaoResponse {
     private String accessToken;
     private String refreshToken;
-    private String nickname;
-    private String email;
-    private Long userId;
-    private String joinDate;
+    private Boolean isNewUser;
 }
 
 //@Data
