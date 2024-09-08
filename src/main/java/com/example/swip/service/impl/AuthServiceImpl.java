@@ -138,6 +138,18 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 
+    public Boolean JwtLogout(UserPrincipal principal) {
+        if(!principal.getIsRefreshToken())
+            return null;
+
+        if(!refreshTokenService.isTokenValid(principal.getToken()))
+            return null;
+
+        refreshTokenService.removeToken(principal.getToken());
+
+        return true;
+    }
+
     public ValidateTokenResponse compareJWTWithId(String jwt, long user_id) {
         DecodedJWT decodedJWT = jwtDecoder.decode(jwt);
         UserPrincipal userPrincipal = jwtToPrincipalConverter.convert(decodedJWT);

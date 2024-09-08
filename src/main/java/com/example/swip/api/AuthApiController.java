@@ -40,7 +40,7 @@ public class AuthApiController {
         return ResponseEntity.status(403).build();
     }
 
-    @Operation(summary = "JWT 재발급", description = "JWT가 만료되었을 경우, Refresh Token을 사용하여 재발급합니다.")
+    @Operation(summary = "JWT Access Token 재발급", description = "JWT가 만료되었을 경우, Refresh Token을 사용하여 재발급합니다.")
     @PostMapping("/auth/refresh/token")
     public ResponseEntity<JwtRefreshResponse> refreshJwt(
             @AuthenticationPrincipal UserPrincipal principal
@@ -48,6 +48,21 @@ public class AuthApiController {
         JwtRefreshResponse result  = authService.JwtRefresh(principal);
         if (result != null) {
             return ResponseEntity.status(201).body(result);
+        }
+        return ResponseEntity.status(401).build();
+    }
+
+    @Operation(summary = "JWT 로그아웃", description = "Refresh 토큰을 통해 요청하면, 해당 Refresh 토큰을 만료시킵니다.")
+    @DeleteMapping("/auth/logout")
+    public ResponseEntity<DefaultResponse> logoutJwt(
+            @AuthenticationPrincipal UserPrincipal principal
+    ){
+        Boolean result = authService.JwtLogout(principal);
+        if (result != null) {
+            return ResponseEntity.status(200).body(
+                    DefaultResponse.builder()
+                            .message("success")
+                            .build());
         }
         return ResponseEntity.status(401).build();
     }

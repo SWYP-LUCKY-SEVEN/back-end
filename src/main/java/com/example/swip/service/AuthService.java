@@ -18,6 +18,7 @@ public interface AuthService {
     public User kakaoRegisterUser(KakaoRegisterDto kakaoRegisterDto);
 
     public JwtRefreshResponse JwtRefresh(UserPrincipal principal);
+    public Boolean JwtLogout(UserPrincipal principal);
 
     public ValidateTokenResponse compareJWTWithId(String jwt, long user_id);
     public List<Long> getAllUserId();
