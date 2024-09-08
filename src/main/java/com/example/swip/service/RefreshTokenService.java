@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class RefreshTokenService {
 
-    @Value("${security.jwt.refresh-token.expire.ttl-second}")
-    private long ttlSeconds;
+    @Value("${security.jwt.refresh-token.expire.ttl-hours}")
+    private long ttlHours;
     @Autowired
     private StringRedisTemplate redisTemplate;
 
@@ -19,6 +19,7 @@ public class RefreshTokenService {
     }
 
     public void addToken(String token) {
+        long ttlSeconds = ttlHours * 60 * 60;
         // Redis에 토큰 저장
         redisTemplate.opsForValue().set("refreshToken:" + token, "valid", ttlSeconds);
     }
