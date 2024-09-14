@@ -33,7 +33,6 @@ public class StudyQuickService {
             return null;
         return QuickMatchFilter.builder()
                 .category(savedFilter.getCategory().getName())
-                .start_date(savedFilter.getStart_date())
                 .duration(savedFilter.getDuration())
                 .mem_scope(
                         QuickMatchFilter.longToMemScope(savedFilter.getMem_scope())
@@ -62,7 +61,6 @@ public class StudyQuickService {
             if (savedFilter != null)
                 savedFilter.updateFilter(
                         findCategory,
-                        quickMatchFilter.getStart_date(),
                         quickMatchFilter.getDuration(),
                         Tendency.stringToLong(quickMatchFilter.getTendency()),
                         QuickMatchFilter.memScopeToLong(quickMatchFilter.getMem_scope())

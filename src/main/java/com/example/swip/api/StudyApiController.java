@@ -3,6 +3,7 @@ package com.example.swip.api;
 import com.example.swip.config.security.UserPrincipal;
 import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.quick_match.QuickMatchFilter;
+import com.example.swip.dto.quick_match.QuickMatchRequest;
 import com.example.swip.dto.quick_match.QuickMatchResponse;
 import com.example.swip.dto.study.*;
 import com.example.swip.entity.Study;
@@ -85,7 +86,7 @@ public class StudyApiController {
     @Operation(summary = "신규/전체/마감임박 스터디 리스트 필터링 & 정렬 메소드",
             description = "{type}: recent/ all/ deadline 중 하나로 작성(각각 신규, 전체, 마감임박 페이지)\n\n" +
                     "requestParam으로 필터링 조건 작성. 각각은 모두 Null 허용. 모두 null이면 필터가 걸리지 않은 상태\n\n" +
-                    "검색기능 => queryString에 검색어 작성 (ex. '모각코')\n" +
+                    "검색기능 => search에 검색어 작성 (ex. '모각코')\n" +
                     "- 검색 : 로그인 한 유저(token 필요), 로그인 x 유저(token 필요x)\n" +
                     "- quickMatch는 빠른 매칭 선택시 'quick'으로 작성\n" +
                     "- category는 카테고리 (ex. '코딩', '수능', '대학생', '취업', '공무원', '임용', " +
@@ -102,7 +103,7 @@ public class StudyApiController {
                     schema = @Schema(defaultValue = "recent",
                             allowableValues = {"recent", "all", "deadline", "nonApproval"}))
             @PathVariable("type") String pageType,
-            @RequestParam(required = false) String queryString, //검색어
+            @RequestParam(required = false) String search, //검색어
             @Parameter(description = "참가 방식",
                     in = ParameterIn.QUERY,
                     schema = @Schema(defaultValue = "approval",
@@ -137,7 +138,7 @@ public class StudyApiController {
         // 필터링 조건 객체 생성
         StudyFilterCondition filterCondition = StudyFilterCondition.builder()
                 .page_type(pageType)
-                .query_string(queryString)
+                .search_string(search)
                 .quick_match(quickMatch)
                 .category(category)
                 .start_date(startDate)
@@ -152,7 +153,7 @@ public class StudyApiController {
         List<StudyFilterResponse> filteredStudy = new ArrayList<>();
 
         //로그인된 사용자인 & 검색어가 존재 하는 경우
-        if(queryString!=null && userDetails != null) {
+        if(search!=null && userDetails != null) {
             UserPrincipal principal = (UserPrincipal) userDetails;
             filteredStudy = studyService.findQueryAndFilteredStudy(filterCondition, principal.getUserId());
         } else { //필터링만 or 알 수 없는 사용자
@@ -196,40 +197,17 @@ public class StudyApiController {
 
         return ResponseEntity.status(200).body(quickMatchFilter);
     }
-    @Operation(summary = "빠른 매칭 - 상위 리스트 9개 반환 (JWT 필요)",
-            description = "page : 다시 매칭한 횟수\n" +
+
+    @Operation(summary = "빠른 매칭 - 매칭 내용 페이징 (JWT 필요)",
+            description = "page : 다시 매칭한 횟수, size : 한 페이지 출력 개수\n" +
                     "1. Save 옵션 True시 조건 저장. false시 조건 삭제\n" +
                     "2. 일치하는 조건은 (분야 > 시작일 > 진행기간 > 성향 > 인원) 순으로 정렬된다.\n" +
                     "3. mem_scope : 0 : 2명, 1 : 3~5명, 2 : 6~10명, 3: 11~20명")
     @PostMapping("/study/quick/match")
-    public Result postQuickMatchStudy(
+    public Result getQuickMatchStudy(
             @AuthenticationPrincipal UserPrincipal principal, // 권한 인증
-            @RequestParam boolean save,
-            @Parameter(description = "분야",
-                    in = ParameterIn.QUERY,
-                    schema = @Schema(defaultValue = "수능",
-                            allowableValues = {"수능", "대학생", "취업", "공무원", "임용",
-                                    "전문직", "어학", "자격증", "코딩", "모각공", "기타"}))
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) LocalDate startDate,
-            @Parameter(description = "기간",
-                    in = ParameterIn.QUERY,
-                    schema = @Schema(defaultValue = "1w",
-                            allowableValues = {"1w", "1m", "3m", "6m"}))
-            @RequestParam(required = false) String duration,
-            @Parameter(description = "0: 2명, 1: 3~5명, 2: 6~10명, 3: 11명 이상",
-                    in = ParameterIn.QUERY,
-                    array = @ArraySchema(schema = @Schema(type = "integer", format = "int64",
-                            allowableValues = {"0", "1", "2", "3"}),
-                            minItems = 0, maxItems = 4, uniqueItems = true))
-            @RequestParam(required = false) List<Long> mem_scope,
-            @Parameter(description = "성향",
-                    in = ParameterIn.QUERY,
-                    array = @ArraySchema(schema = @Schema(
-                            allowableValues = {"active", "feedback", "focus"}),
-                            minItems = 0, maxItems = 3, uniqueItems = true))
-            @RequestParam(required = false) List<String> tendency
-    )
+            @RequestBody QuickMatchRequest quickMatchRequest
+            )
     {
         if(principal == null)
             return null;
@@ -238,14 +216,13 @@ public class StudyApiController {
         // 필터링 조건 객체 생성
         QuickMatchFilter quickMatchFilter = QuickMatchFilter.builder()
                 .quick_match("quick")
-                .category(category)
-                .start_date(startDate)
-                .duration(duration)
-                .tendency(tendency)
-                .mem_scope(mem_scope)
+                .category(quickMatchRequest.getCategory())
+                .duration(quickMatchRequest.getDuration())
+                .tendency(quickMatchRequest.getTendency())
+                .mem_scope(quickMatchRequest.getMem_scope())
                 .build();
 
-        if(save == true)
+        if(quickMatchRequest.getSave())
             studyQuickService.saveQuickMatchFilter(quickMatchFilter, user_id);
         else
             studyQuickService.deleteQuickMatchFilter(user_id);
@@ -255,8 +232,8 @@ public class StudyApiController {
                 studyQuickService.quickFilteredStudy(
                         quickMatchFilter,
                         user_id,
-                        0L,
-                        9L);
+                        quickMatchRequest.getPage(),
+                        quickMatchRequest.getSize());
 
         int totalCount = filteredStudyList.size(); //전체 리스트 개수
 
