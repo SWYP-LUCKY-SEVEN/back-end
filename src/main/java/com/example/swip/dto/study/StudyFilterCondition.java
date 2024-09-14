@@ -27,6 +27,7 @@ public class StudyFilterCondition {
     private Integer min_participants;
     private Integer max_participants;
     private List<String> tendency;
+    private String recruit_status;
 
     private String order_type;
 

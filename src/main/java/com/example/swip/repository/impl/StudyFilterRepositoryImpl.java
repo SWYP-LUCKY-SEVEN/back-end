@@ -138,6 +138,12 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         if(filterCondition.getTendency()!=null) {
             builder.and(study.tendency.in(toTendencyList(filterCondition.getTendency())));
         }
+        //스터디 모집 상태(모집중, 모집완료)
+        if(filterCondition.getRecruit_status()!=null){
+            String str_recruit_status = filterCondition.getRecruit_status();
+            boolean bool_recruit_status = "true".equals(str_recruit_status);
+            builder.and(study.recruit_status.eq(bool_recruit_status));
+        }
         //정렬 조건 설정
         OrderSpecifier[] orderSpecifiers = createOrderSpecifier(filterCondition.getOrder_type());
 

@@ -94,6 +94,7 @@ public class StudyApiController {
                     "- minParticipants: 최소인원\n" +
                     "- maxParticipants: 최대인원\n" +
                     "- tendency: active, feedback, focus (여러개 선택시 ,로 연결하여 입력): \n" +
+                    "- recruit_status: false:모집완료, true:모집중\n"+
                     "- orderType(정렬 조건) : recent(최근 등록순), popular(인기순), deadline(마감 임박순), abcd(가나다순)\n")
     @GetMapping("/study/{type}/filter")
     public Result filterAndSortStudy(
@@ -129,6 +130,11 @@ public class StudyApiController {
                             allowableValues = {"active", "feedback", "focus"}),
                             minItems = 0, maxItems = 3, uniqueItems = true))
             @RequestParam(required = false) List<String> tendency, //active, feedback, focus
+            @Parameter(description = "모집상태",
+                    in = ParameterIn.QUERY,
+                    schema = @Schema(defaultValue = "true",
+                            allowableValues = {"true", "false"}))
+            @RequestParam(required = false) String recruitStatus,
             @Parameter(description = "정렬",
                     in = ParameterIn.QUERY,
                     schema = @Schema(defaultValue = "recent",
@@ -146,6 +152,7 @@ public class StudyApiController {
                 .min_participants(minParticipants)
                 .max_participants(maxParticipants)
                 .tendency(tendency)
+                .recruit_status(recruitStatus)
                 .order_type(orderType)
                 .build();
 
