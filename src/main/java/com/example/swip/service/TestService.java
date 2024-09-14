@@ -23,6 +23,6 @@ public class TestService {
             return null;
         List<String> list = new LinkedList<>(Arrays.asList(user.getRole()));
 
-        return jwtIssuer.issue(user.getId(),user.getEmail(),user.getValidate(),list);
+        return jwtIssuer.issueAT(user.getId(),user.getEmail(),user.getValidate(),list);
     }
 }

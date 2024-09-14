@@ -23,6 +23,7 @@ import com.mysema.commons.lang.Pair;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -41,10 +42,13 @@ public class ChatServerServiceImpl implements ChatServerService {
 
     private final StudyRepository studyRepository;
     private final UserRepository userRepository;
-    private final UserService userService;
     private final UserStudyRepository userStudyRepository;
+
     @Value("${swyp.chat.server.uri}")
     private String reqUserURL;
+    @Value("${swyp.chat.server.chatRoom.url}")
+    private String reqStudyURL;
+
     public Pair<String, Integer> postUser(ChatProfileRequest chatProfileRequest){
         Pair<String, Integer> result;
         ObjectMapper objectMapper = new ObjectMapper();
@@ -102,8 +106,6 @@ public class ChatServerServiceImpl implements ChatServerService {
     /**
      * 스터디 생성/수정/삭제 -> 채팅 생성/수정/삭제
      */
-    @Value("${swyp.chat.sever.chatRoom.url}")
-    private String reqStudyURL;
     @Override
     public Pair<String, Integer> postStudy(PostStudyRequest postStudyRequest) {
 
@@ -432,14 +434,29 @@ public class ChatServerServiceImpl implements ChatServerService {
 
     private Pair<String, Integer> setUserStatusAndReturnPair(Long userId, Integer status_num, ChatStatus chatStatus) {
 
-        User user = userService.findUserById(userId);
+        User user = userRepository.findById(userId).orElse(null);
         if(chatStatus==ChatStatus.Need_create || chatStatus==ChatStatus.Need_update) {
-            userService.setChatStatus(user, status_num, chatStatus);
+            setChatStatus(user, status_num, chatStatus);
             return Pair.of("Failed to sync user data", 500);
         } else{
-            userService.setChatStatus(user, status_num, chatStatus);
+            setChatStatus(user, status_num, chatStatus);
             return Pair.of("Complete to sync user data", 200);
         }
+    }
+
+    @Transactional
+    public void setChatStatus(Object obj, Integer status_num, ChatStatus defaultStatus) {
+        if (status_num == 200)
+            setUserOrStudyChatStatus(obj, ChatStatus.Clear);
+        else
+            setUserOrStudyChatStatus(obj, defaultStatus);
+    }
+
+    private void setUserOrStudyChatStatus(Object obj, ChatStatus status) {
+        if(obj instanceof User)
+            ((User) obj).setChat_status(status);
+        else if (obj instanceof Study)
+            ((Study) obj).setChat_status(status);
     }
 
     private Pair<String, Integer> setStudyStatusAndReturnPair(Long studyId, Integer status_num, ChatStatus chatStatus) {

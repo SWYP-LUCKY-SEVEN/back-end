@@ -4,8 +4,6 @@ import com.example.swip.config.security.UserPrincipal;
 import com.example.swip.dto.JoinRequest.JoinRequestResponse;
 import com.example.swip.entity.enumtype.JoinStatus;
 import com.example.swip.service.JoinRequestService;
-import com.example.swip.service.StudyService;
-import com.example.swip.service.UserStudyService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,8 +18,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JoinRequestApiController {
     private final JoinRequestService joinRequestService;
-    private final UserStudyService userStudyService;
-    private final StudyService studyService;
 
     @Operation(summary = "스터디 신청 내역 조회 (방장용)")
     @GetMapping("/joinRequest/{study_id}")
@@ -33,11 +29,10 @@ public class JoinRequestApiController {
         if(userPrincipal == null){
             return ResponseEntity.status(401).body(new Result<>(null, "로그인이 필요합니다."));
         }
-        Long ownerId = userPrincipal.getUserId();
-        Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
+        Long loginUserId = userPrincipal.getUserId();
 
         //방장이면 확인 가능하도록
-        if(ownerId.equals(findStudyOwner)){
+        if(joinRequestService.isStudyOwner(studyId, loginUserId)){
             List<JoinRequestResponse> responses= joinRequestService.getAllByStudyId(studyId);
             //dto 변환 & return
             return ResponseEntity.status(200).body(new Result(responses, "성공"));
@@ -51,13 +46,12 @@ public class JoinRequestApiController {
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable("study_id") Long studyId
     ){
-        Long ownerId = userPrincipal.getUserId();
-        Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
+        Long loginUserId = userPrincipal.getUserId();
         //방장이면 확인 가능하도록
         if(userPrincipal == null){
             return ResponseEntity.status(401).body(new Result(null,"로그인이 필요합니다."));
         }
-        if(ownerId.equals(findStudyOwner)){
+        if(joinRequestService.isStudyOwner(studyId, loginUserId)){
             Integer size = joinRequestService.getAllWaitingCountByStudyId(studyId);
             return ResponseEntity.status(200).body(new Result(size, "성공"));
         }
@@ -75,13 +69,12 @@ public class JoinRequestApiController {
         if(userPrincipal == null){
             return ResponseEntity.status(401).body("로그인이 필요합니다.");
         }
-        Long ownerId = userPrincipal.getUserId();
-        Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
-        if(!ownerId.equals(findStudyOwner)) {
+        Long loginUserId = userPrincipal.getUserId();
+        if(!joinRequestService.isStudyOwner(studyId, loginUserId)) {
             return ResponseEntity.status(403).body("방장이 아닙니다.");
         }
         //꽉찬 스터디의 경우 수락 불가
-        boolean isFull = studyService.isAlreadyFull(studyId);
+        boolean isFull = joinRequestService.isAlreadyFull(studyId);
         if(isFull){
             return ResponseEntity.status(200).body("참여 인원이 꽉 찼습니다.");
         }
@@ -110,9 +103,8 @@ public class JoinRequestApiController {
         if(userPrincipal == null){
             return ResponseEntity.status(401).body("로그인이 필요합니다.");
         }
-        Long ownerId = userPrincipal.getUserId();
-        Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
-        if(!ownerId.equals(findStudyOwner)) {
+        Long loginUserId = userPrincipal.getUserId();
+        if(!joinRequestService.isStudyOwner(studyId, loginUserId)) {
             return ResponseEntity.status(403).body("방장이 아닙니다.");
         }
         //이미 신청 수락/거부한 경우(더블체크)

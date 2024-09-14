@@ -1,5 +1,7 @@
 package com.example.swip.service;
 
+import com.example.swip.config.security.UserPrincipal;
+import com.example.swip.dto.auth.JwtRefreshResponse;
 import com.example.swip.dto.auth.ValidateTokenResponse;
 import com.example.swip.dto.oauth.KakaoRegisterDto;
 import com.example.swip.dto.auth.LoginResponse;
@@ -14,6 +16,9 @@ public interface AuthService {
 
     public String addUser(String email, String password);
     public User kakaoRegisterUser(KakaoRegisterDto kakaoRegisterDto);
+
+    public JwtRefreshResponse JwtRefresh(UserPrincipal principal);
+    public Boolean JwtLogout(UserPrincipal principal);
 
     public ValidateTokenResponse compareJWTWithId(String jwt, long user_id);
     public List<Long> getAllUserId();
