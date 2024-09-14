@@ -108,18 +108,18 @@ public class StudyService {
 
     //서비스 코드 내부에서 사용되는 로직
     private void handleSearch(StudyFilterCondition filterCondition, Long writerId){
-        if(filterCondition.getQuery_string()!=null && writerId!=null) {
+        if(filterCondition.getSearch_string()!=null && writerId!=null) {
             //검색어 중복 검색 -> 없으면 검색어 table에 저장 , search_user table에 저장
-            String queryString = filterCondition.getQuery_string();
-            Boolean isExist = searchService.KeywordIsExist(queryString);
+            String searchString = filterCondition.getSearch_string();
+            Boolean isExist = searchService.KeywordIsExist(searchString);
             if (!isExist) { //검색어가 없으면, 검색어 table에 저장 & search_user table에 저장
                 User user = userRepository.findById(writerId).orElse(null); //작성자 정보 조회
                 if(user == null) {
                     throw new RuntimeException("검색하는 유저가 존재하지 않습니다.");
                 }
 
-                searchService.saveKeyword(queryString);
-                Search findKeyword = searchService.findByKeyword(queryString);
+                searchService.saveKeyword(searchString);
+                Search findKeyword = searchService.findByKeyword(searchString);
                 userSearchService.saveSearchLog(findKeyword, user);
             } else if (isExist) { //검색어가 있으면, user_search에 있는지 조회/ 없으면 search_user table에만 저장 / 있으면 count 증가, updatetime 갱신
                 User user = userRepository.findById(writerId).orElse(null); //작성자 정보 조회
@@ -127,7 +127,7 @@ public class StudyService {
                     throw new RuntimeException("검색하는 유저가 존재하지 않습니다.");
                 }
 
-                Search findKeyword = searchService.findByKeyword(queryString); //검색어 조회
+                Search findKeyword = searchService.findByKeyword(searchString); //검색어 조회
 
                 Optional<UserSearch> findUserSearch = userSearchService.findById(writerId, findKeyword.getId()); //작성자별 검색어 정보 조회
 

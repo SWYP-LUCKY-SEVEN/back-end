@@ -12,22 +12,22 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SearchService {
     private final SearchRepository searchRepository;
-    public Boolean KeywordIsExist(String queryString) {
-        return searchRepository.existsByKeyword(queryString);
+    public Boolean KeywordIsExist(String searchString) {
+        return searchRepository.existsByKeyword(searchString);
     }
 
     @Transactional
-    public Long saveKeyword(String queryString) {
+    public Long saveKeyword(String searchString) {
         Search search = Search.builder()
-                .keyword(queryString)
+                .keyword(searchString)
                 .count(1L)
                 .build();
         Search savedSearch = searchRepository.save(search);
         return savedSearch.getId();
     }
 
-    public Search findByKeyword(String queryString) {
-        return searchRepository.findByKeyword(queryString);
+    public Search findByKeyword(String searchString) {
+        return searchRepository.findByKeyword(searchString);
     }
 
     public List<Search> findTop6ByCount(){
