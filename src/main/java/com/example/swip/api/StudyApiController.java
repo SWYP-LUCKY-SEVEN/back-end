@@ -40,7 +40,7 @@ public class StudyApiController {
             description = "스터디 생성 메소드입니다.[Athentication token 필요 - Baerer 타입]" +
                     "/ category: 정해진 분야(수능, 대학생, 코딩 ... 등 11가지) 중 선택된 1개의 값 문자열 형태로 넣기." +
                     "/ tags: 추가정보(태그)를 배열 형태로 넣기." +
-                    "/ duration: (미정: x, 일주일: 1w, 한 달: 1m, 3개월: 3m, 6개월: 6m) 같이 문자열의 형태로 넣기" +
+                    "/ duration: (미정: x, 하루: 1d, 일주일: 1w, 한 달: 1m, 3개월: 3m, 6개월: 6m) 같이 문자열의 형태로 넣기" +
                     "/ max_participants_num : 최대 참여 인원" +
                     "/ matching_tye: 스터디 신청 방식 - (빠른 매칭: quick or 인증제: approval) - 문자열로 넣기" +
                     "/ tendency: 스터디 성향: (활발한 대화와 동기부여 원해요: active, 학습 피드백을 주고 받고 싶어요: feedback, 조용히 집중하고 싶어요: focus)- 문자열로 넣기")
@@ -119,7 +119,7 @@ public class StudyApiController {
             @Parameter(description = "기간",
                     in = ParameterIn.QUERY,
                     schema = @Schema(defaultValue = "1w",
-                            allowableValues = {"1w", "1m", "3m", "6m"}))
+                            allowableValues = {"1d", "1w", "1m", "3m", "6m"}))
             @RequestParam(required = false) String duration,
             @RequestParam(required = false) Integer minParticipants,
             @RequestParam(required = false) Integer maxParticipants,
