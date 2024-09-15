@@ -373,7 +373,8 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         return tendency != null ? study.tendency.in(toTendencyList(tendency)) : null;
     }
 
-    //모든 스터디,
+    //모든 스터디
+    @Override
     public List<Study> progressStartStudy(LocalDate date) {
         List<Study> findStudy = queryFactory.select(study)
                 .from(study)
@@ -382,6 +383,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                 .fetch();
         return  findStudy;
     }
+    @Override
     public List<Study> completeExpiredStudy(LocalDate date) {
         List<Study> findStudy = queryFactory.select(study)
                 .from(study)
@@ -389,5 +391,14 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                         study.end_date.before(date))
                 .fetch();
         return  findStudy;
+    }
+    @Override
+    public List<Study> findRecent3() {
+        List<Study> findRecent3Study = queryFactory.select(study)
+                .from(study)
+                .orderBy(study.created_time.desc()) // created_time 기준 내림차순 정렬
+                .limit(3) // 최대 3개의 결과만 반환
+                .fetch();
+        return findRecent3Study;
     }
 }

@@ -55,7 +55,30 @@ public class StudyApiController {
 
         return saveStudy;
     }
+    @Operation(summary = "스터디 최신 3개 조회 메소드")
+    @GetMapping("/study/recent")
+    public Result getRecent3Study() {
+        List<Study> recent3studies = studyService.findRecent3studies();
 
+        //DTO로 변환
+        List<StudyResponse> result = recent3studies.stream()
+                .map(study -> new StudyResponse(
+                        study.getId(),
+                        study.getTitle(),
+                        study.getStart_date(),
+                        study.getEnd_date(),
+                        study.getMax_participants_num(),
+                        study.getCur_participants_num(),
+                        study.getCategory().getName(),
+                        study.getAdditionalInfos().stream()
+                                .map(additionalInfo -> additionalInfo.getName())
+                                .collect(Collectors.toList()))
+                )
+                .collect(Collectors.toList());
+
+        int totalCount = result.size(); //전체 리스트 개수
+        return new Result(result, totalCount); // TODO: Result 타입으로 한번 감싸기
+    }
     //조회
     @Operation(summary = "스터디 전체 리스트 조회 메소드")
     @GetMapping("/study")
