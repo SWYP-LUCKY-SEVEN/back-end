@@ -66,22 +66,27 @@ public class UserStudyService {
         return userStudyRepository.findOwnerByStudyId(studyId);
     }
 
+    public List<UserStudy> getUserRealation(Long studyId, Long userId){
+        List<UserStudy> allUsersByStudyId = userStudyRepository.findAllByStudyId(studyId);
+        return allUsersByStudyId;
+    }
+
     public List<UserStudy> getAllNotExitedUsersByStudyId(Long studyId){
         List<UserStudy> findUsers = userStudyRepository.findAllNotExitedUsersBySyudyId(studyId);
         return findUsers;
     }
 
     @Transactional
-    public ResponseEntity<String> getMemberOutOfStudy(Long studyId, Long userId, List<String> exitReason, String bearerToken) {
+    public ResponseEntity<DefaultResponse> getMemberOutOfStudy(Long studyId, Long userId, List<String> exitReason, String bearerToken) {
         //user_study update
         UserStudy findUserStudy = userStudyRepository.findById(new UserStudyId(userId, studyId)).orElse(null);
         if(findUserStudy == null){
-            return ResponseEntity.status(404).body("존재하지 않는 유저");
+            return ResponseEntity.status(404).body(new DefaultResponse("존재하지 않는 유저"));
         }
         ExitStatus exitStatus = findUserStudy.getExit_status();
         //이미 강퇴된 유저는 강퇴 안하고 끝내기
         if(exitStatus==ExitStatus.Leave || exitStatus==ExitStatus.Forced_leave){ //내보내진 유저
-            return ResponseEntity.status(200).body("강퇴된 유저");
+            return ResponseEntity.status(200).body(new DefaultResponse("강퇴된 유저"));
         }
         Study findSutdy = studyRepository.findById(studyId).orElse(null);
         if(findSutdy != null && exitStatus==ExitStatus.None) {
@@ -124,7 +129,7 @@ public class UserStudyService {
 //            );
 //            System.out.println("response = " + response);
         }
-        return ResponseEntity.status(200).body("스터디 멤버 내보내기 성공");
+        return ResponseEntity.status(200).body(new DefaultResponse("스터디 멤버 내보내기 성공"));
     }
 
     @Transactional

@@ -1,6 +1,7 @@
 package com.example.swip.api;
 
 import com.example.swip.config.security.UserPrincipal;
+import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.userStudy.UserStudyResponse;
 import com.example.swip.entity.User;
 import com.example.swip.entity.UserStudy;
@@ -50,7 +51,7 @@ public class UserStudyApiController {
 
     @Operation(summary = "스터디별 참여 멤버 내보내기 (방장용)")
     @PostMapping("/study/{study_id}/user/out")
-    private ResponseEntity<String> GetStudyMembetOut(
+    private ResponseEntity<DefaultResponse> GetStudyMembetOut(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable("study_id") Long studyId,
             @RequestParam Long userId,
@@ -59,13 +60,10 @@ public class UserStudyApiController {
         Long ownerId = userPrincipal.getUserId();
         Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
         if(!ownerId.equals(findStudyOwner)) {
-            return ResponseEntity.status(403).body("방장이 아닙니다.");
+            return ResponseEntity.status(403).body(new DefaultResponse("방장이 아닙니다."));
         }
         //TODO: 방장은 내보낼 수 없도록하는 로직 추가.
-        else {
-            ResponseEntity<String> response = userStudyService.getMemberOutOfStudy(studyId, userId, exitReasons, userPrincipal.getToken());
-            return response;
-        }
+        return userStudyService.getMemberOutOfStudy(studyId, userId, exitReasons, userPrincipal.getToken());
     }
 
     @Data
