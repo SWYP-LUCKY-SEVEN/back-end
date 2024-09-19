@@ -3,7 +3,9 @@ package com.example.swip.api;
 import com.example.swip.config.security.UserPrincipal;
 import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.quick_match.QuickMatchFilter;
+import com.example.swip.dto.quick_match.QuickMatchRequest;
 import com.example.swip.dto.quick_match.QuickMatchResponse;
+import com.example.swip.dto.quick_match.QuickMatchStudy;
 import com.example.swip.dto.study.*;
 import com.example.swip.entity.Study;
 import com.example.swip.service.*;
@@ -15,6 +17,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,10 +32,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class StudyApiController {
 
+    private static final Logger log = LoggerFactory.getLogger(StudyApiController.class);
     private final StudyService studyService;
     private final StudyQuickService studyQuickService;
-    private final FavoriteStudyService favoriteStudyService;
-    private final ChatServerService chatServerService;
+
     private final UserStudyService userStudyService;
 
     //저장
@@ -51,19 +55,6 @@ public class StudyApiController {
         Long writerId = principal.getUserId();
         System.out.println("writerId = " + writerId);
         Long saveStudy = studyService.saveStudy(dto, writerId);
-
-        Study findStudy = studyService.findStudyById(saveStudy);
-        if (findStudy!=null){ //채팅 서버에 저장
-            DefaultResponse defaultResponse = chatServerService.postStudy(
-                    PostStudyRequest.builder()
-                            .studyId(findStudy.getId().toString())
-                            .pk(writerId.toString())
-                            .name(findStudy.getTitle())
-                            .build()
-            );
-            System.out.println("postStudyResponse = " + defaultResponse.getMessage());
-            //TODO: 채팅 서버에 저장되었는지 여부 확인 후 조치
-        }
 
         return saveStudy;
     }
@@ -98,7 +89,7 @@ public class StudyApiController {
     @Operation(summary = "신규/전체/마감임박 스터디 리스트 필터링 & 정렬 메소드",
             description = "{type}: recent/ all/ deadline 중 하나로 작성(각각 신규, 전체, 마감임박 페이지)\n\n" +
                     "requestParam으로 필터링 조건 작성. 각각은 모두 Null 허용. 모두 null이면 필터가 걸리지 않은 상태\n\n" +
-                    "검색기능 => queryString에 검색어 작성 (ex. '모각코')\n" +
+                    "검색기능 => search에 검색어 작성 (ex. '모각코')\n" +
                     "- 검색 : 로그인 한 유저(token 필요), 로그인 x 유저(token 필요x)\n" +
                     "- quickMatch는 빠른 매칭 선택시 'quick'으로 작성\n" +
                     "- category는 카테고리 (ex. '코딩', '수능', '대학생', '취업', '공무원', '임용', " +
@@ -115,7 +106,7 @@ public class StudyApiController {
                     schema = @Schema(defaultValue = "recent",
                             allowableValues = {"recent", "all", "deadline", "nonApproval"}))
             @PathVariable("type") String pageType,
-            @RequestParam(required = false) String queryString, //검색어
+            @RequestParam(required = false) String search, //검색어
             @Parameter(description = "참가 방식",
                     in = ParameterIn.QUERY,
                     schema = @Schema(defaultValue = "approval",
@@ -150,7 +141,7 @@ public class StudyApiController {
         // 필터링 조건 객체 생성
         StudyFilterCondition filterCondition = StudyFilterCondition.builder()
                 .page_type(pageType)
-                .query_string(queryString)
+                .search_string(search)
                 .quick_match(quickMatch)
                 .category(category)
                 .start_date(startDate)
@@ -165,7 +156,7 @@ public class StudyApiController {
         List<StudyFilterResponse> filteredStudy = new ArrayList<>();
 
         //로그인된 사용자인 & 검색어가 존재 하는 경우
-        if(queryString!=null && userDetails != null) {
+        if(search!=null && userDetails != null) {
             UserPrincipal principal = (UserPrincipal) userDetails;
             filteredStudy = studyService.findQueryAndFilteredStudy(filterCondition, principal.getUserId());
         } else { //필터링만 or 알 수 없는 사용자
@@ -209,40 +200,17 @@ public class StudyApiController {
 
         return ResponseEntity.status(200).body(quickMatchFilter);
     }
-    @Operation(summary = "빠른 매칭 - 상위 리스트 9개 반환 (JWT 필요)",
-            description = "page : 다시 매칭한 횟수\n" +
+
+    @Operation(summary = "빠른 매칭 - 매칭 내용 페이징 (JWT 필요)",
+            description = "page : 다시 매칭한 횟수, size : 한 페이지 출력 개수\n" +
                     "1. Save 옵션 True시 조건 저장. false시 조건 삭제\n" +
                     "2. 일치하는 조건은 (분야 > 시작일 > 진행기간 > 성향 > 인원) 순으로 정렬된다.\n" +
                     "3. mem_scope : 0 : 2명, 1 : 3~5명, 2 : 6~10명, 3: 11~20명")
     @PostMapping("/study/quick/match")
-    public Result postQuickMatchStudy(
+    public ResponseEntity<QuickMatchResponse> getQuickMatchStudy(
             @AuthenticationPrincipal UserPrincipal principal, // 권한 인증
-            @RequestParam boolean save,
-            @Parameter(description = "분야",
-                    in = ParameterIn.QUERY,
-                    schema = @Schema(defaultValue = "수능",
-                            allowableValues = {"수능", "대학생", "취업", "공무원", "임용",
-                                    "전문직", "어학", "자격증", "코딩", "모각공", "기타"}))
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) LocalDate startDate,
-            @Parameter(description = "기간",
-                    in = ParameterIn.QUERY,
-                    schema = @Schema(defaultValue = "1w",
-                            allowableValues = {"1w", "1m", "3m", "6m"}))
-            @RequestParam(required = false) String duration,
-            @Parameter(description = "0: 2명, 1: 3~5명, 2: 6~10명, 3: 11명 이상",
-                    in = ParameterIn.QUERY,
-                    array = @ArraySchema(schema = @Schema(type = "integer", format = "int64",
-                            allowableValues = {"0", "1", "2", "3"}),
-                            minItems = 0, maxItems = 4, uniqueItems = true))
-            @RequestParam(required = false) List<Long> mem_scope,
-            @Parameter(description = "성향",
-                    in = ParameterIn.QUERY,
-                    array = @ArraySchema(schema = @Schema(
-                            allowableValues = {"active", "feedback", "focus"}),
-                            minItems = 0, maxItems = 3, uniqueItems = true))
-            @RequestParam(required = false) List<String> tendency
-    )
+            @RequestBody QuickMatchRequest quickMatchRequest
+            )
     {
         if(principal == null)
             return null;
@@ -251,29 +219,26 @@ public class StudyApiController {
         // 필터링 조건 객체 생성
         QuickMatchFilter quickMatchFilter = QuickMatchFilter.builder()
                 .quick_match("quick")
-                .category(category)
-                .start_date(startDate)
-                .duration(duration)
-                .tendency(tendency)
-                .mem_scope(mem_scope)
+                .category(quickMatchRequest.getCategory())
+                .duration(quickMatchRequest.getDuration())
+                .tendency(quickMatchRequest.getTendency())
+                .mem_scope(quickMatchRequest.getMem_scope())
                 .build();
 
-        if(save == true)
+        if(quickMatchRequest.getSave())
             studyQuickService.saveQuickMatchFilter(quickMatchFilter, user_id);
         else
             studyQuickService.deleteQuickMatchFilter(user_id);
 
         // 필터링된 결과 리스트
-        List<QuickMatchResponse> filteredStudyList =
+        QuickMatchResponse response =
                 studyQuickService.quickFilteredStudy(
                         quickMatchFilter,
                         user_id,
-                        0L,
-                        9L);
+                        quickMatchRequest.getPage(),
+                        quickMatchRequest.getSize());
 
-        int totalCount = filteredStudyList.size(); //전체 리스트 개수
-
-        return new Result(filteredStudyList,totalCount);
+        return ResponseEntity.status(200).body(response);
     }
 
     @Operation(summary = "찜 추가",
@@ -289,7 +254,7 @@ public class StudyApiController {
                             .message("로그인이 필요합니다.")
                             .build());
 
-        boolean status = favoriteStudyService.postFavoriteStudy( userPrincipal.getUserId(), studyId);
+        boolean status = studyService.postFavoriteStudy( userPrincipal.getUserId(), studyId);
         if(status)
             return ResponseEntity.status(200).body(
                     DefaultResponse.builder()
@@ -314,7 +279,7 @@ public class StudyApiController {
                             .message("로그인이 필요합니다.")
                             .build());
 
-        boolean status = favoriteStudyService.deleteFavoriteStudy(userPrincipal.getUserId(), studyId);
+        boolean status = studyService.deleteFavoriteStudy(userPrincipal.getUserId(), studyId);
         if(status)
             return ResponseEntity.status(200).body(
                     DefaultResponse.builder()
@@ -376,7 +341,7 @@ public class StudyApiController {
 
     @Operation(summary = "스터디 수정 API")
     @PatchMapping("/study/{study_id}")
-    public ResponseEntity<String> updateStudyDetail(
+    public ResponseEntity<DefaultResponse> updateStudyDetail(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable("study_id") Long studyId,
             @RequestBody StudyUpdateRequest studyUpdateRequest
@@ -384,33 +349,33 @@ public class StudyApiController {
         Long ownerId = userPrincipal.getUserId();
         Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
         if(!ownerId.equals(findStudyOwner)) {
-            return ResponseEntity.status(403).body("스터디를 수정할 권한이 없습니다.");
+            return ResponseEntity.status(403).body(new DefaultResponse("스터디를 수정할 권한이 없습니다."));
         }
-        Boolean updateStatus = studyService.updateStudy(studyId, studyUpdateRequest);
+        Boolean updateStatus = studyService.updateStudy(ownerId, userPrincipal.getToken(), studyId, studyUpdateRequest);
         if(updateStatus){
-            return ResponseEntity.status(200).body("스터디 수정 완료!");
+            return ResponseEntity.status(200).body(new DefaultResponse("스터디 수정 완료!"));
         }
-        return ResponseEntity.status(404).body("스터디 수정이 불가능합니다");
+        return ResponseEntity.status(404).body(new DefaultResponse("스터디 수정이 불가능합니다"));
     }
 
     //삭제
     @Operation(summary = "스터디 삭제 API")
     @DeleteMapping("/study/{study_id}")
-    public ResponseEntity<String> deleteStudy(
+    public ResponseEntity<DefaultResponse> deleteStudy(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable("study_id") Long studyId
     ){
         Long ownerId = userPrincipal.getUserId();
         Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
         if(!ownerId.equals(findStudyOwner)) {
-            return ResponseEntity.status(403).body("스터디를 삭제할 권한이 없습니다.");
+            return ResponseEntity.status(403).body(new DefaultResponse("스터디를 삭제할 권한이 없습니다."));
         }
 
-        boolean deletedStatus = studyService.deleteStudy(studyId);
+        boolean deletedStatus = studyService.deleteStudy(userPrincipal.getToken(), studyId);
         if(deletedStatus){
-            return ResponseEntity.status(200).body("삭제 성공!");
+            return ResponseEntity.status(200).body(new DefaultResponse("삭제 성공!"));
         }
-        return ResponseEntity.status(404).body("존재하지 않는 스터디");
+        return ResponseEntity.status(404).body(new DefaultResponse("존재하지 않는 스터디"));
     }
 
     // List 값을 Result로 한 번 감싸서 return하기 위한 class

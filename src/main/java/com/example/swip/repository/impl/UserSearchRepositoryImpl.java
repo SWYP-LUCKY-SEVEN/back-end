@@ -1,6 +1,7 @@
-package com.example.swip.repository;
+package com.example.swip.repository.impl;
 
 import com.example.swip.entity.UserSearch;
+import com.example.swip.repository.custom.UserSearchRepositoryCustom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 
@@ -10,7 +11,7 @@ import java.util.List;
 import static com.example.swip.entity.QSearch.search;
 import static com.example.swip.entity.QUserSearch.userSearch;
 
-public class UserSearchRepositoryImpl implements UserSearchRepositoryCustom{
+public class UserSearchRepositoryImpl implements UserSearchRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     public UserSearchRepositoryImpl(EntityManager em){
@@ -27,33 +28,15 @@ public class UserSearchRepositoryImpl implements UserSearchRepositoryCustom{
     }
 
     @Override
-    public List<UserSearch> findSearchById(Long userId) {
-        //("SELECT us FROM UserSearch us JOIN FETCH us.search s WHERE us.id.userId = :userId ORDER BY us.update_time DESC ") // default: 최근 검색순 정렬.
+    public List<UserSearch> findRecent10SearchById(Long userId) {
         List<UserSearch> response = queryFactory
                 .selectFrom(userSearch)
                 .leftJoin(userSearch.search, search).fetchJoin()
                 .where(userSearch.id.userId.eq(userId))
                 .orderBy(userSearch.update_time.desc())
+                .limit(10)
                 .fetch();
         return response;
     }
-
-    @Override
-    public List<UserSearch> findExpiredSearch(LocalDateTime time) {
-        List<UserSearch> userSearchList = queryFactory
-                .selectFrom(userSearch)
-                .where(userSearch.update_time.before(time.minusDays(7)))
-                .fetch();
-        return userSearchList;
-    }
-
-    @Override
-    public void deleteExpiredSearch(LocalDateTime time) {
-        queryFactory
-                .delete(userSearch)
-                .where(userSearch.update_time.before(time.minusDays(7)))
-                .execute();
-    }
-
 
 }

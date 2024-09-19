@@ -26,4 +26,8 @@ public class StudyTodoPublic {
     @OneToMany(mappedBy = "study_todo_public", cascade = CascadeType.REMOVE)
     @Builder.Default
     private List<StudyTodo> studyTodos = new ArrayList<>();
+
+    public void setContent(String content) {
+        this.content = content;
+    }
 }

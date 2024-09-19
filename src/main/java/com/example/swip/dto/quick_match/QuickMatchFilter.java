@@ -17,20 +17,19 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class QuickMatchFilter {
     private String page_type; //신규, 전체, 마감임박, 승인없음
-    private String query_string; // 검색 관련인듯함.
+    private String search; // 검색 관련.
     private String quick_match; //빠른매칭: quick, 승인제:false
 
     private String order_type;
 
     private String category;
-    private LocalDate start_date;
+    //private LocalDate start_date;
     private String duration;
     private List<String> tendency;
     private List<Long> mem_scope;
     //DTO 들어온 뒤, Study, StudyCategory, Category, AddicionalInfo, UserStudy 에 정보 저장해야함.
     public SavedQuickMatchFilter toQuickFilterEntity(User user, Category findCategory) {
         return SavedQuickMatchFilter.builder()
-                .start_date(this.start_date)
                 .duration(this.duration)
                 .mem_scope(memScopeToLong(this.mem_scope))
                 .tendency(Tendency.stringToLong(tendency))
@@ -39,17 +38,10 @@ public class QuickMatchFilter {
                 .build();
     }
     public static Long memScopeToLong(List<Long> mem_scope){
-        Long scopeLong = 0L;
-        for (Long value : mem_scope) {
-            Long addValue = 1L;
-            for (Long i = 0L; i < 4; i++) {
-                if (value == i) {
-                    scopeLong += addValue;
-                    break;
-                }
-                addValue = addValue << 1;
-            }
-        }
+        Long scopeLong = mem_scope.stream().reduce(0L, (acc, value) -> {
+            Long addValue = 1L << value;
+            return acc+addValue;
+        });
         return scopeLong;
     }
     public static List<Long> longToMemScope(Long scopeLong){

@@ -17,6 +17,7 @@ public class UserPrincipal implements UserDetails {
     private final String validate;
     @JsonIgnore
     private final String password;
+    private final Boolean isRefreshToken;
     private String token;
     private final Collection<? extends GrantedAuthority> authorities;
 

@@ -1,7 +1,9 @@
-package com.example.swip.repository;
+package com.example.swip.repository.custom;
 
 import com.example.swip.entity.Study;
 import com.example.swip.entity.UserStudy;
+import com.example.swip.entity.compositeKey.UserStudyId;
+import com.example.swip.entity.enumtype.ChatStatus;
 
 import java.util.List;
 
@@ -15,4 +17,6 @@ public interface UserStudyRepositoryCustom {
     List<UserStudy> findAllNotExitedUsersBySyudyId(Long studyId);
 
     List<UserStudy> findAllByStudyId(Long studyId);
+
+    UserStudy findUserStudyById(UserStudyId userStudyId);
 }

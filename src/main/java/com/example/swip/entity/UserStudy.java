@@ -1,6 +1,7 @@
 package com.example.swip.entity;
 
 import com.example.swip.entity.compositeKey.UserStudyId;
+import com.example.swip.entity.enumtype.ChatStatus;
 import com.example.swip.entity.enumtype.ExitReason;
 import com.example.swip.entity.enumtype.ExitStatus;
 import jakarta.persistence.*;
@@ -33,6 +34,7 @@ public class UserStudy {
     private boolean is_owner;
     private ExitStatus exit_status;
     private LocalDateTime join_date; //참여 날짜
+    private ChatStatus chat_status; //채팅 연결 상태
 
     @OneToMany(mappedBy = "userStudy", cascade = CascadeType.ALL)
     @Builder.Default
@@ -43,5 +45,8 @@ public class UserStudy {
     }
     public void setIs_owner(boolean is_owner) {
         this.is_owner = is_owner;
+    }
+    public void setChat_status(ChatStatus chat_status) {
+        this.chat_status = chat_status;
     }
 }

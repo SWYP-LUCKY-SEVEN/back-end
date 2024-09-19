@@ -41,7 +41,7 @@ public class UserSearchService {
 
     //user id로 유저별 최근 검색기록 조회
     public List<UserSearch> findRecentSearchByUserId(Long userId) {
-        return userSearchRepository.findSearchById(userId);
+        return userSearchRepository.findRecent10SearchById(userId);
     }
 
     //userId에 해당하는 검색어 모두 삭제
@@ -59,22 +59,5 @@ public class UserSearchService {
     public Optional<UserSearch> findById(Long writerId, Long searchId) {
         Optional<UserSearch> findUserSearch = userSearchRepository.findById(new UserSearchId(writerId, searchId));
         return findUserSearch;
-    }
-
-    @Transactional
-    public void deleteExpiredSearch(LocalDateTime time){
-        //7일 넘은 기록 찾기
-        List<UserSearch> expiredSearch = userSearchRepository.findExpiredSearch(time);
-        //해당 갯수만큼 search table에서 count 줄이기 -> count가 0 이하이면 그냥 0으로
-        expiredSearch.forEach(
-                userSearch -> {
-                    Optional<Search> findSearch = searchRepository.findById(userSearch.getId().getSearchId());
-                    if(findSearch.isPresent()){
-                        findSearch.get().reduceCount(userSearch.getCount());
-                    }
-                }
-        );
-        //7일 넘은 기록 삭제
-        userSearchRepository.deleteExpiredSearch(time);
     }
 }

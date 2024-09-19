@@ -27,7 +27,6 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 public class UserApiController {
-    private final FavoriteStudyService favoriteStudyService;
     private final ChatServerService chatServerService;
     private final UserService userService;
     private final StudyService studyService;
@@ -58,8 +57,6 @@ public class UserApiController {
             return ResponseEntity.status(400).build();
 
         Pair<String, Integer> response = chatServerService.postUser(postProfileDto.toChatUserProfileDto());
-        if(response.getSecond() != 200)
-            userService.setChatStatus(user, response.getSecond(), ChatStatus.Need_create);
 
         return ResponseEntity.status(200).body(DefaultResponse.builder()
                 .message("chat server response : "+response.getFirst() + response.getSecond().toString())
@@ -81,8 +78,6 @@ public class UserApiController {
             return ResponseEntity.status(400).build();
 
         Pair<String, Integer> response = chatServerService.updateUser(postProfileDto.toChatUserProfileDto());
-        if(response.getSecond() != 200)
-            userService.setChatStatus(user, response.getSecond(), ChatStatus.Need_update);
 
         return ResponseEntity.status(200).body(DefaultResponse.builder()
                 .message("chat server response : "+response.getFirst() + response.getSecond().toString())
@@ -156,7 +151,7 @@ public class UserApiController {
 
 
         List<StudyFilterResponse> filteredStudy =
-                favoriteStudyService.getFavoriteStudyList(userPrincipal.getUserId());
+                studyService.getFavoriteStudyList(userPrincipal.getUserId());
         int totalCount = filteredStudy.size(); //전체 리스트 개수
 
         return ResponseEntity.status(200).body(

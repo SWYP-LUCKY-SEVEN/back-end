@@ -1,8 +1,9 @@
-package com.example.swip.repository;
+package com.example.swip.repository.impl;
 
 import com.example.swip.entity.JoinRequest;
 import com.example.swip.entity.compositeKey.JoinRequestId;
 import com.example.swip.entity.enumtype.JoinStatus;
+import com.example.swip.repository.custom.JoinRequestRepositoryCustom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 
@@ -12,7 +13,7 @@ import java.util.List;
 import static com.example.swip.entity.QJoinRequest.joinRequest;
 import static com.example.swip.entity.QUser.user;
 
-public class JoinRequestRepositoryImpl implements JoinRequestRepositoryCustom{
+public class JoinRequestRepositoryImpl implements JoinRequestRepositoryCustom {
     private final JPAQueryFactory queryFactory;
     public JoinRequestRepositoryImpl(EntityManager em){
         this.queryFactory = new JPAQueryFactory(em);

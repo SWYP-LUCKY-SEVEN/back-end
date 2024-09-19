@@ -18,7 +18,7 @@ public class SavedQuickMatchFilter {
     @Id
     private Long id;
   
-    private LocalDate start_date; //시작 날짜
+    //private LocalDate start_date; //시작 날짜 // 2024-09-14 제거 요청
   
     private String duration;    //진행 기간
     private Long tendency; //스터디 성향
@@ -33,9 +33,8 @@ public class SavedQuickMatchFilter {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    public void updateFilter(Category category, LocalDate start_date, String duration, Long tendency, Long mem_scope) {
+    public void updateFilter(Category category, String duration, Long tendency, Long mem_scope) {
         this.category = category;
-        this.start_date = start_date;
         this.duration = duration;
         this.tendency = tendency;
         this.mem_scope = mem_scope;

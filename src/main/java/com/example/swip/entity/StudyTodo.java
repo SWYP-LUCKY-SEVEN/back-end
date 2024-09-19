@@ -36,4 +36,7 @@ public class StudyTodo {
     public void updateComplete(boolean complete) {
         this.complete = complete;
     }
+    public void setContent(String content) {
+        this.content = content;
+    }
 }

@@ -68,7 +68,7 @@ public class TesterApiController {
                 .build();
         Pair<String, Integer> response = chatServerService.postUser(chatProfileRequest);
         if(response.getSecond() != 200)
-            userService.setChatStatus(user, response.getSecond(), ChatStatus.Need_create);
+            chatServerService.setChatStatus(user, response.getSecond(), ChatStatus.Need_create);
 
         return ResponseEntity.status(response.getSecond()).body(
                 DefaultResponse.builder()
@@ -198,30 +198,30 @@ public class TesterApiController {
 
     @Operation(summary = "신청 수락 (테스트용)")
     @PostMapping("/test/joinRequest/accept")
-    private ResponseEntity<String> acceptJoinRequest(
+    private ResponseEntity<DefaultResponse> acceptJoinRequest(
             @RequestParam Long studyId,
             @RequestParam Long userId
     )
     {
         //꽉찬 스터디의 경우 수락 불가
-        boolean isFull = studyService.isAlreadyFull(studyId);
+        boolean isFull = joinRequestService.isAlreadyFull(studyId);
         if(isFull){
-            return ResponseEntity.status(200).body("참여 인원이 꽉 찼습니다.");
+            return ResponseEntity.status(200).body(new DefaultResponse("참여 인원이 꽉 찼습니다."));
         }
         //이미 신청 수락/거부한 경우(더블체크)
         JoinStatus joinStatus = joinRequestService.checkJoinStatusById(studyId, userId);
         if(joinStatus != null) {
             if (joinStatus.equals(JoinStatus.Approved)) {
-                return ResponseEntity.status(200).body("이미 수락된 사용자입니다.");
+                return ResponseEntity.status(200).body(new DefaultResponse("이미 수락된 사용자입니다."));
             } else if (joinStatus.equals(JoinStatus.Rejected)) {
-                return ResponseEntity.status(200).body("이미 거부된 사용자입니다.");
+                return ResponseEntity.status(200).body(new DefaultResponse("이미 거부된 사용자입니다."));
             }
         }
         Long admin_id = userStudyService.getOwnerbyStudyId(studyId);
         String jwt = testService.getJWTByUserID(admin_id);
 
         joinRequestService.acceptJoinRequest(studyId, userId, jwt);
-        return ResponseEntity.status(200).body("쇼터디에 가입했어요."); //신청 수락 성공
+        return ResponseEntity.status(200).body(new DefaultResponse("쇼터디에 가입했어요.")); //신청 수락 성공
     }
 
     @Operation(summary = "스터디 상태 강제 변경 (테스트용 API)",

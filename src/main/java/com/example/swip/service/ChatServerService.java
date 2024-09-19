@@ -1,10 +1,12 @@
 package com.example.swip.service;
 
-import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.chat.ChatProfileRequest;
+import com.example.swip.dto.chat.DeleteStudyRequest;
+import com.example.swip.dto.chat.UpdateStudyRequest;
 import com.example.swip.dto.study.PostStudyAddMemberRequest;
 import com.example.swip.dto.study.PostStudyDeleteMemberRequest;
 import com.example.swip.dto.study.PostStudyRequest;
+import com.example.swip.entity.enumtype.ChatStatus;
 import com.mysema.commons.lang.Pair;
 
 public interface ChatServerService {
@@ -12,9 +14,13 @@ public interface ChatServerService {
     Pair<String, Integer> updateUser(ChatProfileRequest chatProfileRequest);
     Pair<String, Integer> deleteUser(Long userId);
 
-    DefaultResponse postStudy(PostStudyRequest postStudyRequest);
+    Pair<String, Integer> postStudy(PostStudyRequest postStudyRequest);
+    Pair<String, Integer> updateStudy(UpdateStudyRequest postStudyRequest, Long userId);
+    Pair<String, Integer> deleteStudy(DeleteStudyRequest deleteStudyRequest);
 
-    DefaultResponse addStudyMember(PostStudyAddMemberRequest postStudymemberRequest);
+    void setChatStatus(Object obj, Integer status_num, ChatStatus defaultStatus);
 
-    DefaultResponse deleteStudyMember(PostStudyDeleteMemberRequest postStudymemberRequest);
+    Pair<String, Integer> addStudyMember(PostStudyAddMemberRequest postStudymemberRequest);
+    Pair<String, Integer> deleteStudyMember(PostStudyDeleteMemberRequest postStudymemberRequest);
+    Pair<String, Integer> deleteStudyMemberSelf(PostStudyDeleteMemberRequest postStudymemberRequest);
 }

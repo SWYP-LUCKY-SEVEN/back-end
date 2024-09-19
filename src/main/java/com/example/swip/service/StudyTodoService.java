@@ -6,16 +6,14 @@ import com.example.swip.dto.todo.PostTodoRequest;
 import com.example.swip.dto.todo.StudyMBOResponse;
 import com.example.swip.dto.todo.TodoDto;
 import com.example.swip.entity.*;
-import com.example.swip.repository.StudyTodoPublicRepository;
-import com.example.swip.repository.StudyTodoRepository;
-import com.example.swip.repository.StudyTodoRepositoryCustom;
-import com.example.swip.repository.UserRepository;
+import com.example.swip.entity.compositeKey.UserStudyId;
+import com.example.swip.repository.*;
+import com.example.swip.repository.custom.StudyTodoRepositoryCustom;
 import com.mysema.commons.lang.Pair;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Member;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,13 +25,13 @@ import java.util.stream.Collectors;
 public class StudyTodoService {
     private final StudyTodoRepository studyTodoRepository;
     private final UserRepository userRepository;
-    private final StudyService studyService;
     private final StudyTodoPublicRepository studyTodoPublicRepository;
     private final StudyTodoRepositoryCustom studyTodoRepositoryCustom;
-    private final UserStudyService userStudyService;
+    private final UserStudyRepository userStudyRepository;
+    private final StudyRepository studyRepository;
 
     private Pair<StudyTodo, Integer> isPermitted(Long study_id, Long user_id, Long todo_id){
-        Study study = studyService.findStudyById(study_id);
+        Study study = studyRepository.findById(study_id).orElse(null);
         User user = userRepository.findById(user_id).orElse(null);
         StudyTodo todo = studyTodoRepository.findById(todo_id).orElse(null);
         if(study == null || user == null || todo == null)
@@ -43,7 +41,6 @@ public class StudyTodoService {
             return new Pair<>(null, 403); //해당 목표에 권한이 없음
         return new Pair<>(todo, 200);
     }
-
 
     //////////////////
     // 목표 공통 기능 //
@@ -73,7 +70,7 @@ public class StudyTodoService {
     public StudyMBOResponse getMemberTodoList(Long studyId, String nickname, LocalDate date) {
         User user = userRepository.findByNickname(nickname);
 
-        if(!userStudyService.getAlreadyJoin(user.getId(), studyId)) //멤버가 아닐경우 null 반환
+        if(!getAlreadyJoin(user.getId(), studyId)) //멤버가 아닐경우 null 반환
             return null;
         //해당 날짜 스터디 멤버의 모든 todo를 가져옴.
         List<StudyTodo> memberTodoList = studyTodoRepositoryCustom.getMemberTodolist(studyId, user.getId(), date);
@@ -117,7 +114,7 @@ public class StudyTodoService {
         Long group_todo_size = studyTodoRepositoryCustom.getMemberTodoNumInGroup(studyId, date);
         Long group_complete_size = studyTodoRepositoryCustom.getCompleteTodoNumInGroup(studyId, date);
 
-        List<UserStudy> allUsersByStudyId = userStudyService.getAllUsersByStudyId(studyId);
+        List<UserStudy> allUsersByStudyId = userStudyRepository.findAllByStudyId(studyId);
 
         //개인 달성률 => 개인 Todo의 완료율
         int personal_percent = 0;
@@ -154,11 +151,12 @@ public class StudyTodoService {
     //그룹 공용 목표 생성.
     @Transactional
     public int postGroupTodo(Long study_id, Long user_id, PostTodoRequest request_todo) { //그룹 todo 추가
-        Study study = studyService.findStudyById(study_id);
+        Study study = studyRepository.findById(study_id).orElse(null);
         User user = userRepository.findById(user_id).orElse(null);
         if(study == null || user == null)
             return 404;
-        if(!userStudyService.isStudyOwner(study_id, user.getId()))
+
+        if(!isStudyOwner(study_id, user.getId()))
             return 403;
 
         StudyTodoPublic studyTodoPublic = studyTodoPublicRepository.save(
@@ -169,7 +167,7 @@ public class StudyTodoService {
                         .build()
         );
         //StudyTodoPublic에 추가
-        List<UserStudy> allUsersByStudyId = userStudyService.getAllUsersByStudyId(study_id);  //검증된 user
+        List<UserStudy> allUsersByStudyId = userStudyRepository.findAllByStudyId(study_id);  //검증된 user
         if(allUsersByStudyId == null)
             return 404;
         //스터디 참여 멤버 id를 모두 가져옴
@@ -194,7 +192,7 @@ public class StudyTodoService {
         if(user == null)
             return 401; //정상적인 유저가 아닙니다.
         //권한 확인.
-        if(!userStudyService.isStudyOwner(study_id, user.getId()))
+        if(!isStudyOwner(study_id, user.getId()))
             return 403; //스터디의 관리자가 아닙니다.
         //공용 todo목록에서 id 가져옴.
 
@@ -208,6 +206,27 @@ public class StudyTodoService {
         studyTodoPublicRepository.deleteById(parent_id);
         return 200;
     }
+    //그룹 공용 목표 수정 (방장만 사용가능) (todo_parent_id가 필수)
+    @Transactional
+    public int patchGroupTodo(Long study_id, Long user_id, Long parent_id, String new_text) {
+        User user = userRepository.findById(user_id).orElse(null);
+        if(user == null)
+            return 401; //정상적인 유저가 아닙니다.
+        //권한 확인.
+        if(!isStudyOwner(study_id, user.getId()))
+            return 403; //스터디의 관리자가 아닙니다.
+        //공용 todo목록에서 id 가져옴.
+
+        StudyTodoPublic group_todo = studyTodoPublicRepository.findById(parent_id).orElse(null);
+        if(group_todo == null)
+            return 404; //존재하는 그룹 todo가 아닙니다.
+
+        group_todo.setContent(new_text);
+        //해당 부모 id를 가진 목표 전부 수정
+        Long status = studyTodoRepositoryCustom.updateAllByGroupTodo(parent_id, new_text);
+        System.out.println(status);
+        return 200;
+    }
 
 
     ///////////////////////
@@ -217,11 +236,11 @@ public class StudyTodoService {
     @Transactional
     public int postPersonalTodo(Long study_id, Long user_id, PostTodoRequest request_todo) {
         //해당 스터디, 해당 멤버, 해당 날짜의 StudyTodo를 생성
-        Study study = studyService.findStudyById(study_id);
+        Study study = studyRepository.findById(study_id).orElse(null);
         User user = userRepository.findById(user_id).orElse(null);
         if(study == null || user == null)
             return 404;
-        if(!userStudyService.getAlreadyJoin(user_id, study_id))
+        if(!getAlreadyJoin(user_id, study_id))
             return 403; //해당 스터디의 멤버가 아닙니다
 
         studyTodoRepository.save(request_todo.toStudyTodo(study, user));
@@ -239,5 +258,30 @@ public class StudyTodoService {
         //해당 studytodo id의 목표 제거
         studyTodoRepository.deleteById(todo_id);
         return 200;
+    }
+
+    //개인 목표 수정
+    @Transactional
+    public int patchPersonalTodo(Long study_id, Long user_id, Long todo_id, String new_text) {
+        Pair<StudyTodo, Integer> pair = isPermitted(study_id, user_id, todo_id);
+        if (pair.getSecond() != 200)
+            return pair.getSecond();
+        if(pair.getFirst().getStudy_todo_public() != null)  //공용 ToDo는 개인이 수정할 수 없음.
+            return 403;
+        //해당 studytodo id의 목표 수정
+        pair.getFirst().setContent(new_text);
+
+        System.out.println(pair.getFirst().getContent());
+
+        return 200;
+    }
+
+    public boolean getAlreadyJoin(Long userId, Long studyId) {
+        return userStudyRepository.existsById(new UserStudyId(userId, studyId));
+    }
+
+    public boolean isStudyOwner(Long studyId, Long userId) {
+        Long ownerId = userStudyRepository.findOwnerByStudyId(studyId);
+        return userId.equals(ownerId);
     }
 }

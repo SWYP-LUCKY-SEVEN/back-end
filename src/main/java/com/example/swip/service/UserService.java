@@ -10,23 +10,16 @@ import com.example.swip.dto.user.PostProfileDto;
 import com.example.swip.entity.Evaluation;
 import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
-import com.example.swip.entity.UserStudy;
 import com.example.swip.entity.enumtype.ChatStatus;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.example.swip.repository.EvaluationRepository;
 import com.example.swip.repository.UserRepository;
-import com.example.swip.repository.UserRepositoryCustom;
-import com.example.swip.repository.UserStudyRepository;
-import com.mysema.commons.lang.Pair;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import com.example.swip.repository.custom.UserRepositoryCustom;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -85,6 +78,7 @@ public class UserService {
             return null;
         return getUserRating(user.getId());
     }
+
     public Integer getUserRating(Long userId) {
         List<Integer> evalList =userRepositoryCustom.getUserEvalList(userId);
         if (evalList == null || evalList.isEmpty())
@@ -109,16 +103,6 @@ public class UserService {
                 .user_id(user.getId())
                 .rating(rating)
                 .build();
-    }
-
-    public List<Study> getProposerStudyList(Long userId) {
-        return userRepositoryCustom.proposerStudyList(userId);
-    }
-    public List<Study> getProgressStudyList(Long userId) {
-        return userRepositoryCustom.processStudyList(userId);
-    }
-    public List<StudyFilterResponse> getRegisteredStudyList(Long userId, StudyProgressStatus.Element status) {
-        return userRepositoryCustom.registeredStudyList(userId, status);
     }
 
     public UserRelatedStudyCount getRelatedStudyNum(Long user_id) {
@@ -156,20 +140,6 @@ public class UserService {
         userRepositoryCustom.deleteExpiredUserData(time);
     }
 
-    @Transactional
-    public void setChatStatus(Object obj, Integer status_num, ChatStatus defaultStatus) {
-        if (status_num == 200)
-            setUserOrStudyChatStatus(obj, ChatStatus.Clear);
-        else
-            setUserOrStudyChatStatus(obj, defaultStatus);
-    }
-
-    private void setUserOrStudyChatStatus(Object obj, ChatStatus status) {
-        if(obj instanceof User)
-            ((User) obj).setChat_status(status);
-        else if (obj instanceof Study)
-            ((Study) obj).setChat_status(status);
-    }
 
     public String deleteUser(Long id) {
         if(userRepository.existsById(id))

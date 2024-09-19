@@ -1,17 +1,15 @@
-package com.example.swip.repository;
+package com.example.swip.repository.impl;
 
 import com.example.swip.entity.*;
-import com.querydsl.core.Tuple;
+import com.example.swip.repository.custom.StudyRepositoryCustom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
-
-import java.util.List;
 
 import static com.example.swip.entity.QAdditionalInfo.additionalInfo;
 import static com.example.swip.entity.QCategory.category;
 import static com.example.swip.entity.QStudy.study;
 
-public class StudyRespositoryImpl implements StudyRepositoryCustom{
+public class StudyRespositoryImpl implements StudyRepositoryCustom {
     private final JPAQueryFactory queryFactory;
     public StudyRespositoryImpl(EntityManager em){
         this.queryFactory = new JPAQueryFactory(em);
