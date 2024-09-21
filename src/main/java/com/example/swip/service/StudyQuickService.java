@@ -2,6 +2,7 @@ package com.example.swip.service;
 
 import com.example.swip.dto.quick_match.QuickMatchFilter;
 import com.example.swip.dto.quick_match.QuickMatchResponse;
+import com.example.swip.dto.quick_match.QuickMatchStudy;
 import com.example.swip.entity.Category;
 import com.example.swip.entity.SavedQuickMatchFilter;
 import com.example.swip.entity.User;
@@ -74,7 +75,7 @@ public class StudyQuickService {
         //return
         return savedFilter.getId();
     }
-    public List<QuickMatchResponse> quickFilteredStudy(QuickMatchFilter quickMatchFilter, Long userId, Long page, Long size){
+    public QuickMatchResponse quickFilteredStudy(QuickMatchFilter quickMatchFilter, Long userId, Long page, Long size){
         return studyRepository.quickFilterStudy(quickMatchFilter, userId, page, size);
     }
 }

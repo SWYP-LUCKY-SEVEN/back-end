@@ -5,10 +5,10 @@ import com.example.swip.dto.DefaultResponse;
 import com.example.swip.dto.quick_match.QuickMatchFilter;
 import com.example.swip.dto.quick_match.QuickMatchRequest;
 import com.example.swip.dto.quick_match.QuickMatchResponse;
+import com.example.swip.dto.quick_match.QuickMatchStudy;
 import com.example.swip.dto.study.*;
 import com.example.swip.entity.Study;
 import com.example.swip.service.*;
-import com.mysema.commons.lang.Pair;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -17,6 +17,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class StudyApiController {
 
+    private static final Logger log = LoggerFactory.getLogger(StudyApiController.class);
     private final StudyService studyService;
     private final StudyQuickService studyQuickService;
 
@@ -234,7 +237,7 @@ public class StudyApiController {
                     "2. 일치하는 조건은 (분야 > 시작일 > 진행기간 > 성향 > 인원) 순으로 정렬된다.\n" +
                     "3. mem_scope : 0 : 2명, 1 : 3~5명, 2 : 6~10명, 3: 11~20명")
     @PostMapping("/study/quick/match")
-    public Result getQuickMatchStudy(
+    public ResponseEntity<QuickMatchResponse> getQuickMatchStudy(
             @AuthenticationPrincipal UserPrincipal principal, // 권한 인증
             @RequestBody QuickMatchRequest quickMatchRequest
             )
@@ -258,16 +261,14 @@ public class StudyApiController {
             studyQuickService.deleteQuickMatchFilter(user_id);
 
         // 필터링된 결과 리스트
-        List<QuickMatchResponse> filteredStudyList =
+        QuickMatchResponse response =
                 studyQuickService.quickFilteredStudy(
                         quickMatchFilter,
                         user_id,
                         quickMatchRequest.getPage(),
                         quickMatchRequest.getSize());
 
-        int totalCount = filteredStudyList.size(); //전체 리스트 개수
-
-        return new Result(filteredStudyList,totalCount);
+        return ResponseEntity.status(200).body(response);
     }
 
     @Operation(summary = "찜 추가",
@@ -370,7 +371,7 @@ public class StudyApiController {
 
     @Operation(summary = "스터디 수정 API")
     @PatchMapping("/study/{study_id}")
-    public ResponseEntity<String> updateStudyDetail(
+    public ResponseEntity<DefaultResponse> updateStudyDetail(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable("study_id") Long studyId,
             @RequestBody StudyUpdateRequest studyUpdateRequest
@@ -378,33 +379,33 @@ public class StudyApiController {
         Long ownerId = userPrincipal.getUserId();
         Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
         if(!ownerId.equals(findStudyOwner)) {
-            return ResponseEntity.status(403).body("스터디를 수정할 권한이 없습니다.");
+            return ResponseEntity.status(403).body(new DefaultResponse("스터디를 수정할 권한이 없습니다."));
         }
         Boolean updateStatus = studyService.updateStudy(ownerId, userPrincipal.getToken(), studyId, studyUpdateRequest);
         if(updateStatus){
-            return ResponseEntity.status(200).body("스터디 수정 완료!");
+            return ResponseEntity.status(200).body(new DefaultResponse("스터디 수정 완료!"));
         }
-        return ResponseEntity.status(404).body("스터디 수정이 불가능합니다");
+        return ResponseEntity.status(404).body(new DefaultResponse("스터디 수정이 불가능합니다"));
     }
 
     //삭제
     @Operation(summary = "스터디 삭제 API")
     @DeleteMapping("/study/{study_id}")
-    public ResponseEntity<String> deleteStudy(
+    public ResponseEntity<DefaultResponse> deleteStudy(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable("study_id") Long studyId
     ){
         Long ownerId = userPrincipal.getUserId();
         Long findStudyOwner = userStudyService.getOwnerbyStudyId(studyId);
         if(!ownerId.equals(findStudyOwner)) {
-            return ResponseEntity.status(403).body("스터디를 삭제할 권한이 없습니다.");
+            return ResponseEntity.status(403).body(new DefaultResponse("스터디를 삭제할 권한이 없습니다."));
         }
 
         boolean deletedStatus = studyService.deleteStudy(userPrincipal.getToken(), studyId);
         if(deletedStatus){
-            return ResponseEntity.status(200).body("삭제 성공!");
+            return ResponseEntity.status(200).body(new DefaultResponse("삭제 성공!"));
         }
-        return ResponseEntity.status(404).body("존재하지 않는 스터디");
+        return ResponseEntity.status(404).body(new DefaultResponse("존재하지 않는 스터디"));
     }
 
     // List 값을 Result로 한 번 감싸서 return하기 위한 class

@@ -3,6 +3,7 @@ package com.example.swip.repository.impl;
 import com.example.swip.dto.UserRelationship;
 import com.example.swip.dto.quick_match.QuickMatchFilter;
 import com.example.swip.dto.quick_match.QuickMatchResponse;
+import com.example.swip.dto.quick_match.QuickMatchStudy;
 import com.example.swip.dto.study.StudyFilterCondition;
 import com.example.swip.dto.study.StudyFilterResponse;
 import com.example.swip.entity.*;
@@ -217,7 +218,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
     }
 
     @Override
-    public List<QuickMatchResponse> quickFilterStudy(QuickMatchFilter quickMatchFilter, Long userId, Long page, Long size) {
+    public QuickMatchResponse quickFilterStudy(QuickMatchFilter quickMatchFilter, Long userId, Long page, Long size) {
         QCategory category = QCategory.category;
         QUserStudy userStudy = QUserStudy.userStudy;
         QFavoriteStudy favoriteStudy = QFavoriteStudy.favoriteStudy;
@@ -229,12 +230,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                         .when(study.category.name.eq(quickMatchFilter.getCategory())).then(1)
                         .otherwise(2)
                 : null ;  //나머지는 2로 취급;
-        // 시작일 정렬
-//        NumberExpression<Integer> startDateRank = quickMatchFilter.getDuration() != null ?
-//                new CaseBuilder()
-//                        .when(study.start_date.eq(quickMatchFilter.getStart_date())).then(1)
-//                        .otherwise(2)
-//                :null;
+
         // 진행 기간 정렬
         NumberExpression<Integer> durationRank = quickMatchFilter.getDuration() != null ?
                 new CaseBuilder()
@@ -254,11 +250,9 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                         .otherwise(2)
                 :null;
 
-        // 분야 > 시작일 > 진행기간 > 성향 > 인원
+        // 분야 > 진행기간 > 성향 > 인원
         List<OrderSpecifier> orderSpecifiers = new ArrayList<>();
-        //우선순위는 어떻게 이뤄질까?
         if(categoryRank != null) orderSpecifiers.add(categoryRank.asc());    //분야
-        //if(startDateRank != null) orderSpecifiers.add(startDateRank.asc());   //시작일
         if(durationRank != null) orderSpecifiers.add(durationRank.asc());    //진행기간
         if(tendencyRank != null) orderSpecifiers.add(tendencyRank.asc());    //성향
         if(memberRank != null) orderSpecifiers.add(memberRank.asc());    //인원
@@ -297,12 +291,19 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                 .limit(size+1)   //최대 조회 건수
                 .fetch();
 
-        Boolean hasNextPage = false;
-        if (size < findStudy.size()) {
-            hasNextPage = true;
-        }
+        // 순서 상관없이 결과의 개수를 통해 다음 페이지 존재 여부 확인
+        Boolean hasNextPage = queryFactory
+                .select(study)
+                .from(study)
+                .where(builder.and(study.start_date.after(LocalDate.now().minusDays(1))),
+                        study.matching_type.eq(MatchingType.Element.Quick),
+                        study.id.notIn(userStudySubQuery))  //첫 BooleanExpression는 무조건 AND 연산이 적용된다.
+                .distinct()
+                .offset((page+1)*size)
+                .limit(1)
+                .fetchOne() != null;
 
-        List<QuickMatchResponse> responses = findStudy.stream()
+        List<QuickMatchStudy> data = findStudy.stream()
                 .map(tuple -> {
                     Study s = tuple.get(study);
                     UserRelationship user_relation =
@@ -311,7 +312,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                                     tuple.get(userStudy.isNotNull()),
                                     tuple.get(favoriteStudy.isNotNull())
                             );
-                    return new QuickMatchResponse(
+                    return new QuickMatchStudy(
                             s.getId(),
                             MatchingType.toString(s.getMatching_type()),
                             s.getTitle(),
@@ -329,9 +330,16 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                             user_relation
                     );
                 })
+                .limit(size)
                 .collect(Collectors.toList());
 
-        return responses;
+        QuickMatchResponse response = QuickMatchResponse.builder()
+                .data(data)
+                .hasNextPage(hasNextPage)
+                .totalCount(data.size())
+                .build();
+
+        return response;
     }
 
     private BooleanBuilder includeMemberNumber(List<Long> mem_scope) {
