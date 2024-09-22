@@ -31,4 +31,21 @@ public class StudyFilterCondition {
 
     private String order_type;
 
+    @Override
+    public String toString() {
+        return "StudyFilterCondition{" +
+                "page_type='" + page_type + '\'' +
+                ", search_string='" + search_string + '\'' +
+                ", quick_match='" + quick_match + '\'' +
+                ", category='" + category + '\'' +
+                ", start_date=" + start_date +
+                ", duration=" + duration +
+                ", min_participants=" + min_participants +
+                ", max_participants=" + max_participants +
+                ", tendency='" + tendency + '\'' +
+                ", recruit_status='" + recruit_status + '\'' +
+                ", order_type='" + order_type + '\'' +
+                '}';
+    }
+
 }

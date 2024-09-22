@@ -62,7 +62,7 @@ public class StudySaveRequest {
         } else if (duration.equals("6m")) {
             end_date = start_date.plusMonths(6);
         } else if (duration.equals("1d")) {
-            end_date = start_date.plusDays(1);
+            end_date = start_date;
         }
         // duration == 상시 -> end_date = null
         return end_date;
