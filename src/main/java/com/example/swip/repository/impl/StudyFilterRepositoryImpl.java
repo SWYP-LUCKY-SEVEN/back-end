@@ -31,6 +31,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.example.swip.entity.QStudy.study;
 
@@ -38,6 +40,7 @@ import static com.example.swip.entity.QStudy.study;
 public class StudyFilterRepositoryImpl implements StudyFilterRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final Logger logger = LoggerFactory.getLogger(StudyFilterRepositoryImpl.class);
 
     public static int[][] scope = {{2, 2}, {3, 5}, {6, 10}, {11, 20}};
     public StudyFilterRepositoryImpl(EntityManager em){
@@ -49,6 +52,8 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         QCategory category = QCategory.category;
 
         BooleanBuilder builder = new BooleanBuilder();
+
+        logger.info("Received filterCondition: {}", filterCondition);
 
         /**
          * 리스트 종류 구분 - 신규, 전체, 마감임박, 승인 없는 / 검색 결과 => path variable로 받기
@@ -138,6 +143,13 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         //성향
         if(filterCondition.getTendency()!=null) {
             builder.and(study.tendency.in(toTendencyList(filterCondition.getTendency())));
+        }
+        //스터디 모집 상태(모집중, 모집완료)
+        if(filterCondition.getRecruit_status()!=null){
+            String str_status = filterCondition.getRecruit_status();
+            boolean bool_recruit_status = str_status.equals("true")? true : false;
+            builder.and(study.recruit_status.eq(bool_recruit_status));
+
         }
         //정렬 조건 설정
         OrderSpecifier[] orderSpecifiers = createOrderSpecifier(filterCondition.getOrder_type());
@@ -375,7 +387,8 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         return tendency != null ? study.tendency.in(toTendencyList(tendency)) : null;
     }
 
-    //모든 스터디,
+    //모든 스터디
+    @Override
     public List<Study> progressStartStudy(LocalDate date) {
         List<Study> findStudy = queryFactory.select(study)
                 .from(study)
@@ -384,6 +397,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                 .fetch();
         return  findStudy;
     }
+    @Override
     public List<Study> completeExpiredStudy(LocalDate date) {
         List<Study> findStudy = queryFactory.select(study)
                 .from(study)
@@ -391,5 +405,14 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                         study.end_date.before(date))
                 .fetch();
         return  findStudy;
+    }
+    @Override
+    public List<Study> findRecent3() {
+        List<Study> findRecent3Study = queryFactory.select(study)
+                .from(study)
+                .orderBy(study.created_time.desc()) // created_time 기준 내림차순 정렬
+                .limit(3) // 최대 3개의 결과만 반환
+                .fetch();
+        return findRecent3Study;
     }
 }

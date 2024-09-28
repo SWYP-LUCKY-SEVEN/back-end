@@ -83,6 +83,11 @@ public class StudyService {
         return savedStudy.getId();
     }
 
+    public List<Study> findRecent3studies() {
+        List<Study> allStudies = studyRepository.findRecent3();
+        return allStudies;
+    }
+
     //조회
     public List<Study> findAllStudies(){
         List<Study> allStudies = studyRepository.findAll();

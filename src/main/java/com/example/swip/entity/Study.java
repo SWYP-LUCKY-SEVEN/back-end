@@ -90,6 +90,13 @@ public class Study {
         } else if (Objects.equals(sign, "-") && this.cur_participants_num > 0) {
             this.cur_participants_num -= num;
         }
+
+        // 참가자가 최대치에 도달하면 모집 상태를 false로, 그 외에는 true로 변경
+        if(this.cur_participants_num == this.max_participants_num) {
+            this.recruit_status = false;
+        } else {
+            this.recruit_status = true;
+        }
     }
 
     public void updateViewcount(){

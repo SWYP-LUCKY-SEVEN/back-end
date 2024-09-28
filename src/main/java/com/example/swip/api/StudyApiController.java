@@ -43,7 +43,7 @@ public class StudyApiController {
             description = "스터디 생성 메소드입니다.[Athentication token 필요 - Baerer 타입]" +
                     "/ category: 정해진 분야(수능, 대학생, 코딩 ... 등 11가지) 중 선택된 1개의 값 문자열 형태로 넣기." +
                     "/ tags: 추가정보(태그)를 배열 형태로 넣기." +
-                    "/ duration: (미정: x, 일주일: 1w, 한 달: 1m, 3개월: 3m, 6개월: 6m) 같이 문자열의 형태로 넣기" +
+                    "/ duration: (미정: x, 하루: 1d, 일주일: 1w, 한 달: 1m, 3개월: 3m, 6개월: 6m) 같이 문자열의 형태로 넣기" +
                     "/ max_participants_num : 최대 참여 인원" +
                     "/ matching_tye: 스터디 신청 방식 - (빠른 매칭: quick or 인증제: approval) - 문자열로 넣기" +
                     "/ tendency: 스터디 성향: (활발한 대화와 동기부여 원해요: active, 학습 피드백을 주고 받고 싶어요: feedback, 조용히 집중하고 싶어요: focus)- 문자열로 넣기")
@@ -58,7 +58,30 @@ public class StudyApiController {
 
         return saveStudy;
     }
+    @Operation(summary = "스터디 최신 3개 조회 메소드")
+    @GetMapping("/study/recent")
+    public Result getRecent3Study() {
+        List<Study> recent3studies = studyService.findRecent3studies();
 
+        //DTO로 변환
+        List<StudyResponse> result = recent3studies.stream()
+                .map(study -> new StudyResponse(
+                        study.getId(),
+                        study.getTitle(),
+                        study.getStart_date(),
+                        study.getEnd_date(),
+                        study.getMax_participants_num(),
+                        study.getCur_participants_num(),
+                        study.getCategory().getName(),
+                        study.getAdditionalInfos().stream()
+                                .map(additionalInfo -> additionalInfo.getName())
+                                .collect(Collectors.toList()))
+                )
+                .collect(Collectors.toList());
+
+        int totalCount = result.size(); //전체 리스트 개수
+        return new Result(result, totalCount); // TODO: Result 타입으로 한번 감싸기
+    }
     //조회
     @Operation(summary = "스터디 전체 리스트 조회 메소드")
     @GetMapping("/study")
@@ -97,6 +120,7 @@ public class StudyApiController {
                     "- minParticipants: 최소인원\n" +
                     "- maxParticipants: 최대인원\n" +
                     "- tendency: active, feedback, focus (여러개 선택시 ,로 연결하여 입력): \n" +
+                    "- recruit_status: false:모집완료, true:모집중\n"+
                     "- orderType(정렬 조건) : recent(최근 등록순), popular(인기순), deadline(마감 임박순), abcd(가나다순)\n")
     @GetMapping("/study/{type}/filter")
     public Result filterAndSortStudy(
@@ -122,7 +146,7 @@ public class StudyApiController {
             @Parameter(description = "기간",
                     in = ParameterIn.QUERY,
                     schema = @Schema(defaultValue = "1w",
-                            allowableValues = {"1w", "1m", "3m", "6m"}))
+                            allowableValues = {"1d", "1w", "1m", "3m", "6m"}))
             @RequestParam(required = false) String duration,
             @RequestParam(required = false) Integer minParticipants,
             @RequestParam(required = false) Integer maxParticipants,
@@ -132,6 +156,11 @@ public class StudyApiController {
                             allowableValues = {"active", "feedback", "focus"}),
                             minItems = 0, maxItems = 3, uniqueItems = true))
             @RequestParam(required = false) List<String> tendency, //active, feedback, focus
+            @Parameter(description = "모집상태",
+                    in = ParameterIn.QUERY,
+                    schema = @Schema(defaultValue = "true",
+                            allowableValues = {"true", "false"}))
+            @RequestParam(required = false) String recruitStatus,
             @Parameter(description = "정렬",
                     in = ParameterIn.QUERY,
                     schema = @Schema(defaultValue = "recent",
@@ -149,6 +178,7 @@ public class StudyApiController {
                 .min_participants(minParticipants)
                 .max_participants(maxParticipants)
                 .tendency(tendency)
+                .recruit_status(recruitStatus)
                 .order_type(orderType)
                 .build();
 

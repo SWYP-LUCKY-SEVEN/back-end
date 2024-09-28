@@ -9,4 +9,5 @@ public interface StudyRepositoryCustom {
 
     Study findStudyDetailById(Long id);
     Study findStudyEditDetailById(Long id);
+
 }

@@ -15,5 +15,5 @@ public interface StudyFilterRepository {
     QuickMatchResponse quickFilterStudy(QuickMatchFilter quickMatchFilter, Long userId, Long page, Long size);
     List<Study> progressStartStudy(LocalDate date);
     List<Study> completeExpiredStudy(LocalDate date);
-
+    List<Study> findRecent3();
 }
