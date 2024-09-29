@@ -1,6 +1,7 @@
 package com.example.swip.service;
 
 import com.example.swip.dto.DefaultResponse;
+import com.example.swip.dto.UserRelationship;
 import com.example.swip.dto.study.PostStudyAddMemberRequest;
 import com.example.swip.dto.study.PostStudyDeleteMemberRequest;
 import com.example.swip.entity.*;
@@ -162,6 +163,10 @@ public class UserStudyService {
                         .build()
         );
         System.out.println("chat data sync - member self deleted response = " + response);
+    }
+
+    public UserRelationship findRelationByUserIdAndStudyId(Long userId, Long studyId) {
+        return userStudyRepository.findRelationByUserIdAndStudyId(userId, studyId);
     }
 
 }

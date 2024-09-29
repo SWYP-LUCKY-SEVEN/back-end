@@ -267,7 +267,7 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
         JPQLQuery<Long> userStudySubQuery = JPAExpressions
                 .select(userStudy.id.studyId)
                 .from(userStudy)
-                .where(userStudy.id.userId.eq(userId));
+                .where(userStudy.id.userId.eq(userId)); // 자신이 참가중일경우 전부 제거
                 //.where(userStudy.id.userId.eq(userId), userStudy.is_owner.eq(true)); //  자신이 운영중일 경우 전부 제거
 
         BooleanBuilder builder = new BooleanBuilder();

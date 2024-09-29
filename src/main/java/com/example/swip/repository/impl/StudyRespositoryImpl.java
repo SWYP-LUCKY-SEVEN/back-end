@@ -1,9 +1,14 @@
 package com.example.swip.repository.impl;
 
+import com.example.swip.dto.UserRelationship;
 import com.example.swip.entity.*;
+import com.example.swip.entity.compositeKey.UserStudyId;
 import com.example.swip.repository.custom.StudyRepositoryCustom;
+import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
+
+import java.util.List;
 
 import static com.example.swip.entity.QAdditionalInfo.additionalInfo;
 import static com.example.swip.entity.QCategory.category;
@@ -38,4 +43,5 @@ public class StudyRespositoryImpl implements StudyRepositoryCustom {
                 .where(study.id.eq(studyId))
                 .fetchOne();
     }
+
 }

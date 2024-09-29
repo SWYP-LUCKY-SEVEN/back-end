@@ -1,9 +1,13 @@
 package com.example.swip.repository.impl;
+import com.example.swip.dto.UserRelationship;
+import com.example.swip.entity.QFavoriteStudy;
+import com.example.swip.entity.QUserStudy;
 import com.example.swip.entity.UserStudy;
 import com.example.swip.entity.compositeKey.UserStudyId;
 import com.example.swip.entity.enumtype.ChatStatus;
 import com.example.swip.entity.enumtype.ExitStatus;
 import com.example.swip.repository.custom.UserStudyRepositoryCustom;
+import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 
@@ -86,5 +90,27 @@ public class UserStudyRepositoryImpl implements UserStudyRepositoryCustom {
                 .from(userStudy)
                 .where(userStudy.id.eq(userStudyId))
                 .fetchOne();
+    }
+
+    @Override
+    public UserRelationship findRelationByUserIdAndStudyId(Long userId, Long studyId) {
+        QUserStudy userStudy = QUserStudy.userStudy;
+        QFavoriteStudy favoriteStudy = QFavoriteStudy.favoriteStudy;
+
+        Tuple findStudy = queryFactory
+                .select(userStudy.is_owner, userStudy.isNotNull(), favoriteStudy.isNotNull())
+                .from(userStudy)
+                .where(userStudy.id.userId.eq(userId)
+                        .and(userStudy.id.studyId.eq(studyId)))
+                .leftJoin(favoriteStudy)
+                .on(favoriteStudy.study.eq(userStudy.study)
+                        .and(favoriteStudy.user.id.eq(userId)))
+                .fetchOne();
+
+        return new UserRelationship(
+                findStudy.get(userStudy.is_owner),
+                findStudy.get(userStudy.isNotNull()),
+                findStudy.get(favoriteStudy.isNotNull())
+        );
     }
 }

@@ -346,8 +346,15 @@ public class StudyApiController {
      */
     @Operation(summary = "스터디 상세 정보 조회 API")
     @GetMapping("/study/{study_id}")
-    public StudyDetailResponse showBoardDetail(@PathVariable("study_id") Long studyId){
-        StudyDetailResponse studyDetail = studyService.findStudyDetailAndUpdateViewCount(studyId);
+    public StudyDetailResponse showBoardDetail(
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable("study_id") Long studyId
+        ){
+        Long userId = null;
+        if(userPrincipal != null)
+            userId = userPrincipal.getUserId();
+
+        StudyDetailResponse studyDetail = studyService.findStudyDetailAndUpdateViewCount(userId, studyId);
 
         return studyDetail;
     }

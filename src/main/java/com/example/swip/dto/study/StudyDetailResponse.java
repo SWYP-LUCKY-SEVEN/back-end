@@ -1,5 +1,6 @@
 package com.example.swip.dto.study;
 
+import com.example.swip.dto.UserRelationship;
 import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
 import com.example.swip.entity.enumtype.Tendency;
@@ -32,4 +33,6 @@ public class StudyDetailResponse {
 
     //참여 멤버
     private List<StudyDetailMembers> membersList;
+
+    private UserRelationship userRelation;
 }
