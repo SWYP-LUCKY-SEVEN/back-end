@@ -10,10 +10,13 @@ import com.example.swip.dto.auth.ValidateTokenResponse;
 import com.example.swip.dto.oauth.KakaoRegisterDto;
 import com.example.swip.dto.auth.LoginResponse;
 import com.example.swip.dto.oauth.OauthKakaoResponse;
+import com.example.swip.entity.DefaultImage;
 import com.example.swip.entity.User;
+import com.example.swip.repository.DefaultImageRepository;
 import com.example.swip.repository.UserRepository;
 import com.example.swip.service.AuthService;
 import com.example.swip.service.RefreshTokenService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,11 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtDecoder jwtDecoder;
     private final JwtToPrincipalConverter jwtToPrincipalConverter;
     private final RefreshTokenService refreshTokenService;
+    private final DefaultImageRepository defaultImageRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -89,6 +89,7 @@ public class AuthServiceImpl implements AuthService {
         return "SignUp success";
     }
 
+    @Transactional
     public OauthKakaoResponse oauthLogin(User user) {
         System.out.println("test : " + user.getEmail() + ", " + user.getValidate());
 
@@ -98,20 +99,32 @@ public class AuthServiceImpl implements AuthService {
         var refreshToken = jwtIssuer.issueRT(user.getId(), user.getEmail(), user.getValidate(), list);
         refreshTokenService.addToken(refreshToken);
 
-        Boolean isNewUser = (user.getJoin_date() == null)? true : false;
+        Boolean isNewUser = user.getJoin_date() == null;
+        if (isNewUser) {
+            user.enrollProfile(); // 첫 로그인 여부 확인을 위함.
+        }
 
         return OauthKakaoResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .isNewUser(isNewUser)
+                .profileImage(user.getProfile_image())
                 .build();
     }
 
     public User kakaoRegisterUser(KakaoRegisterDto kakaoRegisterDto) {
         User user = userRepository.findByEmailAndValidate(kakaoRegisterDto.getEmail(), "kakao");
-        if(user == null) {
-            user = userRepository.save(kakaoRegisterDto.toEntity());
+        if(user != null) {
+            return user;
         }
+        // 기본 이미지 랜덤 삽입
+        List<DefaultImage> imageList = defaultImageRepository.findAllByType("profile");
+        String insert_image_url = null;
+        if(imageList != null) {
+            Random rand = new Random();
+            insert_image_url = imageList.get(rand.nextInt(imageList.size())).getImageUrl();
+        }
+        user = userRepository.save(kakaoRegisterDto.toEntity(insert_image_url));
         return user;
     }
 
