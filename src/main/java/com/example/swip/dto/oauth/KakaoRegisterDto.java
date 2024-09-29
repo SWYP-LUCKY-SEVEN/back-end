@@ -15,10 +15,11 @@ public class KakaoRegisterDto {
     private String nickname;
     private String role;
 
-    public User toEntity() {
+    public User toEntity(String profile_image) {
         return User.builder()
                 .email(this.email)
                 .nickname(this.nickname)
+                .profile_image(profile_image)
                 .role(this.role)
                 .validate("kakao")
                 .build();

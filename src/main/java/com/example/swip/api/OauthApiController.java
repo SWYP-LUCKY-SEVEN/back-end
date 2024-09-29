@@ -25,22 +25,23 @@ public class OauthApiController {
     public ResponseEntity<OauthKakaoResponse> kakaoCalllback(@RequestParam(value = "code") String code) {
         String accessToken = kakaoOauthService.getKakaoAccessToken(code);
 
-        if(accessToken != "") {
-            Pair<KakaoRegisterDto, Long> kakaoRegisterRes = kakaoOauthService.getKakaoProfile(accessToken);
-            kakaoOauthService.logOutKakao(kakaoRegisterRes.getSecond());
-            //회원가입 후, user 정보를 반환함. 회원가입이 되어있다면 바로 user정보를 반환함
-            User user = authService.kakaoRegisterUser(kakaoRegisterRes.getFirst());
-
-            if(user == null)
-                return ResponseEntity.status(404).build();
-
-            if(user.getWithdrawal_date() != null)
-                return ResponseEntity.status(403).build();
-
-            OauthKakaoResponse response = authService.oauthLogin(user);
-
-            return ResponseEntity.status(201).body(response);
+        if (accessToken.isEmpty()) {
+            return  ResponseEntity.status(404).build();
         }
-        return  ResponseEntity.status(404).build();
+
+        Pair<KakaoRegisterDto, Long> kakaoRegisterRes = kakaoOauthService.getKakaoProfile(accessToken);
+        kakaoOauthService.logOutKakao(kakaoRegisterRes.getSecond());
+        //회원가입 후, user 정보를 반환함. 회원가입이 되어있다면 바로 user정보를 반환함
+        User user = authService.kakaoRegisterUser(kakaoRegisterRes.getFirst());
+
+        if(user == null)
+            return ResponseEntity.status(404).build();
+
+        if(user.getWithdrawal_date() != null)
+            return ResponseEntity.status(403).build();
+
+        OauthKakaoResponse response = authService.oauthLogin(user);
+
+        return ResponseEntity.status(201).body(response);
     }
 }

@@ -13,6 +13,7 @@ public class OauthKakaoResponse {
     private String accessToken;
     private String refreshToken;
     private Boolean isNewUser;
+    private String profileImage;
 }
 
 //@Data
