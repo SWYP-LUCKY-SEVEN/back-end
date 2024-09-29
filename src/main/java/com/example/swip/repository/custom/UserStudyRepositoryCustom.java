@@ -1,5 +1,6 @@
 package com.example.swip.repository.custom;
 
+import com.example.swip.dto.UserRelationship;
 import com.example.swip.entity.Study;
 import com.example.swip.entity.UserStudy;
 import com.example.swip.entity.compositeKey.UserStudyId;
@@ -19,4 +20,6 @@ public interface UserStudyRepositoryCustom {
     List<UserStudy> findAllByStudyId(Long studyId);
 
     UserStudy findUserStudyById(UserStudyId userStudyId);
+
+    UserRelationship findRelationByUserIdAndStudyId(Long userId, Long studyId);
 }

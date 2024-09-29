@@ -15,12 +15,10 @@ import com.example.swip.entity.compositeKey.UserStudyId;
 import com.example.swip.entity.enumtype.JoinStatus;
 import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
-import com.example.swip.repository.FavoriteStudyRepository;
-import com.example.swip.repository.JoinRequestRepository;
-import com.example.swip.repository.StudyRepository;
-import com.example.swip.repository.UserRepository;
+import com.example.swip.repository.*;
 import com.example.swip.repository.custom.StudyTodoRepositoryCustom;
 import com.example.swip.repository.custom.UserRepositoryCustom;
+import com.example.swip.repository.custom.UserStudyRepositoryCustom;
 import com.mysema.commons.lang.Pair;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -201,12 +199,13 @@ public class StudyService {
 
 
     @Transactional
-    public StudyDetailResponse findStudyDetailAndUpdateViewCount(Long StudyId){
+    public StudyDetailResponse findStudyDetailAndUpdateViewCount(Long UserId, Long StudyId){
         //study 상세 page에 나오는 모든 것들을 반환
         //study 상세 정보
         Study study = studyRepository.findStudyDetailById(StudyId);
         //study 멤버 정보
         List<UserStudy> allUsersByStudyId = userStudyService.getAllUsersByStudyId(StudyId);
+        UserRelationship userRelation = userStudyService.findRelationByUserIdAndStudyId(UserId, StudyId);
 
         //view_count + 1
         study.updateViewcount();
@@ -241,6 +240,7 @@ public class StudyService {
                                 })
                                 .collect(Collectors.toList())
                 )
+                .userRelation(userRelation)
                 .build();
     }
 
