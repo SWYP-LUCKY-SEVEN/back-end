@@ -97,7 +97,7 @@ public class UserApiController {
         if(profile == null)
             return ResponseEntity.status(404).body(
                     UserProfileGetResponse.builder()
-                            .massage("사용자를 찾을 수 없습니다.")
+                            .message("사용자를 찾을 수 없습니다.")
                             .build());
 
         UserRelatedStudyCount ursCount = userService.getPublicRelatedStudyNum(profile.getUser_id());
@@ -106,7 +106,7 @@ public class UserApiController {
                 UserProfileGetResponse.builder()
                         .profile(profile)
                         .study_count(ursCount)
-                        .massage("Success!")
+                        .message("Success!")
                         .build()
         );
     }
@@ -123,7 +123,7 @@ public class UserApiController {
         if(profile == null)
             return ResponseEntity.status(404).body(
                     UserProfileGetResponse.builder()
-                            .massage("사용자를 찾을 수 없습니다.")
+                            .message("사용자를 찾을 수 없습니다.")
                             .build());
 
         UserRelatedStudyCount ursCount = userService.getRelatedStudyNum(principal.getUserId());
@@ -132,7 +132,7 @@ public class UserApiController {
                 UserProfileGetResponse.builder()
                         .profile(profile)
                         .study_count(ursCount)
-                        .massage("Success!")
+                        .message("Success!")
                         .build()
         );
     }

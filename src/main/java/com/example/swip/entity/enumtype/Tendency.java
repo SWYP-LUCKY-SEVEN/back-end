@@ -23,6 +23,7 @@ public class Tendency {
     public static Element toTendency(String tendency){
         return map.get(tendency);
     }
+
     public static String toString(Element tendency){
         String result = null;
         for (String key : map.keySet()) {

@@ -10,5 +10,5 @@ import lombok.Getter;
 public class UserProfileGetResponse {
     private UserMainProfileDto profile;
     private UserRelatedStudyCount study_count;
-    private String massage;
+    private String message;
 }

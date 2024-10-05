@@ -15,6 +15,7 @@ import com.example.swip.entity.compositeKey.UserStudyId;
 import com.example.swip.entity.enumtype.JoinStatus;
 import com.example.swip.entity.enumtype.MatchingType;
 import com.example.swip.entity.enumtype.StudyProgressStatus;
+import com.example.swip.entity.enumtype.Tendency;
 import com.example.swip.repository.*;
 import com.example.swip.repository.custom.StudyTodoRepositoryCustom;
 import com.example.swip.repository.custom.UserRepositoryCustom;
@@ -221,13 +222,13 @@ public class StudyService {
                 .description(study.getDescription())
                 .tags(tags)
                 .category(category)
-                .matching_type(study.getMatching_type().toString())
+                .matching_type(MatchingType.toString(study.getMatching_type()))
                 .start_date(study.getStart_date())
                 .end_date(study.getEnd_date())
                 .duration(study.getDuration())
                 .max_participants_num(study.getMax_participants_num())
                 .cur_participants_num(study.getCur_participants_num())
-                .tendency(study.getTendency().toString())
+                .tendency(Tendency.toString(study.getTendency()))
                 .membersList(
                         allUsersByStudyId.stream()
                                 .map(member -> {
