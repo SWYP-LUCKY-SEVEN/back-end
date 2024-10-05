@@ -30,7 +30,7 @@ public class AddUserRequest {
                 .nickname(this.nickname)
                 .role("USER")
                 .validate("test")
-                .profile_image("http://res.cloudinary.com/dsfyp40dr/image/upload/v1714733931/p1zlj1jdedvvglagq9qw.png")
+                .profile_image("https://res.cloudinary.com/dsfyp40dr/image/upload/v1714733931/p1zlj1jdedvvglagq9qw.png")
                 .build();
     }
 }

@@ -8,6 +8,8 @@ import com.example.swip.entity.enumtype.ChatStatus;
 import com.example.swip.entity.enumtype.ExitStatus;
 import com.example.swip.repository.custom.UserStudyRepositoryCustom;
 import com.querydsl.core.Tuple;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 
@@ -97,20 +99,35 @@ public class UserStudyRepositoryImpl implements UserStudyRepositoryCustom {
         QUserStudy userStudy = QUserStudy.userStudy;
         QFavoriteStudy favoriteStudy = QFavoriteStudy.favoriteStudy;
 
-        Tuple findStudy = queryFactory
-                .select(userStudy.is_owner, userStudy.isNotNull(), favoriteStudy.isNotNull())
+        Tuple findStudyRelation = queryFactory
+                .select(userStudy.exit_status, userStudy.is_owner)
                 .from(userStudy)
                 .where(userStudy.id.userId.eq(userId)
                         .and(userStudy.id.studyId.eq(studyId)))
-                .leftJoin(favoriteStudy)
-                .on(favoriteStudy.study.eq(userStudy.study)
-                        .and(favoriteStudy.user.id.eq(userId)))
                 .fetchOne();
 
+        Boolean favoriteStudyExist= queryFactory
+                .select(favoriteStudy.isNotNull())
+                .from(favoriteStudy)
+                .where(favoriteStudy.id.userId.eq(userId)
+                        .and(favoriteStudy.id.studyId.eq(studyId)))
+                .fetchOne() != null;
+
+        if (findStudyRelation == null) {
+            return new UserRelationship(
+                    false,
+                    false,
+                    favoriteStudyExist
+            );
+        }
+
+        ExitStatus exitStatus = findStudyRelation.get(userStudy.exit_status);
+        Boolean isMember = ExitStatus.valueOf("None").equals(exitStatus);
         return new UserRelationship(
-                findStudy.get(userStudy.is_owner),
-                findStudy.get(userStudy.isNotNull()),
-                findStudy.get(favoriteStudy.isNotNull())
+                findStudyRelation.get(userStudy.is_owner),
+                isMember, // userStudy is Notnull && exitStatus is None Stat
+                favoriteStudyExist
         );
+
     }
 }

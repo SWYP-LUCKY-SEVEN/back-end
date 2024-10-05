@@ -117,9 +117,9 @@ public class AuthServiceImpl implements AuthService {
         if(user != null) {
             return user;
         }
-        // 기본 이미지 랜덤 삽입
-        List<DefaultImage> imageList = defaultImageRepository.findAllByType("profile");
+        // 기본 이미지 랜덤 삽입 | 별도 메서드로 분리 필요.(테스트 API에서 사용) | 어느 class의 메서드로 둘지 고민중
         String insert_image_url = null;
+        List<DefaultImage> imageList = defaultImageRepository.findAllByType("profile");
         if(imageList != null) {
             Random rand = new Random();
             insert_image_url = imageList.get(rand.nextInt(imageList.size())).getImageUrl();

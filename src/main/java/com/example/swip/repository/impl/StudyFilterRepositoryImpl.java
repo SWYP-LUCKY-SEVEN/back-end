@@ -296,18 +296,9 @@ public class StudyFilterRepositoryImpl implements StudyFilterRepository {
                 .offset(page*size)  //반환 시작 index 0, 3, 6
                 .limit(size+1)   //최대 조회 건수
                 .fetch();
-
-        // 순서 상관없이 결과의 개수를 통해 다음 페이지 존재 여부 확인
-        Boolean hasNextPage = queryFactory
-                .select(study)
-                .from(study)
-                .where(builder.and(study.start_date.after(LocalDate.now().minusDays(1))),
-                        study.matching_type.eq(MatchingType.Element.Quick),
-                        study.id.notIn(userStudySubQuery))  //첫 BooleanExpression는 무조건 AND 연산이 적용된다.
-                .distinct()
-                .offset((page+1)*size)
-                .limit(1)
-                .fetchOne() != null;
+        
+        // 다음 페이지 존재여부 확인
+        Boolean hasNextPage = findStudy.size() > size;
 
         List<QuickMatchStudy> data = findStudy.stream()
                 .map(tuple -> {
