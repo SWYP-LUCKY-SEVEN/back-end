@@ -76,7 +76,7 @@ public class StudyService {
 
 
         if (savedStudy!=null){ //채팅 서버에 저장
-            //ChatPostStudyDataSync(writerId, savedStudy);
+            ChatPostStudyDataSync(writerId, savedStudy);
         }
         //return
         return savedStudy.getId();
