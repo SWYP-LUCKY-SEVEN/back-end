@@ -168,7 +168,7 @@ public class StudyService {
             UserStudy findUserStudy = userStudyService.saveUserStudy(user, study, false);
             //채팅방 멤버 추가 (chat server 연동)
             if (findUserStudy!=null) { //채팅 서버에 저장
-                //ChatAddMemberDataSync(bearerToken, study, user);
+                ChatAddMemberDataSync(bearerToken, study, user);
             }
             return ResponseEntity.status(200).body(DefaultResponse.builder()
                     .message("쇼터디에 가입했어요.")
