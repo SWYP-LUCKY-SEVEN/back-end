@@ -62,7 +62,7 @@ public class TesterApiController {
             );
         User user = userService.saveTestUser(addUserRequest);
         ChatProfileRequest chatProfileRequest = ChatProfileRequest.builder()
-                .pk(user.getId().toString())
+                .userId(user.getId().toString())
                 .pic(user.getProfile_image())
                 .nickname(user.getNickname())
                 .build();
@@ -91,7 +91,7 @@ public class TesterApiController {
         if(user == null)
             return ResponseEntity.status(404).build();
         ChatProfileRequest chatProfileRequest = ChatProfileRequest.builder()
-                .pk(user.getId().toString())
+                .userId(user.getId().toString())
                 .pic(user.getProfile_image())
                 .nickname(user.getNickname())
                 .build();

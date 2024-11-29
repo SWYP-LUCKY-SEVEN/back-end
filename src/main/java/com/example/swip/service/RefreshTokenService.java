@@ -25,7 +25,7 @@ public class RefreshTokenService {
     }
 
     public void removeToken(String token) {
-        // Redis에서 토큰 삭제
+        // Redis에서 토큰 삭제    
         redisTemplate.delete("refreshToken:" + token);
     }
 }

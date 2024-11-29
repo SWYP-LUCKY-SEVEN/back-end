@@ -61,13 +61,13 @@ public class ChatServerServiceImpl implements ChatServerService {
         }
 
         if(result.getSecond() != 200)
-            return setUserStatusAndReturnPair(Long.valueOf(chatProfileRequest.getPk()), result.getSecond(), ChatStatus.Need_create);
+            return setUserStatusAndReturnPair(Long.valueOf(chatProfileRequest.getUserId()), result.getSecond(), ChatStatus.Need_create);
 
         return result;
     }
 
     public Pair<String, Integer> updateUser(ChatProfileRequest chatProfileRequest){
-        Long userId = Long.valueOf(chatProfileRequest.getPk());
+        Long userId = Long.valueOf(chatProfileRequest.getUserId());
 
         ChatStatus chatStatus = userRepository.findChat_statusById(userId);
         if (chatStatus == ChatStatus.Need_create) {
@@ -82,7 +82,7 @@ public class ChatServerServiceImpl implements ChatServerService {
         try {
             String reqUpdateUserURL = "";
             if (!reqUserURL.isEmpty())
-                reqUpdateUserURL = String.format("%s/%s", reqUserURL, chatProfileRequest.getPk());
+                reqUpdateUserURL = String.format("%s/%s", reqUserURL, chatProfileRequest.getUserId());
             String jsonInputString = objectMapper.writeValueAsString(chatProfileRequest);
             result = sendHttpRequest(reqUpdateUserURL, "PATCH", jsonInputString, null);
         }catch (JsonProcessingException e) {
@@ -91,7 +91,7 @@ public class ChatServerServiceImpl implements ChatServerService {
         }
 
         if(result.getSecond() != 200)
-            return setUserStatusAndReturnPair(Long.valueOf(chatProfileRequest.getPk()), result.getSecond(), ChatStatus.Need_update);
+            return setUserStatusAndReturnPair(Long.valueOf(chatProfileRequest.getUserId()), result.getSecond(), ChatStatus.Need_update);
 
         return result;
     }
@@ -110,7 +110,7 @@ public class ChatServerServiceImpl implements ChatServerService {
     public Pair<String, Integer> postStudy(PostStudyRequest postStudyRequest) {
 
         Long studyId = Long.valueOf(postStudyRequest.getStudyId());
-        Long userId = Long.valueOf(postStudyRequest.getPk());
+        Long userId = Long.valueOf(postStudyRequest.getUserId());
 
         ChatStatus chatStatus = userRepository.findChat_statusById(userId);
         if (chatStatus == ChatStatus.Need_create) {
@@ -413,7 +413,7 @@ public class ChatServerServiceImpl implements ChatServerService {
         if(study.isPresent()) {
             PostStudyRequest postStudyRequest = PostStudyRequest.builder()
                     .studyId(studyId.toString())
-                    .pk(userId.toString())
+                    .userId(userId.toString())
                     .name(user.get().getNickname())
                     .build();
 

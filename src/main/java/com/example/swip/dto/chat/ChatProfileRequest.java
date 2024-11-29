@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChatProfileRequest {
-    private String pk;
+    private String userId;
     private String nickname;
     private String pic;
 }

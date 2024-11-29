@@ -17,7 +17,7 @@ public class PostProfileDto {
 
     public ChatProfileRequest toChatUserProfileDto() {
         return ChatProfileRequest.builder()
-                .pk(this.user_id.toString())
+                .userId(this.user_id.toString())
                 .nickname(this.nickname)
                 .pic(this.profileImage)
                 .build();

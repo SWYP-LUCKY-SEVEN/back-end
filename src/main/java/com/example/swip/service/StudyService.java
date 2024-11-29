@@ -389,7 +389,7 @@ public class StudyService {
         Pair<String, Integer> response = chatServerService.postStudy(
                 PostStudyRequest.builder()
                         .studyId(savedStudy.getId().toString())
-                        .pk(writerId.toString())
+                        .userId(writerId.toString())
                         .name(savedStudy.getTitle())
                         .build()
         );
