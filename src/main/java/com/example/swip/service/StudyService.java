@@ -82,6 +82,22 @@ public class StudyService {
         return savedStudy.getId();
     }
 
+
+    @Transactional
+    public Long postChatForStudy(Long studyId){
+        Study study = studyRepository.findById(studyId).orElse(null);
+        if (study == null) {
+            return null;
+        }
+
+        Long userId = userStudyService.getOwnerbyStudyId(studyId);
+
+        //user_study - 방장 정보 저장
+        ChatPostStudyDataSync(userId, study);
+        //return
+        return userId;
+    }
+
     public List<Study> findRecent3studies() {
         List<Study> allStudies = studyRepository.findRecent3();
         return allStudies;

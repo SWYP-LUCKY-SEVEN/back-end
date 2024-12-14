@@ -7,6 +7,7 @@ import com.example.swip.dto.JoinRequest.JoinRequestResponse;
 import com.example.swip.dto.auth.AddUserRequest;
 import com.example.swip.dto.chat.ChatProfileRequest;
 import com.example.swip.dto.user.UserMainProfileDto;
+import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
 import com.example.swip.entity.enumtype.ChatStatus;
 import com.example.swip.entity.enumtype.JoinStatus;
@@ -114,6 +115,21 @@ public class TesterApiController {
                         .build()
         );
     }
+
+    @Operation(summary = "채팅 서버 미등록 스터디 등록", description = "테스트용 유저를 가입 시킨다.")
+    @PostMapping("/test/chat/study") // user id 반환
+    public ResponseEntity<DefaultResponse> postUserChatServer(
+            @RequestParam Long study_id
+    ) {
+        Long response = studyService.postChatForStudy(study_id);
+
+        return ResponseEntity.status(200).body(
+                DefaultResponse.builder()
+                        .message("user ID : " + response)
+                        .build()
+        );
+    }
+
 
     @Operation(summary = "유저 ID로 테스트용 JWT 발급 [테스트]", description = "테스트용 유저를 가입 시킨다.")
     @PostMapping("/test/jwt")
