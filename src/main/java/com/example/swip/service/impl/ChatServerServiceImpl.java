@@ -70,13 +70,13 @@ public class ChatServerServiceImpl implements ChatServerService {
     public Pair<String, Integer> updateUser(ChatProfileRequest chatProfileRequest){
         Long userId = Long.valueOf(chatProfileRequest.getUserId());
 
-        ChatStatus chatStatus = userRepository.findChat_statusById(userId);
-        if (chatStatus == ChatStatus.NEED_CREATE) {
-            Pair<String, Integer> response = syncUserData(userId, null);
-            if(response.getSecond() != 200) {
-                return response;
-            }
-        }
+//        ChatStatus chatStatus = userRepository.findChat_statusById(userId);
+//        if (chatStatus == ChatStatus.NEED_CREATE) {
+//            Pair<String, Integer> response = syncUserData(userId, null);
+//            if(response.getSecond() != 200) {
+//                return response;
+//            }
+//        }
 
         Pair<String, Integer> result;
         ObjectMapper objectMapper = new ObjectMapper();
@@ -113,13 +113,13 @@ public class ChatServerServiceImpl implements ChatServerService {
         Long studyId = Long.valueOf(postStudyRequest.getStudyId());
         Long userId = Long.valueOf(postStudyRequest.getUserId());
 
-        ChatStatus chatStatus = userRepository.findChat_statusById(userId);
-        if (chatStatus == ChatStatus.NEED_CREATE) {
-            Pair<String, Integer> response = syncUserData(userId, studyId);
-            if(response.getSecond() != 200) {
-                return response;
-            }
-        }
+//        ChatStatus chatStatus = userRepository.findChat_statusById(userId);
+//        if (chatStatus == ChatStatus.NEED_CREATE) {
+//            Pair<String, Integer> response = syncUserData(userId, studyId);
+//            if(response.getSecond() != 200) {
+//                return response;
+//            }
+//        }
 
         Pair<String, Integer> result;
         ObjectMapper objectMapper = new ObjectMapper();
@@ -147,13 +147,13 @@ public class ChatServerServiceImpl implements ChatServerService {
 
         Long studyId = Long.valueOf(updateStudyRequest.getChatId());
 
-        ChatStatus chatStatus = studyRepository.findChat_statusById(studyId);
-        if(chatStatus == ChatStatus.NEED_CREATE) {
-            Pair<String, Integer> response = syncStudyData(userId, studyId);
-            if(response.getSecond() != 200) {
-                return response;
-            }
-        }
+//        ChatStatus chatStatus = studyRepository.findChat_statusById(studyId);
+//        if(chatStatus == ChatStatus.NEED_CREATE) {
+//            Pair<String, Integer> response = syncStudyData(userId, studyId);
+//            if(response.getSecond() != 200) {
+//                return response;
+//            }
+//        }
 
         Pair<String, Integer> result;
         ObjectMapper objectMapper = new ObjectMapper();
@@ -194,20 +194,20 @@ public class ChatServerServiceImpl implements ChatServerService {
         Long studyId = Long.valueOf(postStudyAddmemberRequest.getStudyId());
         Long userId = Long.valueOf(postStudyAddmemberRequest.getUserId());
 
-        ChatStatus chatStatus = studyRepository.findChat_statusById(studyId);
-        if(chatStatus == ChatStatus.NEED_CREATE) {
-            Pair<String, Integer> response = syncStudyData(userId, studyId);
-            if(response.getSecond() != 200) {
-                return response;
-            }
-        }
+//        ChatStatus chatStatus = studyRepository.findChat_statusById(studyId);
+//        if(chatStatus == ChatStatus.NEED_CREATE) {
+//            Pair<String, Integer> response = syncStudyData(userId, studyId);
+//            if(response.getSecond() != 200) {
+//                return response;
+//            }
+//        }
 
-        ChatStatus chatStatus2 = userStudyRepository.findChat_statusById(new UserStudyId(userId, studyId));
-        UserStudy userStudy = userStudyRepository.findUserStudyById(new UserStudyId(userId, studyId));
-        if(chatStatus2 == ChatStatus.NEED_DELETE) {
-            userStudy.setChat_status(ChatStatus.CLEAR);
-            return Pair.of("complete to Add Member", 200);
-        }
+//        ChatStatus chatStatus2 = userStudyRepository.findChat_statusById(new UserStudyId(userId, studyId));
+//        UserStudy userStudy = userStudyRepository.findUserStudyById(new UserStudyId(userId, studyId));
+//        if(chatStatus2 == ChatStatus.NEED_DELETE) {
+//            userStudy.setChat_status(ChatStatus.CLEAR);
+//            return Pair.of("complete to Add Member", 200);
+//        }
 
         Pair<String, Integer> result;
         ObjectMapper objectMapper = new ObjectMapper();
@@ -237,20 +237,20 @@ public class ChatServerServiceImpl implements ChatServerService {
         Long studyId = Long.valueOf(postStudymemberRequest.getStudyId());
         Long userId = Long.valueOf(postStudymemberRequest.getUserId());
 
-        ChatStatus chatStatus = studyRepository.findChat_statusById(studyId);
-        if(chatStatus == ChatStatus.NEED_CREATE) {
-            Pair<String, Integer> response = syncStudyData(userId, studyId);
-            if(response.getSecond() != 200) {
-                return response;
-            }
-        }
+//        ChatStatus chatStatus = studyRepository.findChat_statusById(studyId);
+//        if(chatStatus == ChatStatus.NEED_CREATE) {
+//            Pair<String, Integer> response = syncStudyData(userId, studyId);
+//            if(response.getSecond() != 200) {
+//                return response;
+//            }
+//        }
 
-        ChatStatus chatStatus2 = userStudyRepository.findChat_statusById(new UserStudyId(userId, studyId));
-        UserStudy userStudy = userStudyRepository.findUserStudyById(new UserStudyId(userId, studyId));
-        if(chatStatus2 == ChatStatus.NEED_ADD) {
-            userStudy.setChat_status(ChatStatus.CLEAR);
-            return Pair.of("complete to Add Member", 200);
-        }
+//        ChatStatus chatStatus2 = userStudyRepository.findChat_statusById(new UserStudyId(userId, studyId));
+//        UserStudy userStudy = userStudyRepository.findUserStudyById(new UserStudyId(userId, studyId));
+//        if(chatStatus2 == ChatStatus.NEED_ADD) {
+//            userStudy.setChat_status(ChatStatus.CLEAR);
+//            return Pair.of("complete to Add Member", 200);
+//        }
 
         Pair<String, Integer> result;
         ObjectMapper objectMapper = new ObjectMapper();
@@ -278,20 +278,20 @@ public class ChatServerServiceImpl implements ChatServerService {
         Long studyId = Long.valueOf(postStudyDeleteMemberRequest.getStudyId());
         Long userId = Long.valueOf(postStudyDeleteMemberRequest.getUserId());
 
-        ChatStatus chatStatus = studyRepository.findChat_statusById(studyId);
-        if(chatStatus == ChatStatus.NEED_CREATE) {
-            Pair<String, Integer> response = syncStudyData(userId, studyId);
-            if(response.getSecond() != 200) {
-                return response;
-            }
-        }
+//        ChatStatus chatStatus = studyRepository.findChat_statusById(studyId);
+//        if(chatStatus == ChatStatus.NEED_CREATE) {
+//            Pair<String, Integer> response = syncStudyData(userId, studyId);
+//            if(response.getSecond() != 200) {
+//                return response;
+//            }
+//        }
 
-        ChatStatus chatStatus2 = userStudyRepository.findChat_statusById(new UserStudyId(userId, studyId));
-        UserStudy userStudy = userStudyRepository.findUserStudyById(new UserStudyId(userId, studyId));
-        if(chatStatus2 == ChatStatus.NEED_ADD) {
-            userStudy.setChat_status(ChatStatus.CLEAR);
-            return Pair.of("complete to Add Member", 200);
-        }
+//        ChatStatus chatStatus2 = userStudyRepository.findChat_statusById(new UserStudyId(userId, studyId));
+//        UserStudy userStudy = userStudyRepository.findUserStudyById(new UserStudyId(userId, studyId));
+//        if(chatStatus2 == ChatStatus.NEED_ADD) {
+//            userStudy.setChat_status(ChatStatus.CLEAR);
+//            return Pair.of("complete to Add Member", 200);
+//        }
 
         Pair<String, Integer> result;
         ObjectMapper objectMapper = new ObjectMapper();
