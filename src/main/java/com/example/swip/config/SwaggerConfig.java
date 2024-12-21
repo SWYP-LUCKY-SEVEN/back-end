@@ -30,6 +30,7 @@ public class SwaggerConfig {
         Server httpsServer = new Server();
         httpsServer.setDescription("HTTPS");
         httpsServer.setUrl(apiUrl);
+
         Server localServer = new Server();
         localServer.setDescription("Local");
         localServer.setUrl("http://localhost:8080");

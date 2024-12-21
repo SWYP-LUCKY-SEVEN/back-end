@@ -84,7 +84,7 @@ public class StudyService {
 
 
     @Transactional
-    public Long postChatForStudy(Long studyId){
+    public Pair<String, Integer> postChatForStudy(Long studyId){
         Study study = studyRepository.findById(studyId).orElse(null);
         if (study == null) {
             return null;
@@ -93,9 +93,7 @@ public class StudyService {
         Long userId = userStudyService.getOwnerbyStudyId(studyId);
 
         //user_study - 방장 정보 저장
-        ChatPostStudyDataSync(userId, study);
-        //return
-        return userId;
+        return ChatPostStudyDataSync(userId, study);
     }
 
     public List<Study> findRecent3studies() {
@@ -401,7 +399,7 @@ public class StudyService {
         return false;
     }
 
-    private void ChatPostStudyDataSync(Long writerId, Study savedStudy) {
+    private Pair<String, Integer> ChatPostStudyDataSync(Long writerId, Study savedStudy) {
         Pair<String, Integer> response = chatServerService.postStudy(
                 PostStudyRequest.builder()
                         .studyId(savedStudy.getId().toString())
@@ -410,6 +408,7 @@ public class StudyService {
                         .build()
         );
         System.out.println("postStudyResponse = " + response.getSecond());
+        return response;
     }
 
     private void ChatAddMemberDataSync(String bearerToken, Study study, User user) {

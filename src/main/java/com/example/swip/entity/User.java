@@ -35,6 +35,7 @@ public class User {
   
     private LocalDateTime withdrawal_date;
 
+    @Enumerated(EnumType.STRING)
     private ChatStatus chat_status; //채팅 연결 상태
 
     public void updateProfile(String nickname, String profile_image){

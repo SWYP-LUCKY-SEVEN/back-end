@@ -7,7 +7,6 @@ import com.example.swip.dto.JoinRequest.JoinRequestResponse;
 import com.example.swip.dto.auth.AddUserRequest;
 import com.example.swip.dto.chat.ChatProfileRequest;
 import com.example.swip.dto.user.UserMainProfileDto;
-import com.example.swip.entity.Study;
 import com.example.swip.entity.User;
 import com.example.swip.entity.enumtype.ChatStatus;
 import com.example.swip.entity.enumtype.JoinStatus;
@@ -69,7 +68,7 @@ public class TesterApiController {
                 .build();
         Pair<String, Integer> response = chatServerService.postUser(chatProfileRequest);
         if(response.getSecond() != 200)
-            chatServerService.setChatStatus(user, response.getSecond(), ChatStatus.Need_create);
+            chatServerService.setChatStatus(user, response.getSecond(), ChatStatus.NEED_CREATE);
 
         return ResponseEntity.status(response.getSecond()).body(
                 DefaultResponse.builder()
@@ -121,11 +120,11 @@ public class TesterApiController {
     public ResponseEntity<DefaultResponse> postUserChatServer(
             @RequestParam Long study_id
     ) {
-        Long response = studyService.postChatForStudy(study_id);
+        Pair<String, Integer> response = studyService.postChatForStudy(study_id);
 
-        return ResponseEntity.status(200).body(
+        return ResponseEntity.status(response.getSecond()).body(
                 DefaultResponse.builder()
-                        .message("user ID : " + response)
+                        .message("user ID : " + study_id.toString() + " " + response.getFirst())
                         .build()
         );
     }

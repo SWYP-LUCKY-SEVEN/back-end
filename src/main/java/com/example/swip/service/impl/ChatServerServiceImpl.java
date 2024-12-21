@@ -16,12 +16,12 @@ import com.example.swip.repository.StudyRepository;
 import com.example.swip.repository.UserRepository;
 import com.example.swip.repository.UserStudyRepository;
 import com.example.swip.service.ChatServerService;
-import com.example.swip.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mysema.commons.lang.Pair;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +36,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 
+@Scope("singleton")
 @Service
 @RequiredArgsConstructor
 public class ChatServerServiceImpl implements ChatServerService {
@@ -61,7 +62,7 @@ public class ChatServerServiceImpl implements ChatServerService {
         }
 
         if(result.getSecond() != 200)
-            return setUserStatusAndReturnPair(Long.valueOf(chatProfileRequest.getUserId()), result.getSecond(), ChatStatus.Need_create);
+            return setUserStatusAndReturnPair(Long.valueOf(chatProfileRequest.getUserId()), result.getSecond(), ChatStatus.NEED_CREATE);
 
         return result;
     }
@@ -70,7 +71,7 @@ public class ChatServerServiceImpl implements ChatServerService {
         Long userId = Long.valueOf(chatProfileRequest.getUserId());
 
         ChatStatus chatStatus = userRepository.findChat_statusById(userId);
-        if (chatStatus == ChatStatus.Need_create) {
+        if (chatStatus == ChatStatus.NEED_CREATE) {
             Pair<String, Integer> response = syncUserData(userId, null);
             if(response.getSecond() != 200) {
                 return response;
@@ -91,7 +92,7 @@ public class ChatServerServiceImpl implements ChatServerService {
         }
 
         if(result.getSecond() != 200)
-            return setUserStatusAndReturnPair(Long.valueOf(chatProfileRequest.getUserId()), result.getSecond(), ChatStatus.Need_update);
+            return setUserStatusAndReturnPair(Long.valueOf(chatProfileRequest.getUserId()), result.getSecond(), ChatStatus.NEED_UPDATE);
 
         return result;
     }
@@ -113,7 +114,7 @@ public class ChatServerServiceImpl implements ChatServerService {
         Long userId = Long.valueOf(postStudyRequest.getUserId());
 
         ChatStatus chatStatus = userRepository.findChat_statusById(userId);
-        if (chatStatus == ChatStatus.Need_create) {
+        if (chatStatus == ChatStatus.NEED_CREATE) {
             Pair<String, Integer> response = syncUserData(userId, studyId);
             if(response.getSecond() != 200) {
                 return response;
@@ -134,7 +135,7 @@ public class ChatServerServiceImpl implements ChatServerService {
         }
 
         if(result.getSecond() != 200) {
-            return setStudyStatusAndReturnPair(studyId, result.getSecond(), ChatStatus.Need_create);
+            return setStudyStatusAndReturnPair(studyId, result.getSecond(), ChatStatus.NEED_CREATE);
         }
         return result;
     }
@@ -147,7 +148,7 @@ public class ChatServerServiceImpl implements ChatServerService {
         Long studyId = Long.valueOf(updateStudyRequest.getChatId());
 
         ChatStatus chatStatus = studyRepository.findChat_statusById(studyId);
-        if(chatStatus == ChatStatus.Need_create) {
+        if(chatStatus == ChatStatus.NEED_CREATE) {
             Pair<String, Integer> response = syncStudyData(userId, studyId);
             if(response.getSecond() != 200) {
                 return response;
@@ -168,7 +169,7 @@ public class ChatServerServiceImpl implements ChatServerService {
         }
 
         if(result.getSecond() != 200) {
-            return setStudyStatusAndReturnPair(studyId, result.getSecond(), ChatStatus.Need_update);
+            return setStudyStatusAndReturnPair(studyId, result.getSecond(), ChatStatus.NEED_UPDATE);
         }
         return result;
     }
@@ -194,7 +195,7 @@ public class ChatServerServiceImpl implements ChatServerService {
         Long userId = Long.valueOf(postStudyAddmemberRequest.getUserId());
 
         ChatStatus chatStatus = studyRepository.findChat_statusById(studyId);
-        if(chatStatus == ChatStatus.Need_create) {
+        if(chatStatus == ChatStatus.NEED_CREATE) {
             Pair<String, Integer> response = syncStudyData(userId, studyId);
             if(response.getSecond() != 200) {
                 return response;
@@ -203,8 +204,8 @@ public class ChatServerServiceImpl implements ChatServerService {
 
         ChatStatus chatStatus2 = userStudyRepository.findChat_statusById(new UserStudyId(userId, studyId));
         UserStudy userStudy = userStudyRepository.findUserStudyById(new UserStudyId(userId, studyId));
-        if(chatStatus2 == ChatStatus.Need_delete) {
-            userStudy.setChat_status(ChatStatus.Clear);
+        if(chatStatus2 == ChatStatus.NEED_DELETE) {
+            userStudy.setChat_status(ChatStatus.CLEAR);
             return Pair.of("complete to Add Member", 200);
         }
 
@@ -225,7 +226,7 @@ public class ChatServerServiceImpl implements ChatServerService {
         }
 
         if(result.getSecond() != 200) {
-            return setUserStudyStatusAndReturnPair(studyId, userId, result.getSecond(), ChatStatus.Need_add);
+            return setUserStudyStatusAndReturnPair(studyId, userId, result.getSecond(), ChatStatus.NEED_ADD);
         }
 
         return result;
@@ -237,7 +238,7 @@ public class ChatServerServiceImpl implements ChatServerService {
         Long userId = Long.valueOf(postStudymemberRequest.getUserId());
 
         ChatStatus chatStatus = studyRepository.findChat_statusById(studyId);
-        if(chatStatus == ChatStatus.Need_create) {
+        if(chatStatus == ChatStatus.NEED_CREATE) {
             Pair<String, Integer> response = syncStudyData(userId, studyId);
             if(response.getSecond() != 200) {
                 return response;
@@ -246,8 +247,8 @@ public class ChatServerServiceImpl implements ChatServerService {
 
         ChatStatus chatStatus2 = userStudyRepository.findChat_statusById(new UserStudyId(userId, studyId));
         UserStudy userStudy = userStudyRepository.findUserStudyById(new UserStudyId(userId, studyId));
-        if(chatStatus2 == ChatStatus.Need_add) {
-            userStudy.setChat_status(ChatStatus.Clear);
+        if(chatStatus2 == ChatStatus.NEED_ADD) {
+            userStudy.setChat_status(ChatStatus.CLEAR);
             return Pair.of("complete to Add Member", 200);
         }
 
@@ -265,7 +266,7 @@ public class ChatServerServiceImpl implements ChatServerService {
         }
 
         if(result.getSecond() != 200) {
-            return setUserStudyStatusAndReturnPair(studyId, userId, result.getSecond(), ChatStatus.Need_delete);
+            return setUserStudyStatusAndReturnPair(studyId, userId, result.getSecond(), ChatStatus.NEED_DELETE);
         }
 
         return result;
@@ -278,7 +279,7 @@ public class ChatServerServiceImpl implements ChatServerService {
         Long userId = Long.valueOf(postStudyDeleteMemberRequest.getUserId());
 
         ChatStatus chatStatus = studyRepository.findChat_statusById(studyId);
-        if(chatStatus == ChatStatus.Need_create) {
+        if(chatStatus == ChatStatus.NEED_CREATE) {
             Pair<String, Integer> response = syncStudyData(userId, studyId);
             if(response.getSecond() != 200) {
                 return response;
@@ -287,8 +288,8 @@ public class ChatServerServiceImpl implements ChatServerService {
 
         ChatStatus chatStatus2 = userStudyRepository.findChat_statusById(new UserStudyId(userId, studyId));
         UserStudy userStudy = userStudyRepository.findUserStudyById(new UserStudyId(userId, studyId));
-        if(chatStatus2 == ChatStatus.Need_add) {
-            userStudy.setChat_status(ChatStatus.Clear);
+        if(chatStatus2 == ChatStatus.NEED_ADD) {
+            userStudy.setChat_status(ChatStatus.CLEAR);
             return Pair.of("complete to Add Member", 200);
         }
 
@@ -310,7 +311,7 @@ public class ChatServerServiceImpl implements ChatServerService {
         }
 
         if(result.getSecond() != 200) {
-            return setUserStudyStatusAndReturnPair(studyId, userId, result.getSecond(), ChatStatus.Need_delete);
+            return setUserStudyStatusAndReturnPair(studyId, userId, result.getSecond(), ChatStatus.NEED_DELETE);
         }
 
         return result;
@@ -395,13 +396,13 @@ public class ChatServerServiceImpl implements ChatServerService {
             Integer status = response.getSecond();
 
             if(status == 200){
-                return setUserStatusAndReturnPair(userId, status, ChatStatus.Clear);
+                return setUserStatusAndReturnPair(userId, status, ChatStatus.CLEAR);
             }
             else if(studyId == null){
-                return setUserStatusAndReturnPair(userId, status, ChatStatus.Need_create);
+                return setUserStatusAndReturnPair(userId, status, ChatStatus.NEED_CREATE);
             }
             else{
-                return setStudyStatusAndReturnPair(studyId, status, ChatStatus.Need_create);
+                return setStudyStatusAndReturnPair(studyId, status, ChatStatus.NEED_CREATE);
             }
         }
         return null;
@@ -420,9 +421,9 @@ public class ChatServerServiceImpl implements ChatServerService {
             Pair<String, Integer> response = postStudy(postStudyRequest);
             Integer status = response.getSecond();
             if(status == 200){
-                return setStudyStatusAndReturnPair(userId, status, ChatStatus.Clear);
+                return setStudyStatusAndReturnPair(userId, status, ChatStatus.CLEAR);
             }else{
-                return setStudyStatusAndReturnPair(studyId, status, ChatStatus.Need_create);
+                return setStudyStatusAndReturnPair(studyId, status, ChatStatus.NEED_CREATE);
             }
         }
         return null;
@@ -435,7 +436,7 @@ public class ChatServerServiceImpl implements ChatServerService {
     private Pair<String, Integer> setUserStatusAndReturnPair(Long userId, Integer status_num, ChatStatus chatStatus) {
 
         User user = userRepository.findById(userId).orElse(null);
-        if(chatStatus==ChatStatus.Need_create || chatStatus==ChatStatus.Need_update) {
+        if(chatStatus==ChatStatus.NEED_CREATE || chatStatus==ChatStatus.NEED_UPDATE) {
             setChatStatus(user, status_num, chatStatus);
             return Pair.of("Failed to sync user data", 500);
         } else{
@@ -447,7 +448,7 @@ public class ChatServerServiceImpl implements ChatServerService {
     @Transactional
     public void setChatStatus(Object obj, Integer status_num, ChatStatus defaultStatus) {
         if (status_num == 200)
-            setUserOrStudyChatStatus(obj, ChatStatus.Clear);
+            setUserOrStudyChatStatus(obj, ChatStatus.CLEAR);
         else
             setUserOrStudyChatStatus(obj, defaultStatus);
     }
@@ -462,7 +463,7 @@ public class ChatServerServiceImpl implements ChatServerService {
     private Pair<String, Integer> setStudyStatusAndReturnPair(Long studyId, Integer status_num, ChatStatus chatStatus) {
 
         Study study = studyRepository.findById(studyId).orElse(null);
-        if(chatStatus==ChatStatus.Need_create || chatStatus==ChatStatus.Need_update) {
+        if(chatStatus==ChatStatus.NEED_CREATE || chatStatus==ChatStatus.NEED_UPDATE) {
             study.setChat_status(chatStatus);
             return Pair.of("Failed to sync study-chat data", 500);
         } else{
@@ -474,7 +475,7 @@ public class ChatServerServiceImpl implements ChatServerService {
     private Pair<String, Integer> setUserStudyStatusAndReturnPair(Long studyId, Long userId, Integer status_num, ChatStatus chatStatus) {
 
         UserStudy userStudy = userStudyRepository.findUserStudyById(new UserStudyId(userId, studyId));
-        if(chatStatus==ChatStatus.Need_add || chatStatus==ChatStatus.Need_update) {
+        if(chatStatus==ChatStatus.NEED_ADD || chatStatus==ChatStatus.NEED_UPDATE) {
             userStudy.setChat_status(chatStatus);
             return Pair.of("Failed to sync chat-Member data", 500);
         } else{

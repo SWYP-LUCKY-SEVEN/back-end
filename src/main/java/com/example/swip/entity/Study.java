@@ -47,6 +47,7 @@ public class Study {
 
     private int view_count; //조회수
 
+    @Enumerated(EnumType.STRING)
     private ChatStatus chat_status; //채팅 연결 상태
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false) //not null

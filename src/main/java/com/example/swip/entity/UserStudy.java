@@ -34,6 +34,8 @@ public class UserStudy {
     private boolean is_owner;
     private ExitStatus exit_status;
     private LocalDateTime join_date; //참여 날짜
+
+    @Enumerated(EnumType.STRING)
     private ChatStatus chat_status; //채팅 연결 상태
 
     @OneToMany(mappedBy = "userStudy", cascade = CascadeType.ALL)
